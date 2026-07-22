@@ -22,8 +22,8 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         {/* Brand */}
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent)]/15">
-              <span className="text-base font-bold text-[var(--color-accent)]">S</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-brand-bg)]">
+              <span className="text-base font-bold text-[var(--color-brand)]">S</span>
             </div>
             <span className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
               {APP_CONFIG.name}

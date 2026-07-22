@@ -150,11 +150,28 @@ export function IconPlus(props: IconProps) {
   )
 }
 
+export function IconCollege(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...defaultProps} {...props}>
+      <path d="M4 10.5 12 5l8 5.5V20a1 1 0 0 1-1 1h-5v-5h-4v5H5a1 1 0 0 1-1-1v-9.5z" />
+      <path d="M12 5v3.5M9 9.5h6" />
+    </svg>
+  )
+}
+
 export function IconSparkles(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" {...defaultProps} {...props}>
       <path d="M12 3l1.2 4.2L17 8l-3.8 1.2L12 14l-1.2-4.8L7 8l3.8-.8L12 3z" />
       <path d="M19 14l.8 2.5L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.5L19 14z" />
+    </svg>
+  )
+}
+
+export function IconTrash(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" {...defaultProps} {...props}>
+      <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M10 11v6M14 11v6M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13" />
     </svg>
   )
 }

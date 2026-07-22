@@ -1,5 +1,4 @@
 -- Seldom: tasks table
--- Run this in Supabase Dashboard → SQL Editor → New query → Run
 
 create table if not exists public.tasks (
   id uuid primary key default gen_random_uuid(),

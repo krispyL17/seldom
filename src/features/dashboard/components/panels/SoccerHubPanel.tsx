@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom'
 import { Badge } from '@components/ui/Badge'
 import { ProgressBar } from '@components/ui/ProgressBar'
-import { Panel, PanelActionLink, PanelDivider, DataRow } from '@components/ui/Panel'
+import { Panel, PanelDivider, DataRow } from '@components/ui/Panel'
 import { soccerHub } from '../../data/mockData'
 
 export function SoccerHubPanel() {
@@ -13,7 +14,14 @@ export function SoccerHubPanel() {
       title="Soccer Hub"
       subtitle={soccerHub.currentFocus}
       badge={<Badge variant="accent">Focus</Badge>}
-      action={<PanelActionLink>Full hub</PanelActionLink>}
+      action={
+        <Link
+          to="/soccer/overview"
+          className="rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline"
+        >
+          Full hub
+        </Link>
+      }
     >
       <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 p-3">
         <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-accent-muted)]">

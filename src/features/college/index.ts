@@ -1,0 +1,6 @@
+export { CollegeLayout } from './components/CollegeLayout'
+export { CollegeDashboardPage } from './components/CollegeDashboardPage'
+export { CollegeProfilePage } from './components/CollegeProfilePage'
+export { ActivitiesResumePage } from './components/pages/ActivitiesResumePage'
+export { CommonAppPage } from './components/pages/CommonAppPage'
+export { TimelinePage } from './components/pages/TimelinePage'

@@ -9,6 +9,28 @@ import { fileURLToPath, URL } from 'node:url'
  */
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      '/api/memory': {
+        target: 'http://127.0.0.1:3847',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/memory/, ''),
+      },
+      '/api/search': {
+        target: 'http://127.0.0.1:3848',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/search/, ''),
+      },
+      '/api/assistant': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+      },
+      '/api/health': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

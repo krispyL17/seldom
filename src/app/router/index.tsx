@@ -1,7 +1,7 @@
 /**
  * Application route definitions.
  */
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from '@components/auth/ProtectedRoute'
 import { GuestRoute } from '@components/auth/GuestRoute'
 import { MainLayout } from '@components/layout/MainLayout'
@@ -14,8 +14,28 @@ import {
 import { HomePage } from '@features/dashboard'
 import { TasksPage } from '@features/tasks'
 import { GoalsPage } from '@features/goals'
+import {
+  CollegeLayout,
+  CollegeDashboardPage,
+  CollegeProfilePage,
+  ActivitiesResumePage,
+  CommonAppPage,
+  TimelinePage,
+} from '@features/college'
 import { JournalPage } from '@features/journal'
-import { SoccerPage } from '@features/soccer'
+import {
+  SoccerLayout,
+  SoccerOverviewPage,
+  TrainingSessionsPage,
+  MatchesPage,
+  TechnicalSkillsPage,
+  PhysicalMetricsPage,
+  WeaknessesPage,
+  StrengthsPage,
+  AiCoachPage,
+  ProgressChartsPage,
+  RunningPage,
+} from '@features/soccer'
 import { AnalyticsPage } from '@features/analytics'
 import { AssistantPage } from '@features/assistant'
 import { SettingsPage } from '@features/settings'
@@ -39,8 +59,27 @@ export function AppRouter() {
           <Route index element={<HomePage />} />
           <Route path="tasks" element={<TasksPage />} />
           <Route path="goals" element={<GoalsPage />} />
+          <Route path="college" element={<CollegeLayout />}>
+            <Route index element={<CollegeDashboardPage />} />
+            <Route path="activities" element={<ActivitiesResumePage />} />
+            <Route path="common-app" element={<CommonAppPage />} />
+            <Route path="timeline" element={<TimelinePage />} />
+            <Route path="schools/:collegeId" element={<CollegeProfilePage />} />
+          </Route>
           <Route path="journal" element={<JournalPage />} />
-          <Route path="soccer" element={<SoccerPage />} />
+          <Route path="soccer" element={<SoccerLayout />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<SoccerOverviewPage />} />
+            <Route path="training" element={<TrainingSessionsPage />} />
+            <Route path="running" element={<RunningPage />} />
+            <Route path="matches" element={<MatchesPage />} />
+            <Route path="technical" element={<TechnicalSkillsPage />} />
+            <Route path="physical" element={<PhysicalMetricsPage />} />
+            <Route path="weaknesses" element={<WeaknessesPage />} />
+            <Route path="strengths" element={<StrengthsPage />} />
+            <Route path="coach" element={<AiCoachPage />} />
+            <Route path="progress" element={<ProgressChartsPage />} />
+          </Route>
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="assistant" element={<AssistantPage />} />
           <Route path="settings" element={<SettingsPage />} />

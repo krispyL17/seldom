@@ -18,6 +18,7 @@ export type FeatureId =
   | 'home'
   | 'tasks'
   | 'goals'
+  | 'college'
   | 'soccer'
   | 'journal'
   | 'analytics'

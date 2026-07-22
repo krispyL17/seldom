@@ -11,8 +11,8 @@ interface SidebarBrandProps {
 export function SidebarBrand({ size = 'default' }: SidebarBrandProps) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)]/15">
-        <span className="text-sm font-bold text-[var(--color-accent)]">S</span>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-brand-bg)]">
+        <span className="text-sm font-bold text-[var(--color-brand)]">S</span>
       </div>
       <span
         className={

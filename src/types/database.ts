@@ -59,6 +59,486 @@ export interface Database {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          target_date: string | null
+          progress: number
+          milestones: Json
+          category: string | null
+          status: 'active' | 'completed' | 'archived'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          target_date?: string | null
+          progress?: number
+          milestones?: Json
+          category?: string | null
+          status?: 'active' | 'completed' | 'archived'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          target_date?: string | null
+          progress?: number
+          milestones?: Json
+          category?: string | null
+          status?: 'active' | 'completed' | 'archived'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      journal_entries: {
+        Row: {
+          id: string
+          user_id: string
+          entry_date: string
+          mood: 'great' | 'good' | 'okay' | 'low' | 'rough'
+          energy_level: number
+          reflection: string | null
+          wins: string | null
+          challenges: string | null
+          tomorrows_focus: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          entry_date?: string
+          mood: 'great' | 'good' | 'okay' | 'low' | 'rough'
+          energy_level: number
+          reflection?: string | null
+          wins?: string | null
+          challenges?: string | null
+          tomorrows_focus?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          entry_date?: string
+          mood?: 'great' | 'good' | 'okay' | 'low' | 'rough'
+          energy_level?: number
+          reflection?: string | null
+          wins?: string | null
+          challenges?: string | null
+          tomorrows_focus?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          session_date: string
+          duration_min: number
+          position_played: string
+          intensity: number
+          mood: 'great' | 'good' | 'okay' | 'low' | 'rough'
+          energy_level: number
+          technical_ratings: Json
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          session_date?: string
+          duration_min: number
+          position_played: string
+          intensity: number
+          mood: 'great' | 'good' | 'okay' | 'low' | 'rough'
+          energy_level: number
+          technical_ratings?: Json
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          session_date?: string
+          duration_min?: number
+          position_played?: string
+          intensity?: number
+          mood?: 'great' | 'good' | 'okay' | 'low' | 'rough'
+          energy_level?: number
+          technical_ratings?: Json
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      run_logs: {
+        Row: {
+          id: string
+          user_id: string
+          run_date: string
+          distance_m: number
+          distance_label: string
+          duration_sec: number
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          run_date?: string
+          distance_m: number
+          distance_label: string
+          duration_sec: number
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          run_date?: string
+          distance_m?: number
+          distance_label?: string
+          duration_sec?: number
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      run_goals: {
+        Row: {
+          id: string
+          user_id: string
+          distance_m: number
+          distance_label: string
+          target_duration_sec: number
+          deadline: string | null
+          achieved_at: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          distance_m: number
+          distance_label: string
+          target_duration_sec: number
+          deadline?: string | null
+          achieved_at?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          distance_m?: number
+          distance_label?: string
+          target_duration_sec?: number
+          deadline?: string | null
+          achieved_at?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      memories: {
+        Row: {
+          id: string
+          user_id: string
+          category: string
+          title: string
+          text: string
+          importance: number
+          source_id: string | null
+          embedding: unknown
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category: string
+          title: string
+          text: string
+          importance: number
+          source_id?: string | null
+          embedding: unknown
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category?: string
+          title?: string
+          text?: string
+          importance?: number
+          source_id?: string | null
+          embedding?: unknown
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      colleges: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          location: string
+          majors: string[]
+          application_type: 'Early Decision' | 'Early Action' | 'Regular Decision' | 'Rolling'
+          status: 'researching' | 'planning' | 'applying' | 'submitted' | 'waiting' | 'accepted' | 'rejected' | 'committed'
+          acceptance_rate: number | null
+          tuition: number | null
+          checklist: Json
+          essays: Json
+          deadlines: Json
+          documents: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          location?: string
+          majors?: string[]
+          application_type?: 'Early Decision' | 'Early Action' | 'Regular Decision' | 'Rolling'
+          status?: 'researching' | 'planning' | 'applying' | 'submitted' | 'waiting' | 'accepted' | 'rejected' | 'committed'
+          acceptance_rate?: number | null
+          tuition?: number | null
+          checklist?: Json
+          essays?: Json
+          deadlines?: Json
+          documents?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          location?: string
+          majors?: string[]
+          application_type?: 'Early Decision' | 'Early Action' | 'Regular Decision' | 'Rolling'
+          status?: 'researching' | 'planning' | 'applying' | 'submitted' | 'waiting' | 'accepted' | 'rejected' | 'committed'
+          acceptance_rate?: number | null
+          tuition?: number | null
+          checklist?: Json
+          essays?: Json
+          deadlines?: Json
+          documents?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      college_activities: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          category: 'Athletics' | 'Academic' | 'Leadership' | 'Research' | 'Volunteer' | 'Employment' | 'Personal Project'
+          organization: string | null
+          role: string | null
+          description: string | null
+          start_date: string | null
+          end_date: string | null
+          weekly_hours: number | null
+          weeks_per_year: number | null
+          leadership: string | null
+          achievements: string | null
+          skills: string[]
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          category: 'Athletics' | 'Academic' | 'Leadership' | 'Research' | 'Volunteer' | 'Employment' | 'Personal Project'
+          organization?: string | null
+          role?: string | null
+          description?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          weekly_hours?: number | null
+          weeks_per_year?: number | null
+          leadership?: string | null
+          achievements?: string | null
+          skills?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          category?: 'Athletics' | 'Academic' | 'Leadership' | 'Research' | 'Volunteer' | 'Employment' | 'Personal Project'
+          organization?: string | null
+          role?: string | null
+          description?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          weekly_hours?: number | null
+          weeks_per_year?: number | null
+          leadership?: string | null
+          achievements?: string | null
+          skills?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      college_awards: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          organization: string | null
+          award_date: string | null
+          level: string | null
+          description: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          organization?: string | null
+          award_date?: string | null
+          level?: string | null
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          organization?: string | null
+          award_date?: string | null
+          level?: string | null
+          description?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      college_projects: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          technologies: string[]
+          my_role: string | null
+          results: string | null
+          challenges: string | null
+          lessons_learned: string | null
+          documents: Json
+          start_date: string | null
+          end_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          description?: string | null
+          technologies?: string[]
+          my_role?: string | null
+          results?: string | null
+          challenges?: string | null
+          lessons_learned?: string | null
+          documents?: Json
+          start_date?: string | null
+          end_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          technologies?: string[]
+          my_role?: string | null
+          results?: string | null
+          challenges?: string | null
+          lessons_learned?: string | null
+          documents?: Json
+          start_date?: string | null
+          end_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      college_user_data: {
+        Row: {
+          user_id: string
+          test_scores: Json
+          financial_aid: Json
+          recommendations: Json
+          scholarships: Json
+          ai_recommendations: Json
+          common_app: Json
+          resume_settings: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          test_scores?: Json
+          financial_aid?: Json
+          recommendations?: Json
+          scholarships?: Json
+          ai_recommendations?: Json
+          common_app?: Json
+          resume_settings?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          test_scores?: Json
+          financial_aid?: Json
+          recommendations?: Json
+          scholarships?: Json
+          ai_recommendations?: Json
+          common_app?: Json
+          resume_settings?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

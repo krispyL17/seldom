@@ -36,5 +36,5 @@
       "@styles/*": ["src/styles/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "memory/types.ts", "search/types.ts"]
 }
