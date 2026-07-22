@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { AssistantEnv } from './types'
+import type { AssistantEnv } from './types.js'
 
 export async function verifyAccessToken(
   env: AssistantEnv,

@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { AssistantEnv, ChatRequest, ChatResponse } from './types'
-import { retrieveMemories } from './memory'
-import { generateReply } from './llm'
-import { runWebSearch, shouldWebSearch } from './search'
+import type { AssistantEnv, ChatRequest, ChatResponse } from './types.js'
+import { retrieveMemories } from './memory.js'
+import { generateReply } from './llm.js'
+import { runWebSearch, shouldWebSearch } from './search.js'
 
 export async function handleChat(
   client: SupabaseClient,

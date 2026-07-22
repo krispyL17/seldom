@@ -1,4 +1,4 @@
-import type { AssistantEnv } from './types'
+import type { AssistantEnv } from './types.js'
 
 export async function createEmbedding(env: AssistantEnv, text: string): Promise<number[]> {
   const response = await fetch('https://api.openai.com/v1/embeddings', {

@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { extractBearerToken, verifyAccessToken } from '../../lib/assistant/auth'
-import { handleChat } from '../../lib/assistant/orchestrator'
-import { loadAssistantEnv } from '../../lib/assistant/types'
+import { extractBearerToken, verifyAccessToken } from '../../lib/assistant/auth.js'
+import { handleChat } from '../../lib/assistant/orchestrator.js'
+import { loadAssistantEnv } from '../../lib/assistant/types.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')

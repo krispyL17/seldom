@@ -1,5 +1,5 @@
-import { buildSearchContextBlock } from '../../search/summarize'
-import type { SearchResultItem, SearchSummary } from '../../search/types'
+import { buildSearchContextBlock } from '../../search/summarize.js'
+import type { SearchResultItem, SearchSummary } from '../../search/types.js'
 
 const WEB_SEARCH_HINTS =
   /\b(search|find|look up|latest|current|news|today|what is|who is|when is|how to|explain|definition|meaning of|price of|cost of|deadline|requirements)\b/i

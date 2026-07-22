@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { loadAssistantEnv } from '../../lib/assistant/types'
+import { loadAssistantEnv } from '../lib/assistant/types.js'
 
 export default async function handler(_req: VercelRequest, res: VercelResponse) {
   const env = loadAssistantEnv()

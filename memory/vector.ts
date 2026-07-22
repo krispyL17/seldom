@@ -2,7 +2,7 @@
  * Vector math utilities — pure functions, safe for browser and Node.
  */
 
-import type { RetrievedMemory } from './types'
+import type { RetrievedMemory } from './types.js'
 
 export function cosineSimilarity(a: number[], b: number[]): number {
   if (a.length !== b.length || a.length === 0) return 0

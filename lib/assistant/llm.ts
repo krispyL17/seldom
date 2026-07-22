@@ -1,4 +1,4 @@
-import type { AssistantEnv } from './types'
+import type { AssistantEnv } from './types.js'
 
 const SYSTEM_PROMPT = `You are Seldom Assistant — a personal AI operating system for productivity, soccer, college prep, and life management.
 

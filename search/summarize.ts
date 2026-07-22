@@ -2,7 +2,7 @@
  * Pure helpers for building AI context from search results.
  */
 
-import type { SearchResultItem } from './types'
+import type { SearchResultItem } from './types.js'
 
 export function extractDomain(url: string): string {
   try {

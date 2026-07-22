@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { buildContextBlock, combinedScore, recencyScore } from '../../memory/vector'
-import type { RetrievedMemory } from '../../memory/types'
-import type { AssistantEnv } from './types'
-import { createEmbedding } from './embeddings'
+import { buildContextBlock, combinedScore, recencyScore } from '../../memory/vector.js'
+import type { RetrievedMemory } from '../../memory/types.js'
+import type { AssistantEnv } from './types.js'
+import { createEmbedding } from './embeddings.js'
 
 interface MatchRow {
   id: string
