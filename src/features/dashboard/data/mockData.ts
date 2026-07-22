@@ -1,170 +1,118 @@
-/**
- * Realistic placeholder data for the dashboard command center.
- * All values are static — will be replaced by Supabase / AI services later.
- */
-
 import type { CalendarEventType, RecoveryStatus } from '@/types'
 
-export const dailyBriefing = {
-  summary:
-    'Strong recovery overnight. HRV is up 8% from baseline — good day for technical work. Two deadlines approaching this week. Prioritize film review before evening session.',
-  priorities: [
-    { id: '1', text: 'Complete agility drill block (45 min)', done: false },
-    { id: '2', text: 'Review match footage — pressing triggers', done: false },
-    { id: '3', text: 'Log nutrition for pre-training meal', done: true },
-  ],
-  recovery: {
-    score: 82,
-    status: 'Good' as RecoveryStatus,
-    sleep: '7h 24m',
-    hrv: 68,
-    readiness: 'Ready to train',
-  },
-  deadlines: [
-    { id: 'd1', title: 'Season goal review', date: 'Jul 24', daysLeft: 2 },
-    { id: 'd2', title: 'Training plan submission', date: 'Jul 26', daysLeft: 4 },
-  ],
-}
-
 export const tasksData = {
-  completionRate: 67,
+  completionRate: 62,
   active: [
-    { id: 't1', title: 'Ball mastery — weak foot series', due: 'Today', overdue: false, progress: 40 },
-    { id: 't2', title: 'Stretching routine post-session', due: 'Today', overdue: false, progress: 0 },
-    { id: 't3', title: 'Update weekly training log', due: 'Yesterday', overdue: true, progress: 75 },
-    { id: 't4', title: 'Call physio — ankle check-in', due: 'Jul 24', overdue: false, progress: 0 },
+    { id: 't1', title: 'Finish college essay draft', progress: 40, due: 'Today', overdue: false },
+    { id: 't2', title: 'SAT practice — reading section', progress: 0, due: 'Tomorrow', overdue: false },
+    { id: 't3', title: 'Log training session', progress: 80, due: 'Yesterday', overdue: true },
   ],
-}
-
-export const soccerHub = {
-  currentFocus: 'First touch under pressure & scanning frequency',
-  nextTraining: {
-    type: 'Technical + Small-sided games',
-    time: 'Today, 6:00 PM',
-    duration: '90 min',
-    intensity: 'Moderate-High',
-  },
-  technicalRatings: [
-    { skill: 'Passing', value: 14, max: 20 },
-    { skill: 'Dribbling', value: 13, max: 20 },
-    { skill: 'First Touch', value: 15, max: 20 },
-    { skill: 'Vision', value: 14, max: 20 },
-    { skill: 'Work Rate', value: 16, max: 20 },
-  ],
-  lastSession: {
-    date: 'Jul 20',
-    type: 'Match simulation',
-    duration: '85 min',
-    rating: 7.2,
-    notes: 'Strong pressing first half. Passing accuracy dropped after 60 min.',
-  },
-  weeklyWorkload: {
-    sessions: 4,
-    totalMinutes: 340,
-    target: 360,
-    loadStatus: 'On track',
-  },
-  aiRecommendation:
-    'Reduce high-intensity volume tomorrow. Focus on recovery jog and mobility. Your weekly load is at 94% — one lighter day prevents overreach.',
 }
 
 export const goalsData = [
   {
     id: 'g1',
-    title: 'Improve weak-foot passing accuracy',
-    progress: 62,
-    milestone: '80% short-pass completion',
+    title: 'Sub-6:30 mile',
+    progress: 72,
     eta: 'Aug 2026',
-    suggestion: 'Add 15 min weak-foot rondo before each session',
+    milestone: 'Consistent 6:45 tempo runs',
+    suggestion: 'Add one interval session per week.',
   },
   {
     id: 'g2',
-    title: 'Reach match fitness baseline',
-    progress: 78,
-    milestone: 'Complete 90 min at RPE 7+',
-    eta: 'Sep 2026',
-    suggestion: 'Extend Saturday session by 10 min weekly',
-  },
-  {
-    id: 'g3',
-    title: 'Read the game — scanning habit',
+    title: 'College list finalized',
     progress: 45,
-    milestone: '6+ scans per possession',
-    eta: 'Oct 2026',
-    suggestion: 'Use scanning cues drill in warm-up',
+    eta: 'Sep 2026',
+    milestone: 'Visit 2 campuses',
+    suggestion: 'Schedule UNC info session.',
   },
-]
-
-export const calendarEvents: Array<{
-  id: string
-  day: string
-  date: number
-  isoDate: string
-  title: string
-  time: string
-  type: CalendarEventType
-}> = [
-  { id: 'c1', day: 'Wed', date: 22, isoDate: '2026-07-22', title: 'Technical training', time: '18:00', type: 'training' },
-  { id: 'c2', day: 'Thu', date: 23, isoDate: '2026-07-23', title: 'Recovery + mobility', time: '10:00', type: 'recovery' },
-  { id: 'c3', day: 'Fri', date: 24, isoDate: '2026-07-24', title: 'Tactical review', time: '17:30', type: 'tactical' },
-  { id: 'c4', day: 'Sat', date: 25, isoDate: '2026-07-25', title: 'Match day', time: '15:00', type: 'match' },
-  { id: 'c5', day: 'Sun', date: 26, isoDate: '2026-07-26', title: 'Active recovery', time: '11:00', type: 'recovery' },
 ]
 
 export const journalEntries = [
-  {
-    id: 'j1',
-    date: 'Jul 21',
-    preview: 'Felt sharp in morning session. Ankle a bit tight after sprints…',
-    mood: 'Focused',
-    energy: 4,
+  { id: 'j1', date: 'Jul 22', mood: 'Focused', energy: 4, preview: 'Strong training week. Need better sleep.' },
+  { id: 'j2', date: 'Jul 21', mood: 'Tired', energy: 2, preview: 'Heavy legs after match. Recovery day helped.' },
+]
+
+export const dailyBriefing = {
+  summary:
+    'Midweek focus: balance college prep with training load. You have 1 overdue task and a tempo run scheduled.',
+  priorities: [
+    { id: 'p1', text: 'Complete SAT reading practice', done: false },
+    { id: 'p2', text: 'Log yesterday\'s training session', done: false },
+    { id: 'p3', text: 'Review college list targets', done: true },
+  ],
+  recovery: {
+    status: 'Moderate' as RecoveryStatus,
+    score: 68,
+    note: 'Sleep was short — aim for 8h tonight.',
+    sleep: '6h 45m',
+    hrv: 52,
+    readiness: 'Moderate',
   },
-  {
-    id: 'j2',
-    date: 'Jul 20',
-    preview: 'Match sim was intense. Need better fueling strategy at halftime.',
-    mood: 'Tired',
-    energy: 3,
-  },
-  {
-    id: 'j3',
-    date: 'Jul 19',
-    preview: 'Recovery day. Sleep was excellent — HRV bounced back.',
-    mood: 'Calm',
-    energy: 5,
-  },
+  focusBlock: { title: 'Deep work', time: '4:00–5:30 PM', task: 'Essay brainstorming' },
+  deadlines: [
+    { id: 'dl1', title: 'UNC EA research deadline', daysLeft: 14, date: 'Aug 5' },
+    { id: 'dl2', title: 'SAT reading practice', daysLeft: 1, date: 'Jul 23' },
+    { id: 'dl3', title: 'Scholarship essay draft', daysLeft: 5, date: 'Jul 27' },
+  ],
+}
+
+export const calendarEvents = [
+  { id: 'c1', day: 'Mon', date: '21', isoDate: '2026-07-21', title: 'Recovery run', time: '7:00 AM', type: 'recovery' as CalendarEventType },
+  { id: 'c2', day: 'Tue', date: '22', isoDate: '2026-07-22', title: 'Technical session', time: '5:30 PM', type: 'training' as CalendarEventType },
+  { id: 'c3', day: 'Wed', date: '23', isoDate: '2026-07-23', title: 'Tactical review', time: '4:00 PM', type: 'tactical' as CalendarEventType },
+  { id: 'c4', day: 'Thu', date: '24', isoDate: '2026-07-24', title: 'Match prep', time: '6:00 PM', type: 'match' as CalendarEventType },
+  { id: 'c5', day: 'Fri', date: '25', isoDate: '2026-07-25', title: 'League match', time: '3:00 PM', type: 'match' as CalendarEventType },
 ]
 
 export const performanceAnalytics = {
-  trainingFrequency: [3, 4, 5, 4, 4, 5, 4],
-  taskCompletion: [55, 62, 70, 58, 75, 67, 72],
-  goalProgress: [40, 42, 45, 48, 52, 58, 62],
-  sleepHours: [6.5, 7, 7.5, 6, 7.2, 7.8, 7.4],
-  recoveryScores: [70, 75, 78, 65, 80, 82, 82],
-  weekLabels: ['M', 'Tu', 'W', 'Th', 'F', 'Sa', 'Su'],
+  weekLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  trainingFrequency: [1, 0, 1, 1, 0, 1, 0],
+  taskCompletion: [55, 60, 45, 70, 62, 80, 62],
+  goalProgress: [40, 42, 45, 48, 50, 55, 58],
+  sleepHours: [7.5, 6.5, 8, 7, 6, 8.5, 7],
+  recoveryScores: [72, 65, 80, 70, 68, 85, 68],
+}
+
+export const soccerHub = {
+  currentFocus: 'First touch under pressure',
+  nextTraining: { type: 'Technical + rondos', time: 'Today 5:30 PM', duration: '90 min', intensity: 'Moderate-High' },
+  weeklyWorkload: { sessions: 4, totalMinutes: 340, target: 360, loadStatus: 'On track' },
+  technicalRatings: [
+    { skill: 'Passing', value: 70, max: 100 },
+    { skill: 'First touch', value: 75, max: 100 },
+    { skill: 'Scanning', value: 65, max: 100 },
+  ],
+  lastSession: {
+    date: 'Jul 21',
+    type: 'Technical + rondos',
+    rating: 7.5,
+    notes: 'Good first touch under pressure. Weak foot still needs reps in tight spaces.',
+  },
+  lastMatch: { opponent: 'City United', result: 'W 3–1', rating: 7.8 },
+  aiRecommendation:
+    'Keep technical volume moderate today — add 15 minutes of weak-foot rondos before your college essay block.',
 }
 
 export const insightsData = {
   aiInsights: [
-    'Your best training days follow 7+ hours of sleep.',
-    'Task completion drops 22% on double-session days.',
-    'Weak-foot drills correlate with improved match ratings.',
+    'Training load is high — schedule a lighter day before Saturday.',
+    'College essay themes are ready to outline.',
+    'Mile PR trending down — on track for sub-6:30 goal.',
   ],
   personalRecords: [
-    { label: 'Longest training streak', value: '14 days' },
-    { label: 'Best session rating', value: '8.4' },
-    { label: 'Most tasks in a week', value: '23' },
+    { label: 'Mile', value: '6:42' },
+    { label: '5K', value: '22:10' },
+    { label: 'Match rating', value: '8.2' },
   ],
   streaks: [
-    { label: 'Daily journal', count: 12, unit: 'days' },
-    { label: 'Training logged', count: 8, unit: 'sessions' },
-    { label: 'Recovery score 80+', count: 5, unit: 'days' },
+    { label: 'Journal', count: 12, unit: 'days' },
+    { label: 'Training logged', count: 4, unit: 'weeks' },
   ],
-  motivation:
-    'Consistency beats intensity. You\'ve hit 4 sessions this week — one more puts you ahead of your monthly average.',
+  motivation: 'Small consistent reps beat cramming. One focused hour today moves everything forward.',
   suggestedAction: {
-    title: 'Pre-training scan drill',
-    description: '10 min before today\'s session to reinforce your scanning goal.',
-    duration: '10 min',
+    title: '15-min weak-foot rondo',
+    description: 'Quick technical touch before homework block.',
+    duration: '15 min',
   },
 }

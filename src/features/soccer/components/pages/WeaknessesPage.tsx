@@ -6,7 +6,7 @@ const priorityVariant = {
   high: 'danger',
   medium: 'warning',
   low: 'muted',
-} as const
+} as const satisfies Record<'high' | 'medium' | 'low', 'danger' | 'warning' | 'muted'>
 
 export function WeaknessesPage() {
   return (

@@ -34,8 +34,8 @@ pnpm-debug.log*
 # TypeScript
 *.tsbuildinfo
 
-# Local memory database
-data/
+# Local memory database (project root only — do NOT use bare "data/")
+/data/
 
 # Vercel
 .vercel

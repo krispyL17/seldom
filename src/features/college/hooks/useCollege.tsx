@@ -106,8 +106,7 @@ async function seedIfEmpty(userId: string) {
   const activities = await collegeActivityService.fetchAll()
   if (activities.length === 0) {
     for (const seed of buildSeedActivities(userId)) {
-      const { user_id: _, ...input } = seed
-      await collegeActivityService.create(userId, input)
+      await collegeActivityService.create(userId, seed)
     }
   }
 
@@ -121,16 +120,7 @@ async function seedIfEmpty(userId: string) {
   const projects = await collegeProjectService.fetchAll()
   if (projects.length === 0) {
     for (const seed of buildSeedProjects(userId)) {
-      const { technologies, myRole, lessonsLearned, startDate, endDate, documents, ...rest } = seed
-      await collegeProjectService.create(userId, {
-        ...rest,
-        technologies,
-        myRole,
-        lessonsLearned,
-        startDate,
-        endDate,
-        documents,
-      })
+      await collegeProjectService.create(userId, seed)
     }
   }
 }
