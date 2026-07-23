@@ -1,11 +1,9 @@
 import type { AdvisorMessage } from '../types'
 
-export const advisorMessagesData: AdvisorMessage[] = [
-  {
-    id: 'msg-1',
-    role: 'assistant',
-    content:
-      'Welcome to your College Advisor. I can help review essays, compare schools, build application plans, and track deadlines. What would you like to work on?',
-    timestamp: '2026-07-22T09:00:00',
-  },
-]
+export const advisorWelcomeMessage: AdvisorMessage = {
+  id: 'msg-welcome',
+  role: 'assistant',
+  content:
+    'Welcome! I can help you explore schools, plan testing, compare fit, and prepare for application season. What would you like to work on?',
+  timestamp: new Date().toISOString(),
+}

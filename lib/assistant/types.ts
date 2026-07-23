@@ -1,7 +1,9 @@
 /**
  * Server-side assistant orchestration — used by Vercel API routes.
- * Runs on each user prompt: embed → retrieve memories → search → LLM.
+ * Delegates to lib/orchestration for modular OS capabilities.
  */
+
+import type { OSMode } from '../orchestration/types.js'
 
 export interface AssistantEnv {
   supabaseUrl: string
@@ -13,16 +15,35 @@ export interface AssistantEnv {
 
 export interface ChatRequest {
   message: string
+  mode?: OSMode
   history?: Array<{ role: 'user' | 'assistant'; content: string }>
 }
 
 export interface ChatResponse {
   reply: string
   meta: {
+    mode: OSMode
+    module: string | null
     memoriesUsed: number
     searchUsed: boolean
     model: string
-    mode: 'live' | 'fallback'
+    proactiveInsights: Array<{
+      id: string
+      title: string
+      description: string
+      suggestedMode: OSMode
+      priority: 'high' | 'medium' | 'low'
+    }>
+    contextSummary: {
+      openTasks: number
+      completedTasks: number
+      activeGoals: number
+      journalEntriesLast14Days: number
+      trainingSessionsLast14Days: number
+      runsLast14Days: number
+      collegesOnList: number
+      collegePhase: 'junior' | 'senior' | 'unknown'
+    }
   }
 }
 
@@ -40,4 +61,20 @@ export function loadAssistantEnv(): AssistantEnv | null {
     chatModel: process.env.OPENAI_CHAT_MODEL ?? 'gpt-4o-mini',
     embedModel: process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small',
   }
+}
+
+export function getAssistantEnvStatus(): {
+  ready: boolean
+  missing: string[]
+} {
+  const missing: string[] = []
+  const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY
+  const openaiApiKey = process.env.OPENAI_API_KEY
+
+  if (!supabaseUrl) missing.push('SUPABASE_URL or VITE_SUPABASE_URL')
+  if (!supabaseAnonKey) missing.push('SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY')
+  if (!openaiApiKey) missing.push('OPENAI_API_KEY')
+
+  return { ready: missing.length === 0, missing }
 }

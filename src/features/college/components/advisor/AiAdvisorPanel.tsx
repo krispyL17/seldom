@@ -3,21 +3,31 @@ import { Button } from '@components/ui/Button'
 import { Panel } from '@components/ui/Panel'
 import { IconSparkles } from '@components/ui/icons'
 import { PreviewBadge } from '../shared/PreviewBadge'
-import { advisorMessagesData } from '../../data/mockData'
+import { advisorWelcomeMessage } from '../../data/mockData'
+import { useCollege } from '../../hooks/useCollege'
 import type { AdvisorMessage } from '../../types'
 import { cn } from '@lib/utils'
 
-const SUGGESTIONS = [
-  'Help me balance my college list',
-  'Compare UNC vs Duke for me',
+const JUNIOR_SUGGESTIONS = [
+  'Help me build a balanced college list',
+  'What should I do this summer to prepare?',
+  'How do I compare schools by fit and cost?',
   'Build my junior year testing plan',
-  'What should I do this summer?',
+] as const
+
+const SENIOR_SUGGESTIONS = [
+  'Help me prioritize application deadlines',
+  'Review my personal statement outline',
+  'Compare two schools on my list',
+  'What should I finish this week?',
 ] as const
 
 export function AiAdvisorPanel() {
-  const [messages, setMessages] = useState<AdvisorMessage[]>(advisorMessagesData)
+  const { isSeniorMode } = useCollege()
+  const [messages, setMessages] = useState<AdvisorMessage[]>([advisorWelcomeMessage])
   const [input, setInput] = useState('')
   const listRef = useRef<HTMLUListElement>(null)
+  const suggestions = isSeniorMode ? SENIOR_SUGGESTIONS : JUNIOR_SUGGESTIONS
 
   useEffect(() => {
     const list = listRef.current
@@ -41,8 +51,9 @@ export function AiAdvisorPanel() {
     const assistantMsg: AdvisorMessage = {
       id: `msg-${now}-reply`,
       role: 'assistant',
-      content:
-        'AI advisor is coming soon. I will be able to review essays, compare colleges, create application plans, track deadlines, and suggest schools.',
+      content: isSeniorMode
+        ? 'AI advisor is coming soon. I will help with essays, deadline planning, school comparisons, and application checklists.'
+        : 'AI advisor is coming soon. I will help you explore schools, plan testing, compare fit, and prepare before application season.',
       timestamp: new Date(now + 1).toISOString(),
     }
 
@@ -53,7 +64,7 @@ export function AiAdvisorPanel() {
   return (
     <Panel
       title="AI College Advisor"
-      subtitle="Essay review · school comparison · planning"
+      subtitle={isSeniorMode ? 'Essays · deadlines · applications' : 'Exploration · planning · prep'}
       badge={<PreviewBadge />}
     >
       <div className="flex h-72 flex-col">
@@ -94,7 +105,11 @@ export function AiAdvisorPanel() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about essays, schools, deadlines…"
+            placeholder={
+              isSeniorMode
+                ? 'Ask about essays, schools, deadlines…'
+                : 'Ask about exploring schools, testing, summer plans…'
+            }
             aria-label="Message to AI advisor"
             className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
           />
@@ -105,7 +120,7 @@ export function AiAdvisorPanel() {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-3">
-        {SUGGESTIONS.map((suggestion) => (
+        {suggestions.map((suggestion) => (
           <button
             key={suggestion}
             type="button"

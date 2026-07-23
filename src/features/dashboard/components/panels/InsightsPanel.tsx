@@ -1,5 +1,5 @@
+import { Link } from 'react-router-dom'
 import { Badge } from '@components/ui/Badge'
-import { Button } from '@components/ui/Button'
 import { Panel } from '@components/ui/Panel'
 import { insightsData } from '../../data/mockData'
 
@@ -9,7 +9,7 @@ import { insightsData } from '../../data/mockData'
 export function InsightsPanel() {
   return (
     <aside aria-label="Insights" className="space-y-4 xl:sticky xl:top-4 xl:w-72 xl:shrink-0">
-      <Panel title="AI Insights" badge={<Badge variant="accent">Live</Badge>}>
+      <Panel title="AI Insights" badge={<Badge variant="muted">Preview</Badge>}>
         <ul className="space-y-2.5">
           {insightsData.aiInsights.map((insight) => (
             <li
@@ -75,9 +75,12 @@ export function InsightsPanel() {
         </p>
         <div className="mt-3 flex items-center justify-between">
           <Badge variant="muted">{insightsData.suggestedAction.duration}</Badge>
-          <Button variant="primary" size="sm">
-            Start
-          </Button>
+          <Link
+            to="/assistant"
+            className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
+          >
+            Open Seldom OS
+          </Link>
         </div>
       </div>
     </aside>

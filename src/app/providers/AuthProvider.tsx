@@ -24,34 +24,43 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthContextValue['user']>(null)
   const [session, setSession] = useState<AuthContextValue['session']>(null)
   const [loading, setLoading] = useState(true)
+  const [sessionError, setSessionError] = useState<string | null>(null)
 
   const isConfigured = isSupabaseConfigured()
 
-  useEffect(() => {
+  const restoreSession = useCallback(async () => {
     if (!isConfigured) {
       setLoading(false)
       return
     }
 
-    let mounted = true
+    setLoading(true)
+    setSessionError(null)
 
-    authService
-      .getSession()
-      .then(({ session: initialSession, user: initialUser }) => {
-        if (!mounted) return
-        setSession(initialSession)
-        setUser(initialUser)
-        setLoading(false)
-      })
-      .catch(() => {
-        if (!mounted) return
-        setLoading(false)
-      })
+    try {
+      const { session: initialSession, user: initialUser } = await authService.getSession()
+      setSession(initialSession)
+      setUser(initialUser)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not restore session'
+      setSessionError(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [isConfigured])
+
+  useEffect(() => {
+    void restoreSession()
+
+    if (!isConfigured) return
+
+    let mounted = true
 
     const unsubscribe = authService.onAuthStateChange(async (_event, nextSession) => {
       if (!mounted) return
       setSession(nextSession)
       setUser(nextSession?.user ?? null)
+      setSessionError(null)
       setLoading(false)
     })
 
@@ -59,7 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       mounted = false
       unsubscribe()
     }
-  }, [isConfigured])
+  }, [isConfigured, restoreSession])
 
   const signIn = useCallback(async (credentials: SignInCredentials) => {
     await authService.signIn(credentials)
@@ -86,6 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       session,
       loading,
+      sessionError,
       isConfigured,
       isAuthenticated: user !== null,
       signIn,
@@ -94,7 +104,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       resetPassword,
       updatePassword,
     }),
-    [user, session, loading, isConfigured, signIn, signUp, signOut, resetPassword, updatePassword],
+    [user, session, loading, sessionError, isConfigured, signIn, signUp, signOut, resetPassword, updatePassword],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

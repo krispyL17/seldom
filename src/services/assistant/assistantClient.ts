@@ -1,20 +1,72 @@
 /**
  * Production assistant client — calls Vercel serverless /api/assistant/chat.
- * No local sidecars required when deployed.
  */
+
+export type AssistantMode =
+  | 'chat'
+  | 'daily_plan'
+  | 'weekly_review'
+  | 'goal_breakdown'
+  | 'brainstorm'
+  | 'essay_ideas'
+  | 'project_ideas'
+  | 'coding_ideas'
+  | 'soccer_drills'
+  | 'research_topics'
+  | 'college_planning'
+  | 'scholarship_ideas'
+  | 'personal_recommendations'
+  | 'reflection'
+  | 'project_management'
+
+export interface AssistantModule {
+  id: string
+  mode: AssistantMode
+  label: string
+  description: string
+  keywords: string[]
+}
+
+export interface ProactiveInsight {
+  id: string
+  title: string
+  description: string
+  suggestedMode: AssistantMode
+  priority: 'high' | 'medium' | 'low'
+}
+
+export interface AssistantBootstrap {
+  welcome: string
+  suggestions: string[]
+  modules: AssistantModule[]
+  proactiveInsights: ProactiveInsight[]
+}
 
 export interface AssistantChatRequest {
   message: string
+  mode?: AssistantMode
   history?: Array<{ role: 'user' | 'assistant'; content: string }>
 }
 
 export interface AssistantChatResponse {
   reply: string
   meta: {
+    mode: AssistantMode
+    module: string | null
     memoriesUsed: number
     searchUsed: boolean
     model: string
-    mode: 'live' | 'fallback'
+    proactiveInsights: ProactiveInsight[]
+    contextSummary: {
+      openTasks: number
+      completedTasks: number
+      activeGoals: number
+      journalEntriesLast14Days: number
+      trainingSessionsLast14Days: number
+      runsLast14Days: number
+      collegesOnList: number
+      collegePhase: 'junior' | 'senior' | 'unknown'
+    }
   }
 }
 
@@ -28,24 +80,38 @@ export class AssistantApiError extends Error {
   }
 }
 
+async function authFetch(accessToken: string, init?: RequestInit): Promise<Response> {
+  return fetch('/api/assistant/chat', {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+      ...init?.headers,
+    },
+  })
+}
+
+export async function fetchAssistantBootstrap(accessToken: string): Promise<AssistantBootstrap> {
+  const response = await authFetch(accessToken, { method: 'GET' })
+  const body = (await response.json().catch(() => ({}))) as AssistantBootstrap & { error?: string }
+
+  if (!response.ok) {
+    throw new AssistantApiError(body.error ?? `Assistant API error (${response.status})`, response.status)
+  }
+
+  return body
+}
+
 export async function sendAssistantMessage(
   accessToken: string,
   request: AssistantChatRequest,
 ): Promise<AssistantChatResponse> {
-  const response = await fetch('/api/assistant/chat', {
+  const response = await authFetch(accessToken, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
     body: JSON.stringify(request),
   })
 
-  const body = (await response.json().catch(() => ({}))) as {
-    error?: string
-    reply?: string
-    meta?: AssistantChatResponse['meta']
-  }
+  const body = (await response.json().catch(() => ({}))) as AssistantChatResponse & { error?: string }
 
   if (!response.ok) {
     throw new AssistantApiError(body.error ?? `Assistant API error (${response.status})`, response.status)
@@ -55,15 +121,7 @@ export async function sendAssistantMessage(
     throw new AssistantApiError('Empty response from assistant', 500)
   }
 
-  return {
-    reply: body.reply,
-    meta: body.meta ?? {
-      memoriesUsed: 0,
-      searchUsed: false,
-      model: 'unknown',
-      mode: 'live',
-    },
-  }
+  return body
 }
 
 export async function checkAssistantHealth(): Promise<boolean> {

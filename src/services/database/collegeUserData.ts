@@ -9,15 +9,9 @@ import type {
 import {
   DEFAULT_COMMON_APP,
   DEFAULT_RESUME_SETTINGS,
+  DEFAULT_TEST_SCORES,
 } from '@features/college/types'
 import { mapUserDataRow, toJson } from '@features/college/mappers'
-import {
-  aiRecommendationsData,
-  juniorFinancialAidData,
-  recommendationsData,
-  scholarshipsData,
-  testScoresData,
-} from '@features/college/data/seedData'
 
 function requireClient() {
   const client = getSupabaseClient()
@@ -25,14 +19,14 @@ function requireClient() {
   return client
 }
 
-function defaultUserData(userId: string): CollegeUserData {
+function emptyUserData(userId: string): CollegeUserData {
   return {
     user_id: userId,
-    testScores: testScoresData,
-    financialAid: juniorFinancialAidData,
-    recommendations: recommendationsData,
-    scholarships: scholarshipsData,
-    aiRecommendations: aiRecommendationsData,
+    testScores: DEFAULT_TEST_SCORES,
+    financialAid: [],
+    recommendations: [],
+    scholarships: [],
+    aiRecommendations: [],
     commonApp: DEFAULT_COMMON_APP,
     resumeSettings: DEFAULT_RESUME_SETTINGS,
     updated_at: new Date().toISOString(),
@@ -49,7 +43,7 @@ export const collegeUserDataService = {
       .maybeSingle()
 
     if (error) throw error
-    if (!data) return defaultUserData(userId)
+    if (!data) return emptyUserData(userId)
     return mapUserDataRow(data)
   },
 
@@ -64,7 +58,7 @@ export const collegeUserDataService = {
 
     if (row) return existing
 
-    const seed = defaultUserData(userId)
+    const seed = emptyUserData(userId)
     const { data, error } = await client
       .from('college_user_data')
       .insert({
@@ -96,6 +90,13 @@ export const collegeUserDataService = {
     return collegeUserDataService.patch(userId, { recommendations: toJson(recommendations) })
   },
 
+  async updateAiRecommendations(
+    userId: string,
+    aiRecommendations: CollegeUserData['aiRecommendations'],
+  ) {
+    return collegeUserDataService.patch(userId, { ai_recommendations: toJson(aiRecommendations) })
+  },
+
   async updateScholarships(userId: string, scholarships: CollegeUserData['scholarships']) {
     return collegeUserDataService.patch(userId, { scholarships: toJson(scholarships) })
   },
@@ -106,6 +107,19 @@ export const collegeUserDataService = {
 
   async updateResumeSettings(userId: string, resumeSettings: ResumeSettings) {
     return collegeUserDataService.patch(userId, { resume_settings: toJson(resumeSettings) })
+  },
+
+  async completeOnboarding(
+    userId: string,
+    payload: {
+      resumeSettings: ResumeSettings
+      testScores: TestScores
+    },
+  ): Promise<CollegeUserData> {
+    return collegeUserDataService.patch(userId, {
+      resume_settings: toJson(payload.resumeSettings),
+      test_scores: toJson(payload.testScores),
+    })
   },
 
   async patch(userId: string, payload: TableUpdate<'college_user_data'>): Promise<CollegeUserData> {

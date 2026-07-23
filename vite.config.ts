@@ -21,6 +21,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/search/, ''),
       },
+      '/api/analytics': {
+        target: 'http://127.0.0.1:3849',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/analytics/, ''),
+      },
       '/api/assistant': {
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,
@@ -42,6 +47,7 @@ export default defineConfig({
       '@services': fileURLToPath(new URL('./src/services', import.meta.url)),
       '@config': fileURLToPath(new URL('./src/config', import.meta.url)),
       '@styles': fileURLToPath(new URL('./src/styles', import.meta.url)),
+      '@analytics': fileURLToPath(new URL('./analytics', import.meta.url)),
     },
   },
 })

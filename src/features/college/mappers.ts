@@ -181,6 +181,10 @@ export function mapUserDataRow(row: {
       ...parseJson<Partial<ResumeSettings>>(row.resume_settings, {}),
       applicationPhase:
         parseJson<Partial<ResumeSettings>>(row.resume_settings, {}).applicationPhase ?? 'junior',
+      onboardingCompletedAt:
+        parseJson<Partial<ResumeSettings>>(row.resume_settings, {}).onboardingCompletedAt ?? null,
+      studentProfile:
+        parseJson<Partial<ResumeSettings>>(row.resume_settings, {}).studentProfile ?? null,
     },
     updated_at: row.updated_at,
   }

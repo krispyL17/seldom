@@ -1,84 +1,88 @@
+import type { AssistantMode } from '@services/assistant/assistantClient'
 import type { RetrievedMemory } from '@services/memory'
 import type { SearchResponse } from '@services/search'
+import { MODE_LABELS } from '../data/capabilities'
 
 export interface AssistantContext {
   memoryContext?: string
   memories: RetrievedMemory[]
   search?: SearchResponse
+  mode?: AssistantMode
 }
 
-/**
- * Builds assistant reply using memory + web search context (stub until LLM is connected).
- */
 export function getStubReply(userMessage: string, context: AssistantContext = { memories: [] }): string {
-  const { memoryContext, memories, search } = context
+  const { memoryContext, memories, search, mode } = context
   const lower = userMessage.toLowerCase()
+  const modeLabel = mode && mode !== 'chat' ? MODE_LABELS[mode] : null
 
   const memorySection =
     memories.length > 0
-      ? `\n\n---\n\n**Memory retrieval** (${memories.length} relevant ${memories.length === 1 ? 'memory' : 'memories'}):\n\n${memoryContext}\n\n*Ranked by similarity, importance, and recency — not the full database.*`
+      ? `\n\n---\n\n**Memory retrieval** (${memories.length} relevant ${memories.length === 1 ? 'memory' : 'memories'}):\n\n${memoryContext}\n\n*Ranked by similarity, importance, and recency.*`
       : ''
 
   const searchSection =
     search && !search.skipped && search.results.length > 0
-      ? `\n\n---\n\n**Web search** (${search.provider}, ${search.results.length} trusted ${search.results.length === 1 ? 'result' : 'results'}):\n\n${search.summary}\n\n${search.contextBlock}\n\n*Only trusted domains are included.*`
+      ? `\n\n---\n\n**Web search** (${search.provider}, ${search.results.length} results):\n\n${search.summary}\n\n${search.contextBlock}`
       : ''
 
   const contextSections = `${memorySection}${searchSection}`
+  const modeNote = modeLabel ? `\n\n*Active capability: **${modeLabel}***` : ''
 
-  if (lower.includes('code') || lower.includes('typescript') || lower.includes('function')) {
-    return `Here's an example **TypeScript** helper you could use in Seldom:
+  if (lower.includes('plan') || lower.includes('tomorrow') || lower.includes('daily') || mode === 'daily_plan') {
+    return `## Daily Plan (preview)
 
-\`\`\`typescript
-export function formatDeadline(date: string): string {
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-\`\`\`
+**Morning (60–90 min):** Highest-focus task tied to your top goal  
+**Midday:** Lighter admin + one learning block  
+**Evening:** 10-min reflection + prep tomorrow's top 3
 
-> AI responses are simulated for now. Connect a model later to get real answers.${contextSections}`
+Connect \`OPENAI_API_KEY\` for a personalized plan from your tasks and goals.${modeNote}${contextSections}`
   }
 
-  if (lower.includes('college') || lower.includes('application')) {
-    return `For **college prep**, I'd suggest focusing on:
+  if (lower.includes('week') || lower.includes('review') || mode === 'weekly_review') {
+    return `## Weekly Review (preview)
 
-1. Balancing your list (reach / target / safety)
-2. Logging activities in Seldom's Activities tab
-3. Starting essay themes before senior year
+1. **Wins** — what moved your goals forward?  
+2. **Challenges** — what blocked you?  
+3. **Adjust** — one change for next week
 
-Use **"I'm a senior now"** in the College section when application season starts.
-
-*Preview mode — no AI model connected yet.*${contextSections}`
+Live weekly reviews use your journal, tasks, training, and college data.${modeNote}${contextSections}`
   }
 
-  if (lower.includes('plan') || lower.includes('tomorrow') || lower.includes('week')) {
-    return `Here's a simple planning framework:
+  if (lower.includes('goal') || mode === 'goal_breakdown') {
+    return `## Goal Breakdown (preview)
 
-- **Morning:** Highest-focus task (60–90 min)
-- **Afternoon:** Meetings, errands, lighter work
-- **Evening:** Review & journal
+Pick one goal → define **milestones** → assign **weekly actions** → set a **checkpoint date**.
 
-Want me to tie this to your Tasks module once AI is connected?${contextSections}`
+The OS orchestrator reads your active goals from Supabase when connected.${modeNote}${contextSections}`
+  }
+
+  if (lower.includes('college') || mode === 'college_planning' || mode === 'scholarship_ideas') {
+    return `## College OS (preview)
+
+Rising-junior mode: explore schools, build your list, plan testing — no preset schools.
+
+Ask about list balance, essay themes, or scholarship search strategies once the API is connected.${modeNote}${contextSections}`
+  }
+
+  if (lower.includes('drill') || lower.includes('soccer') || mode === 'soccer_drills') {
+    return `## Soccer Drills (preview)
+
+For full drill plans with your training history, use **Soccer → AI Coach** or connect the OS assistant API.
+
+Stub mode gives generic guidance only.${modeNote}${contextSections}`
   }
 
   if (memories.length > 0 || (search && search.results.length > 0)) {
-    return `I gathered context from your semantic memory and trusted web sources.${contextSections}
+    return `Seldom OS gathered context from memory and search.${modeNote}${contextSections}
 
-*Preview mode — connect an LLM to generate answers from this context.*`
+*Connect \`OPENAI_API_KEY\` for full modular orchestration.*`
   }
 
-  return `Thanks for your message. I'm Seldom's assistant UI — **ChatGPT-style interface**, preview mode only.
+  return `Thanks for your message. **Seldom OS** routes requests through modular capabilities — daily planning, weekly reviews, goals, college, soccer, reflection, and more.
 
-I can help with tasks, goals, journal, soccer, and college prep. Try asking **"What is early action?"** or **"How to improve first touch?"** to trigger web search.
-
-*Start sidecars with \`npm run services\` (memory + search). Ollama needs \`nomic-embed-text\` for memory.*`
+Run \`npm run dev:vercel\` or deploy with \`OPENAI_API_KEY\` for live orchestration.${modeNote}${contextSections}`
 }
 
-export const WELCOME_MESSAGE = `Hello! I'm **Seldom Assistant** — your personal AI operating system companion.
+export const WELCOME_MESSAGE = `Hello! I'm **Seldom OS** — your proactive personal operating system.
 
-Before each reply I retrieve your **memories** and search **trusted sources** when needed. On Vercel this runs automatically — just sign in and ask.
-
-Try a suggestion below or type your own message.`
+I help you achieve long-term goals through daily planning, weekly reviews, reflection, and domain-specific coaching. Pick a capability or ask anything.`

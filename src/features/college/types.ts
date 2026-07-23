@@ -284,6 +284,14 @@ export interface CommonAppData {
   reflectionNotes: ReflectionNote[]
 }
 
+export interface StudentProfile {
+  name: string
+  school: string
+  graduationYear: string
+  gpa?: string | null
+  intendedMajor?: string | null
+}
+
 export interface ResumeSettings {
   template: ResumeTemplate
   selectedActivityIds: string[]
@@ -291,6 +299,8 @@ export interface ResumeSettings {
   selectedProjectIds: string[]
   applicationPhase: ApplicationPhase
   seniorModeStartedAt: string | null
+  onboardingCompletedAt: string | null
+  studentProfile: StudentProfile | null
 }
 
 export interface CollegeUserData {
@@ -480,6 +490,8 @@ export const DEFAULT_RESUME_SETTINGS: ResumeSettings = {
   selectedProjectIds: [],
   applicationPhase: 'junior',
   seniorModeStartedAt: null,
+  onboardingCompletedAt: null,
+  studentProfile: null,
 }
 
 export const DEFAULT_TEST_SCORES: TestScores = {

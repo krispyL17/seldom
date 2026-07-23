@@ -2,6 +2,7 @@ import { Panel } from '@components/ui/Panel'
 import { PreviewBadge } from '../shared/PreviewBadge'
 import { useCollege } from '../../hooks/useCollege'
 import { scrollToAdvisor } from '../../utils'
+import { buildStarterRecommendations } from '../../data/templates'
 
 const TYPE_ICONS: Record<string, string> = {
   school: '🏫',
@@ -11,13 +12,16 @@ const TYPE_ICONS: Record<string, string> = {
 }
 
 export function AiRecommendationsPanel() {
-  const { userData } = useCollege()
-  const recommendations = userData?.aiRecommendations ?? []
+  const { userData, isSeniorMode } = useCollege()
+  const recommendations =
+    (userData?.aiRecommendations.length ?? 0) > 0
+      ? userData!.aiRecommendations
+      : buildStarterRecommendations()
 
   return (
     <Panel
-      title="AI Recommendations"
-      subtitle="Personalized next steps"
+      title="Next steps"
+      subtitle={isSeniorMode ? 'Application priorities' : 'Exploration & prep ideas'}
       action={<PreviewBadge />}
     >
       <ul className="space-y-3">

@@ -1,0 +1,95 @@
+{
+  "id": "college-onboarding",
+  "version": 1,
+  "title": "College Setup",
+  "subtitle": "Let's build your rising-junior prep profile — a few questions and your workspace starts blank, ready for your schools and goals.",
+  "welcome": "Hi! I'm your Seldom college assistant. I'll ask a few quick questions so your **College** tab starts **empty** with *your* info — no demo schools or preset lists. You can edit everything later.",
+  "completeMessage": "Your college workspace is ready. Add schools as you explore, track prep progress, and expand your profile anytime.",
+  "steps": [
+    {
+      "id": "name",
+      "question": "What's your full name?",
+      "type": "text",
+      "field": "studentProfile.name",
+      "placeholder": "e.g. Alex Johnson"
+    },
+    {
+      "id": "school",
+      "question": "What high school do you attend?",
+      "type": "text",
+      "field": "studentProfile.school",
+      "placeholder": "e.g. Lincoln High School"
+    },
+    {
+      "id": "graduationYear",
+      "question": "When do you graduate high school?",
+      "type": "text",
+      "field": "studentProfile.graduationYear",
+      "placeholder": "e.g. 2027"
+    },
+    {
+      "id": "phase",
+      "question": "Where are you in the process?",
+      "type": "choice",
+      "options": ["Rising junior — exploring schools", "Senior — applying now"],
+      "field": "applicationPhase",
+      "map": {
+        "Rising junior — exploring schools": "junior",
+        "Senior — applying now": "senior"
+      }
+    },
+    {
+      "id": "gpa",
+      "question": "What's your GPA? (optional — type **skip** to leave blank)",
+      "type": "text",
+      "field": "studentProfile.gpa",
+      "optional": true,
+      "placeholder": "e.g. 3.8 weighted"
+    },
+    {
+      "id": "satStatus",
+      "question": "What's your SAT status?",
+      "type": "choice",
+      "options": ["Not taken yet", "Scheduled", "Completed"],
+      "field": "testScores.sat.status",
+      "map": { "Not taken yet": "not_taken", "Scheduled": "scheduled", "Completed": "completed" }
+    },
+    {
+      "id": "satScore",
+      "question": "If you've taken the SAT, what's your score? (type **skip** if not taken)",
+      "type": "text",
+      "field": "testScores.sat.score",
+      "optional": true,
+      "placeholder": "e.g. 1320"
+    },
+    {
+      "id": "intendedMajor",
+      "question": "What major(s) are you interested in?",
+      "type": "text",
+      "field": "studentProfile.intendedMajor",
+      "placeholder": "e.g. Computer Science, Undecided"
+    },
+    {
+      "id": "activityName",
+      "question": "What's your most important extracurricular activity?",
+      "type": "text",
+      "field": "activity.name",
+      "placeholder": "e.g. Varsity Soccer, Robotics Club"
+    },
+    {
+      "id": "activityRole",
+      "question": "What was your role in that activity?",
+      "type": "text",
+      "field": "activity.role",
+      "placeholder": "e.g. Captain, Programming Lead"
+    },
+    {
+      "id": "firstCollege",
+      "question": "Name one school you're curious about (optional — type **skip** to add later)",
+      "type": "text",
+      "field": "college.name",
+      "optional": true,
+      "placeholder": "Any school you're researching"
+    }
+  ]
+}

@@ -3,9 +3,10 @@ import { ProgressBar } from '@components/ui/ProgressBar'
 import { Panel, DataRow, PanelDivider } from '@components/ui/Panel'
 import { MetricTile, MiniBarChart } from '@components/ui/MiniBarChart'
 import { Link } from 'react-router-dom'
+import { useTrainingSessions } from '../../training/hooks/useTrainingSessions'
+import { useSoccer } from '../../hooks/useSoccerProfile'
 import {
   matches,
-  playerProfile,
   technicalSkills,
   trainingSessions,
   weeklyLoad,
@@ -19,10 +20,44 @@ import {
 } from '../../utils'
 
 export function SoccerOverviewPage() {
+  const { profile } = useSoccer()
+  const { sessions: dbSessions } = useTrainingSessions()
+
+  const playerProfile = profile
+    ? {
+        name: profile.name,
+        position: profile.position,
+        preferredFoot: profile.preferredFoot,
+        squadNumber: profile.squadNumber ?? 0,
+        season: profile.season,
+        currentFocus: profile.currentFocus,
+      }
+    : null
+
   const loadPct = Math.round((weeklyWorkload.totalMinutes / weeklyWorkload.target) * 100)
-  const nextSession = trainingSessions[0]
+  const dbNext = dbSessions[0]
+  const nextSession = dbNext
+    ? {
+        type: `${dbNext.position_played} training`,
+        date: dbNext.session_date,
+        durationMin: dbNext.duration_min,
+        rpe: dbNext.intensity,
+        intensity: `Intensity ${dbNext.intensity}/10`,
+        focus: dbNext.notes ? [dbNext.notes] : ['Log notes in Training tab'],
+      }
+    : trainingSessions[0]
   const lastMatch = matches[0]
   const topSkills = [...technicalSkills].sort((a, b) => b.value - a.value).slice(0, 5)
+
+  if (!playerProfile) {
+    return (
+      <Panel title="Player Profile" subtitle="Complete setup to see your overview" fullWidth>
+        <p className="text-sm text-[var(--color-text-secondary)]">
+          Your profile will appear here after onboarding.
+        </p>
+      </Panel>
+    )
+  }
 
   return (
     <div className="dashboard-grid grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -33,7 +68,8 @@ export function SoccerOverviewPage() {
               {playerProfile.name}
             </p>
             <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-              #{playerProfile.squadNumber} · {playerProfile.position} · {playerProfile.preferredFoot} foot
+              {playerProfile.squadNumber ? `#${playerProfile.squadNumber} · ` : ''}
+              {playerProfile.position} · {playerProfile.preferredFoot} foot
             </p>
             <Badge variant="accent" className="mt-2 normal-case tracking-normal">
               Focus: {playerProfile.currentFocus}

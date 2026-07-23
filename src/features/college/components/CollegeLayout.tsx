@@ -1,3 +1,5 @@
+import { ErrorPanel } from '@components/ui/ErrorPanel'
+import { PageSkeleton } from '@components/ui/PanelSkeleton'
 import { NavLink, Outlet } from 'react-router-dom'
 import { getCollegeNav } from '../types'
 import { cn } from '@lib/utils'
@@ -5,10 +7,13 @@ import { CollegeProvider, useCollege } from '../hooks/useCollege'
 import { SeniorModePrompt } from './shared/SeniorModePrompt'
 import { phaseDescription, phaseLabel } from '../phaseUtils'
 import { Badge } from '@components/ui/Badge'
+import { CollegeOnboardingGate } from '../onboarding/CollegeOnboardingGate'
 
 export function CollegeNav() {
-  const { applicationPhase } = useCollege()
+  const { applicationPhase, onboardingComplete } = useCollege()
   const nav = getCollegeNav(applicationPhase)
+
+  if (!onboardingComplete) return null
 
   return (
     <nav
@@ -37,7 +42,31 @@ export function CollegeNav() {
 }
 
 function CollegeLayoutInner() {
-  const { applicationPhase } = useCollege()
+  const { applicationPhase, loading, error, onboardingComplete, reload } = useCollege()
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-[1600px] animate-fade-in">
+        <PageSkeleton panels={4} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-[1600px]">
+        <ErrorPanel message={error} onRetry={() => void reload()} title="College workspace" />
+      </div>
+    )
+  }
+
+  if (!onboardingComplete) {
+    return (
+      <div className="mx-auto max-w-[900px] animate-fade-in">
+        <CollegeOnboardingGate onComplete={() => void reload()} />
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto max-w-[1600px] animate-fade-in">

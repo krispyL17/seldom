@@ -5,7 +5,7 @@
   "rewrites": [{ "source": "/((?!api/).*)", "destination": "/" }],
   "functions": {
     "api/**/*.ts": {
-      "includeFiles": "lib/**,memory/**,search/**"
+      "includeFiles": "lib/**,memory/**,search/**,analytics/**,config/prompts/**"
     }
   }
 }

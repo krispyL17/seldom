@@ -1,36 +1,75 @@
-import { Panel, PanelActionLink, PanelDivider } from '@components/ui/Panel'
+import { Link } from 'react-router-dom'
+import { PanelSkeleton } from '@components/ui/PanelSkeleton'
+import { Panel, PanelDivider } from '@components/ui/Panel'
 import { MiniBarChart, MetricTile } from '@components/ui/MiniBarChart'
-import { performanceAnalytics, soccerHub, tasksData } from '../../data/mockData'
+import { useAnalytics } from '@features/analytics'
+import { useAuth } from '@hooks/useAuth'
 
 export function PerformanceAnalyticsPanel() {
-  const { weekLabels } = performanceAnalytics
-  const avgSleep =
-    performanceAnalytics.sleepHours.reduce((a, b) => a + b, 0) /
-    performanceAnalytics.sleepHours.length
-  const latestTaskCompletion =
-    performanceAnalytics.taskCompletion.at(-1) ?? tasksData.completionRate
+  const { user } = useAuth()
+  const { dashboard, loading } = useAnalytics()
+
+  if (!user) {
+    return (
+      <Panel title="Performance Analytics" subtitle="Sign in for live metrics" fullWidth>
+        <p className="text-xs text-[var(--color-text-tertiary)]">
+          Log in to see your task, training, and goal trends here.
+        </p>
+      </Panel>
+    )
+  }
+
+  if (loading || !dashboard) {
+    return (
+      <Panel title="Performance Analytics" subtitle="Loading metrics…" fullWidth>
+        <PanelSkeleton lines={4} />
+      </Panel>
+    )
+  }
+
+  const taskKpi = dashboard.kpis.find((k) => k.label === 'Task completion')
+  const goalKpi = dashboard.kpis.find((k) => k.label === 'Goal progress')
+  const trainingKpi = dashboard.kpis.find((k) => k.label === 'Training / wk')
+  const journalKpi = dashboard.kpis.find((k) => k.label === 'Journal streak')
 
   return (
     <Panel
       title="Performance Analytics"
-      subtitle="7-day overview"
+      subtitle="Live from your data"
       fullWidth
-      action={<PanelActionLink>Full analytics</PanelActionLink>}
+      action={
+        <Link
+          to="/analytics"
+          className="rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline"
+        >
+          Full analytics
+        </Link>
+      }
     >
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <MetricTile label="Avg Sleep" value={avgSleep.toFixed(1)} unit="h" trend="up" />
         <MetricTile
-          label="Recovery"
-          value={performanceAnalytics.recoveryScores.at(-1) ?? 0}
-          unit="/100"
-          trend="up"
+          label="Tasks Done"
+          value={taskKpi?.value ?? 0}
+          unit={taskKpi?.unit}
+          trend={taskKpi?.trend}
         />
-        <MetricTile label="Tasks Done" value={latestTaskCompletion} unit="%" trend="neutral" />
         <MetricTile
-          label="Sessions"
-          value={soccerHub.weeklyWorkload.sessions}
-          unit="/wk"
-          trend="up"
+          label="Goal Progress"
+          value={goalKpi?.value ?? 0}
+          unit={goalKpi?.unit}
+          trend={goalKpi?.trend}
+        />
+        <MetricTile
+          label="Training"
+          value={trainingKpi?.value ?? 0}
+          unit={trainingKpi?.unit}
+          trend={trainingKpi?.trend}
+        />
+        <MetricTile
+          label="Journal Streak"
+          value={journalKpi?.value ?? 0}
+          unit={journalKpi?.unit}
+          trend={journalKpi?.trend}
         />
       </div>
 
@@ -38,42 +77,25 @@ export function PerformanceAnalyticsPanel() {
         <div>
           <PanelDivider label="Training Frequency" />
           <MiniBarChart
-            data={performanceAnalytics.trainingFrequency}
-            labels={weekLabels}
+            data={dashboard.trainingFrequency.data}
+            labels={dashboard.trainingFrequency.labels}
             color="var(--color-accent)"
           />
         </div>
         <div>
           <PanelDivider label="Task Completion" />
           <MiniBarChart
-            data={performanceAnalytics.taskCompletion}
-            labels={weekLabels}
+            data={dashboard.taskCompletion.data}
+            labels={dashboard.taskCompletion.labels}
             color="var(--color-success)"
           />
         </div>
         <div>
           <PanelDivider label="Goal Progress" />
           <MiniBarChart
-            data={performanceAnalytics.goalProgress}
-            labels={weekLabels}
+            data={dashboard.goalProgress.data}
+            labels={dashboard.goalProgress.labels}
             color="var(--color-warning)"
-          />
-        </div>
-        <div>
-          <PanelDivider label="Sleep (hours)" />
-          <MiniBarChart
-            data={performanceAnalytics.sleepHours}
-            labels={weekLabels}
-            color="#636366"
-          />
-        </div>
-        <div className="sm:col-span-2 lg:col-span-2">
-          <PanelDivider label="Recovery Score" />
-          <MiniBarChart
-            data={performanceAnalytics.recoveryScores}
-            labels={weekLabels}
-            color="var(--color-success)"
-            height={64}
           />
         </div>
       </div>

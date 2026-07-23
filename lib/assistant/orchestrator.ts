@@ -1,46 +1,37 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { handleOSChat, getOSBootstrap } from '../orchestration/orchestrator.js'
+import type { OSBootstrapResponse, OSChatRequest, OSMode } from '../orchestration/types.js'
 import type { AssistantEnv, ChatRequest, ChatResponse } from './types.js'
-import { retrieveMemories } from './memory.js'
-import { generateReply } from './llm.js'
-import { runWebSearch, shouldWebSearch } from './search.js'
 
 export async function handleChat(
   client: SupabaseClient,
   env: AssistantEnv,
+  userId: string,
   request: ChatRequest,
 ): Promise<ChatResponse> {
-  const message = request.message.trim()
-  if (!message) throw new Error('Message is required')
+  const osRequest: OSChatRequest = {
+    message: request.message,
+    mode: request.mode,
+    history: request.history,
+  }
 
-  const [memoryResult, searchResult] = await Promise.allSettled([
-    retrieveMemories(client, env, message, 8),
-    shouldWebSearch(message) ? runWebSearch(message) : Promise.resolve(null),
-  ])
-
-  const memoryBlock =
-    memoryResult.status === 'fulfilled' ? memoryResult.value.contextBlock : undefined
-  const memoriesUsed =
-    memoryResult.status === 'fulfilled' ? memoryResult.value.memories.length : 0
-
-  const searchBlock =
-    searchResult.status === 'fulfilled' && searchResult.value?.contextBlock
-      ? searchResult.value.contextBlock
-      : undefined
-  const searchUsed = Boolean(searchBlock)
-
-  const reply = await generateReply(env, message, {
-    memoryBlock,
-    searchBlock,
-    history: request.history?.slice(-6),
-  })
+  const result = await handleOSChat(client, env, userId, osRequest)
 
   return {
-    reply,
+    reply: result.reply,
     meta: {
-      memoriesUsed,
-      searchUsed,
-      model: env.chatModel,
-      mode: 'live',
+      ...result.meta,
+      mode: result.meta.mode,
     },
   }
 }
+
+export async function getAssistantBootstrap(
+  client: SupabaseClient,
+  env: AssistantEnv,
+  userId: string,
+): Promise<OSBootstrapResponse> {
+  return getOSBootstrap(client, env, userId)
+}
+
+export type { OSMode, OSBootstrapResponse }

@@ -1,3 +1,7 @@
+/**
+ * Home dashboard — athlete command center.
+ */
+import { ErrorBoundary } from '@components/ui/ErrorBoundary'
 import { DailyBriefingPanel } from './panels/DailyBriefingPanel'
 import { TasksPanel } from './panels/TasksPanel'
 import { SoccerHubPanel } from './panels/SoccerHubPanel'
@@ -7,44 +11,47 @@ import { JournalPanel } from './panels/JournalPanel'
 import { PerformanceAnalyticsPanel } from './panels/PerformanceAnalyticsPanel'
 import { InsightsPanel } from './panels/InsightsPanel'
 
-/**
- * Home dashboard — athlete command center.
- *
- * Design philosophy (FM-inspired, not FM-branded):
- *   • Information-dense panel grid
- *   • Hierarchical data widgets with clear section rails
- *   • Professional dark surfaces with depth and subtle motion
- *   • Right insights rail on xl+; collapses below on smaller screens
- */
 export function HomePage() {
   return (
-    <div className="mx-auto max-w-[1600px]">
-      {/* Page header */}
+    <main className="mx-auto max-w-[1600px] animate-fade-in">
       <div className="mb-5">
-        <h2 className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
           Command Center
-        </h2>
-        <p className="text-xs text-[var(--color-text-tertiary)]">
-          Your daily overview — training, tasks, goals, and insights
+        </h1>
+        <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+          Your personal control center — tasks, goals, and schedule at a glance
         </p>
       </div>
 
-      {/* Two-column layout: main panels + insights rail */}
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
-        {/* Main panel grid */}
         <div className="dashboard-grid min-w-0 flex-1 grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <DailyBriefingPanel />
-          <TasksPanel />
-          <SoccerHubPanel />
-          <GoalsPanel />
-          <CalendarPanel />
-          <JournalPanel />
-          <PerformanceAnalyticsPanel />
+          <ErrorBoundary title="Daily briefing failed">
+            <DailyBriefingPanel />
+          </ErrorBoundary>
+          <ErrorBoundary title="Tasks panel failed">
+            <TasksPanel />
+          </ErrorBoundary>
+          <ErrorBoundary title="Soccer panel failed">
+            <SoccerHubPanel />
+          </ErrorBoundary>
+          <ErrorBoundary title="Goals panel failed">
+            <GoalsPanel />
+          </ErrorBoundary>
+          <ErrorBoundary title="Calendar panel failed">
+            <CalendarPanel />
+          </ErrorBoundary>
+          <ErrorBoundary title="Journal panel failed">
+            <JournalPanel />
+          </ErrorBoundary>
+          <ErrorBoundary title="Analytics panel failed">
+            <PerformanceAnalyticsPanel />
+          </ErrorBoundary>
         </div>
 
-        {/* Insights — right rail on xl+, stacked below on smaller screens */}
-        <InsightsPanel />
+        <ErrorBoundary title="Insights panel failed">
+          <InsightsPanel />
+        </ErrorBoundary>
       </div>
-    </div>
+    </main>
   )
 }

@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { AssistantEnv } from './types.js'
 
 export async function verifyAccessToken(
   env: AssistantEnv,
   accessToken: string,
-): Promise<{ userId: string; client: ReturnType<typeof createClient> } | null> {
+): Promise<{ userId: string; client: SupabaseClient } | null> {
   const client = createClient(env.supabaseUrl, env.supabaseAnonKey, {
     global: { headers: { Authorization: `Bearer ${accessToken}` } },
   })

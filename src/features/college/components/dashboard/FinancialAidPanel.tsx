@@ -1,4 +1,5 @@
 import { Panel } from '@components/ui/Panel'
+import { EmptyState } from '@components/ui/EmptyState'
 import { ChecklistItemRow } from '../shared/ChecklistItemRow'
 import { useCollege } from '../../hooks/useCollege'
 import { generateId } from '../../utils'
@@ -39,15 +40,35 @@ export function FinancialAidPanel() {
       }
     >
       <ul className="space-y-1">
-        {items.map((item) => (
-          <li key={item.id}>
-            <ChecklistItemRow
-              label={item.label}
-              completed={item.completed}
-              onToggle={() => toggle(item.id)}
-            />
-          </li>
-        ))}
+        {items.length === 0 ? (
+          <EmptyState
+            title="No checklist items yet"
+            description={
+              isSeniorMode
+                ? 'Add FAFSA, CSS Profile, and scholarship deadlines as you go.'
+                : 'Track savings goals and scholarship research for junior year.'
+            }
+            action={
+              <button
+                type="button"
+                onClick={addItem}
+                className="text-[11px] text-[var(--color-accent-muted)] hover:underline"
+              >
+                Add first item
+              </button>
+            }
+          />
+        ) : (
+          items.map((item) => (
+            <li key={item.id}>
+              <ChecklistItemRow
+                label={item.label}
+                completed={item.completed}
+                onToggle={() => toggle(item.id)}
+              />
+            </li>
+          ))
+        )}
       </ul>
     </Panel>
   )

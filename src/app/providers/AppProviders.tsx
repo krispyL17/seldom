@@ -1,10 +1,9 @@
-/**
- * Application provider tree.
- * Wraps the app with global context providers (router, auth, theme, etc.).
- */
 import type { ReactNode } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from '@app/providers/AuthProvider'
+import { AnalyticsProvider } from '@features/analytics'
+import { UserPreferencesProvider } from '@features/preferences'
+import { NotificationProvider } from '@features/notifications'
 
 interface AppProvidersProps {
   children: ReactNode
@@ -13,7 +12,13 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <BrowserRouter>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        <UserPreferencesProvider>
+          <NotificationProvider>
+            <AnalyticsProvider>{children}</AnalyticsProvider>
+          </NotificationProvider>
+        </UserPreferencesProvider>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

@@ -1,5 +1,6 @@
 import { Panel } from '@components/ui/Panel'
 import { Badge } from '@components/ui/Badge'
+import { EmptyState } from '@components/ui/EmptyState'
 import { useCollege } from '../../hooks/useCollege'
 import { daysUntil, deadlineUrgencyVariant, formatShortDate, getAllDeadlines } from '../../utils'
 
@@ -13,7 +14,14 @@ export function UpcomingDeadlinesPanel() {
   return (
     <Panel title="Upcoming Deadlines" subtitle={isSeniorMode ? 'Next 6 across all schools' : 'Tests, visits & prep dates'}>
       {deadlines.length === 0 ? (
-        <p className="text-xs text-[var(--color-text-tertiary)]">No upcoming deadlines.</p>
+        <EmptyState
+          title="No upcoming deadlines"
+          description={
+            isSeniorMode
+              ? 'Add deadlines on school profiles to see them here.'
+              : 'Add test dates, visits, or prep milestones to stay on track.'
+          }
+        />
       ) : (
         <ul className="space-y-2">
           {deadlines.map((d) => {

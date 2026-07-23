@@ -1,4 +1,5 @@
 import { Panel } from '@components/ui/Panel'
+import { EmptyState } from '@components/ui/EmptyState'
 import { MiniBarChart } from '@components/ui/MiniBarChart'
 import { useCollege } from '../../hooks/useCollege'
 import { statusLabel } from '../../utils'
@@ -18,7 +19,13 @@ export function CollegeAnalyticsPanel() {
 
   return (
     <Panel title="Application Analytics" subtitle="List composition" fullWidth>
-      <div className="grid gap-4 sm:grid-cols-2">
+      {colleges.length === 0 ? (
+        <EmptyState
+          title="No schools on your list"
+          description="Add colleges to see status breakdown and progress metrics."
+        />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
         <div className="grid grid-cols-2 gap-3 text-center">
           <div className="rounded-[var(--radius-sm)] bg-[var(--color-surface-overlay)] p-3">
             <p className="text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">
@@ -46,7 +53,8 @@ export function CollegeAnalyticsPanel() {
           </div>
         </div>
         {chartData.length > 0 && <MiniBarChart data={chartData} labels={chartLabels} />}
-      </div>
+        </div>
+      )}
     </Panel>
   )
 }

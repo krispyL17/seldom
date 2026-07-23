@@ -77,6 +77,14 @@ export const authService = {
     if (error) throw error
   },
 
+  async updateDisplayName(displayName: string) {
+    const client = requireClient()
+    const { error } = await client.auth.updateUser({
+      data: { display_name: displayName.trim() },
+    })
+    if (error) throw error
+  },
+
   onAuthStateChange(
     callback: Parameters<
       NonNullable<ReturnType<typeof getSupabaseClient>>['auth']['onAuthStateChange']

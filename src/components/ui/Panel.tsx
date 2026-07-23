@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { cn } from '@lib/utils'
 
 interface PanelProps extends HTMLAttributes<HTMLDivElement> {
@@ -30,7 +31,7 @@ export function Panel({
   return (
     <section
       className={cn(
-        'panel animate-fade-in flex flex-col overflow-hidden rounded-[var(--radius-lg)]',
+        'panel flex flex-col overflow-hidden rounded-[var(--radius-lg)]',
         'border border-[var(--color-border)] bg-[var(--color-surface-raised)]',
         'shadow-[var(--shadow-panel)] transition-shadow duration-200 hover:shadow-[var(--shadow-panel-hover)]',
         fullWidth && 'lg:col-span-2',
@@ -115,14 +116,23 @@ export function PanelDivider({ label }: { label?: string }) {
 /** Standard action link styled for panel headers */
 export function PanelActionLink({
   children,
+  to,
+  className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { to?: string }) {
+  const styles =
+    'rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]'
+
+  if (to) {
+    return (
+      <Link to={to} className={cn(styles, className)}>
+        {children}
+      </Link>
+    )
+  }
+
   return (
-    <button
-      type="button"
-      className="rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
-      {...props}
-    >
+    <button type="button" className={cn(styles, className)} {...props}>
       {children}
     </button>
   )

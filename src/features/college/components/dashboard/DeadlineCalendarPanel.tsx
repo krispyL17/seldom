@@ -3,7 +3,7 @@ import { useCollege } from '../../hooks/useCollege'
 import { daysUntil, formatShortDate, getAllDeadlines } from '../../utils'
 
 export function DeadlineCalendarPanel() {
-  const { colleges } = useCollege()
+  const { colleges, isSeniorMode } = useCollege()
   const deadlines = getAllDeadlines(colleges).filter((d) => {
     const days = daysUntil(d.date)
     return days >= 0 && days <= 90
@@ -20,9 +20,16 @@ export function DeadlineCalendarPanel() {
   }, {})
 
   return (
-    <Panel title="Deadline Calendar" subtitle="Next 90 days">
+    <Panel
+      title={isSeniorMode ? 'Deadline Calendar' : 'Planning Dates'}
+      subtitle={isSeniorMode ? 'Next 90 days' : 'Visits, tests, and milestones you add'}
+    >
       {Object.keys(byMonth).length === 0 ? (
-        <p className="text-xs text-[var(--color-text-tertiary)]">No deadlines in the next 90 days.</p>
+        <p className="text-xs text-[var(--color-text-tertiary)]">
+          {isSeniorMode
+            ? 'No deadlines in the next 90 days.'
+            : 'Add dates on a school profile as you plan visits, tests, or summer programs.'}
+        </p>
       ) : (
         <div className="space-y-4">
           {Object.entries(byMonth).map(([month, items]) => (

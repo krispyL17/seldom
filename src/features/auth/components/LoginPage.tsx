@@ -38,7 +38,7 @@ export function LoginPage() {
     <AuthLayout>
       <AuthCard
         title="Welcome back"
-        subtitle="Sign in to your command center"
+        subtitle="Sign in to your personal control center"
         footer={
           <>
             Don&apos;t have an account?{' '}

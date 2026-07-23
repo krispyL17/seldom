@@ -1,61 +1,91 @@
 /**
  * Seldom — Global Styles
  *
- * Apple-inspired dark theme with system font stack, smooth transitions,
- * and subtle glass-morphism surfaces. Tailwind v4 is imported here.
+ * Restrained dark-first design system. Muted accents, clear hierarchy,
+ * purposeful motion. Light theme via [data-theme="light"].
  */
 
 @import "tailwindcss";
 
-/* ─── Design Tokens ─────────────────────────────────────────────────────── */
+/* ─── Design Tokens (dark default) ─────────────────────────────────────── */
 
 @theme {
-  /* Typography — system stack mimicking SF Pro */
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-  /* Dark palette — layered surfaces for depth */
-  --color-surface-base: #0a0a0a;
-  --color-surface-raised: #141414;
-  --color-surface-overlay: #1c1c1e;
-  --color-surface-elevated: #2c2c2e;
+  /* Surfaces — warm charcoal, not pure black */
+  --color-surface-base: #0c0c0d;
+  --color-surface-raised: #141416;
+  --color-surface-overlay: #1c1c1f;
+  --color-surface-elevated: #262628;
 
-  /* Accent — indigo blue */
-  --color-accent: #2525a6;
-  --color-accent-muted: #6b6bd4;
-  --color-accent-hover: #3232b8;
+  /* Accent — muted slate blue, professional */
+  --color-accent: #4a6fa5;
+  --color-accent-muted: #7a94b8;
+  --color-accent-hover: #5a7fb5;
+  --color-accent-subtle: rgba(74, 111, 165, 0.12);
 
-  /* Brand mark — original light blue (logo only) */
-  --color-brand: #0a84ff;
-  --color-brand-muted: #409cff;
-  --color-brand-bg: rgba(10, 132, 255, 0.15);
+  /* Brand mark */
+  --color-brand: #5a8fd4;
+  --color-brand-muted: #7aa8e0;
+  --color-brand-bg: rgba(90, 143, 212, 0.1);
 
-  /* Text hierarchy */
-  --color-text-primary: #f5f5f7;
-  --color-text-secondary: #98989d;
+  /* Text */
+  --color-text-primary: #ececee;
+  --color-text-secondary: #9a9a9f;
   --color-text-tertiary: #636366;
 
-  /* Borders & dividers */
-  --color-border: rgba(255, 255, 255, 0.08);
-  --color-border-strong: rgba(255, 255, 255, 0.15);
+  /* Borders */
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
 
   /* Semantic */
-  --color-success: #30d158;
-  --color-warning: #ffd60a;
-  --color-danger: #ff453a;
+  --color-success: #34c759;
+  --color-warning: #e6b800;
+  --color-danger: #e54d4d;
 
-  /* Spacing & radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
 
-  /* Panel depth — command-center layering */
-  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-panel-hover: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-panel-hover: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-elevated: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-/* ─── Base Reset ────────────────────────────────────────────────────────── */
+/* ─── Light theme ───────────────────────────────────────────────────────── */
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --color-surface-base: #f4f4f5;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #ebebed;
+  --color-surface-elevated: #e0e0e3;
+
+  --color-accent: #3d5f8a;
+  --color-accent-muted: #5a7aa8;
+  --color-accent-hover: #4a6f9a;
+  --color-accent-subtle: rgba(61, 95, 138, 0.1);
+
+  --color-brand: #3d7dd4;
+  --color-brand-muted: #5a94e0;
+  --color-brand-bg: rgba(61, 125, 212, 0.08);
+
+  --color-text-primary: #1a1a1c;
+  --color-text-secondary: #5c5c60;
+  --color-text-tertiary: #8e8e93;
+
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-strong: rgba(0, 0, 0, 0.14);
+
+  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-panel-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-elevated: 0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
 
 *,
 *::before,
@@ -64,7 +94,6 @@
 }
 
 html {
-  /* Dark mode is the default — no light-mode toggle yet */
   color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -78,13 +107,14 @@ body {
   background-color: var(--color-surface-base);
   color: var(--color-text-primary);
   line-height: 1.5;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 #root {
   min-height: 100dvh;
 }
 
-/* ─── Scrollbar (subtle, macOS-like) ────────────────────────────────────── */
+/* ─── Scrollbar ─────────────────────────────────────────────────────────── */
 
 ::-webkit-scrollbar {
   width: 6px;
@@ -101,29 +131,27 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-text-tertiary);
 }
 
-/* ─── Focus Ring ────────────────────────────────────────────────────────── */
+/* ─── Focus & selection ─────────────────────────────────────────────────── */
 
 :focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-/* ─── Selection ─────────────────────────────────────────────────────────── */
-
 ::selection {
-  background-color: rgba(37, 37, 166, 0.45);
+  background-color: var(--color-accent-subtle);
   color: var(--color-text-primary);
 }
 
-/* ─── Dashboard Animations ──────────────────────────────────────────────── */
+/* ─── Animations ────────────────────────────────────────────────────────── */
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -131,19 +159,108 @@ body {
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.35s ease-out both;
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Staggered panel entrance on dashboard load */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nav-highlight {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-backdrop-in {
+  animation: backdrop-in 0.3s ease both;
+}
+
+.animate-nav-in {
+  animation: nav-highlight 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .dashboard-grid > *:nth-child(1) { animation-delay: 0ms; }
-.dashboard-grid > *:nth-child(2) { animation-delay: 40ms; }
-.dashboard-grid > *:nth-child(3) { animation-delay: 80ms; }
-.dashboard-grid > *:nth-child(4) { animation-delay: 120ms; }
-.dashboard-grid > *:nth-child(5) { animation-delay: 160ms; }
-.dashboard-grid > *:nth-child(6) { animation-delay: 200ms; }
-.dashboard-grid > *:nth-child(7) { animation-delay: 240ms; }
-.dashboard-grid > *:nth-child(8) { animation-delay: 280ms; }
-.dashboard-grid > *:nth-child(9) { animation-delay: 320ms; }
-.dashboard-grid > *:nth-child(10) { animation-delay: 360ms; }
-.dashboard-grid > *:nth-child(11) { animation-delay: 400ms; }
+.dashboard-grid > *:nth-child(2) { animation-delay: 50ms; }
+.dashboard-grid > *:nth-child(3) { animation-delay: 100ms; }
+.dashboard-grid > *:nth-child(4) { animation-delay: 150ms; }
+.dashboard-grid > *:nth-child(5) { animation-delay: 200ms; }
+.dashboard-grid > *:nth-child(6) { animation-delay: 250ms; }
+.dashboard-grid > *:nth-child(7) { animation-delay: 300ms; }
+.dashboard-grid > *:nth-child(8) { animation-delay: 350ms; }
+.dashboard-grid > *:nth-child(9) { animation-delay: 400ms; }
+.dashboard-grid > *:nth-child(10) { animation-delay: 450ms; }
+.dashboard-grid > *:nth-child(11) { animation-delay: 500ms; }
+
+/* User-disabled animations */
+html.animations-disabled .animate-fade-in,
+html.animations-disabled .animate-slide-up,
+html.animations-disabled .animate-scale-in,
+html.animations-disabled .animate-backdrop-in,
+html.animations-disabled .animate-nav-in {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-backdrop-in,
+  .animate-nav-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .dashboard-grid > * {
+    animation-delay: 0ms !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

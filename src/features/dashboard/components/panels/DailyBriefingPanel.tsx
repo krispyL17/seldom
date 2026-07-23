@@ -1,6 +1,6 @@
 import { Badge } from '@components/ui/Badge'
 import { IconCheck } from '@components/ui/icons'
-import { Panel, PanelDivider, DataRow } from '@components/ui/Panel'
+import { Panel, PanelDivider, PanelActionLink, DataRow } from '@components/ui/Panel'
 import type { RecoveryStatus } from '@/types'
 import { dailyBriefing } from '../../data/mockData'
 
@@ -17,7 +17,8 @@ export function DailyBriefingPanel() {
     <Panel
       title="Daily Briefing"
       subtitle="AI-generated overview"
-      badge={<Badge variant="accent">AI</Badge>}
+      badge={<Badge variant="accent">Preview</Badge>}
+      action={<PanelActionLink to="/assistant">Open Seldom OS</PanelActionLink>}
       fullWidth
     >
       <p className="mb-4 text-sm leading-relaxed text-[var(--color-text-secondary)]">

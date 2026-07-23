@@ -20,7 +20,13 @@ with expected as (
     'college_activities',
     'college_awards',
     'college_projects',
-    'college_user_data'
+    'college_user_data',
+    'memories',
+    'soccer_matches',
+    'soccer_insights',
+    'soccer_user_data',
+    'ai_prompts',
+    'user_preferences'
   ]) as table_name
 ),
 existing as (
@@ -41,6 +47,6 @@ select version, name
 from supabase_migrations.schema_migrations
 order by version;
 
--- Expected: Query 2 shows 11 rows, all "yes".
--- Migration history should include 20260722100000 through 20260722100005.
--- If any MISSING, run npm run supabase:push or supabase/apply-college.sql
+-- Expected: Query 2 shows 17 rows, all "yes".
+-- Migration history should include 20260722100000 through 20260722100010.
+-- If any MISSING, run npm run supabase:push or the matching apply-*.sql script.

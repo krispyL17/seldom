@@ -5,7 +5,6 @@ export interface ChatMessage {
   role: ChatRole
   content: string
   createdAt: string
-  /** True while assistant message is still typing in */
   isStreaming?: boolean
 }
 
@@ -23,10 +22,3 @@ export interface AssistantState {
 }
 
 export const ASSISTANT_STORAGE_KEY = 'seldom-assistant-conversations'
-
-export const DEFAULT_SUGGESTIONS = [
-  'Summarize my week',
-  'What is early action?',
-  'How to improve first touch?',
-  'Help me plan tomorrow',
-] as const

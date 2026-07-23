@@ -1,19 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { setApiCors } from '../../lib/cors.js'
 import { extractBearerToken, verifyAccessToken } from '../../lib/assistant/auth.js'
-import { handleChat } from '../../lib/assistant/orchestrator.js'
+import { getAssistantBootstrap, handleChat } from '../../lib/assistant/orchestrator.js'
 import { loadAssistantEnv } from '../../lib/assistant/types.js'
+import type { OSMode } from '../../lib/orchestration/types.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  setApiCors(res, req.headers.origin)
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
   }
 
   const env = loadAssistantEnv()
@@ -34,14 +30,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Invalid or expired session' })
   }
 
-  const body = req.body as { message?: string; history?: Array<{ role: 'user' | 'assistant'; content: string }> }
+  if (req.method === 'GET') {
+    try {
+      const bootstrap = await getAssistantBootstrap(auth.client, env, auth.userId)
+      return res.status(200).json(bootstrap)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load assistant bootstrap'
+      console.error('[assistant/chat GET]', message)
+      return res.status(500).json({ error: message })
+    }
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const body = req.body as {
+    message?: string
+    mode?: OSMode
+    history?: Array<{ role: 'user' | 'assistant'; content: string }>
+  }
+
   if (!body.message?.trim()) {
     return res.status(400).json({ error: 'message is required' })
   }
 
   try {
-    const result = await handleChat(auth.client, env, {
+    const result = await handleChat(auth.client, env, auth.userId, {
       message: body.message,
+      mode: body.mode,
       history: body.history,
     })
     return res.status(200).json(result)

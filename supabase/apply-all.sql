@@ -5,7 +5,8 @@
 -- • It will NOT show up under Supabase "Migrations" in the dashboard.
 --   That list is only populated by `supabase db push` via the CLI.
 -- • For college tables, also run: supabase/apply-college.sql
--- • After running, verify with: supabase/verify-tables.sql (should show 9 tables)
+-- • For soccer tables, also run: supabase/apply-soccer.sql
+-- • After running, verify with: supabase/verify-tables.sql (should show 16 tables)
 -- • Preferred workflow: npm run supabase:push (see supabase/MIGRATIONS.md)
 --
 -- Safe to re-run: uses IF NOT EXISTS / DROP IF EXISTS where needed.

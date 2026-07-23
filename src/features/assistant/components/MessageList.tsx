@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { scrollBehavior } from '@lib/motion'
 import { IconSparkles } from '@components/ui/icons'
 import { cn } from '@lib/utils'
 import type { ChatMessage } from '../types'
@@ -68,11 +69,11 @@ export function MessageList({ messages, isTyping }: MessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    bottomRef.current?.scrollIntoView({ behavior: scrollBehavior() })
   }, [messages, isTyping])
 
   return (
-    <div className="flex-1 overflow-y-auto" aria-live="polite">
+    <div className="flex-1 overflow-y-auto" aria-live="polite" aria-label="Chat messages">
       <div className="mx-auto max-w-3xl py-4">
         {messages.map((msg) => (
           <ChatMessageBubble key={msg.id} message={msg} />

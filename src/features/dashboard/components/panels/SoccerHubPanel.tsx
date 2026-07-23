@@ -2,18 +2,20 @@ import { Link } from 'react-router-dom'
 import { Badge } from '@components/ui/Badge'
 import { ProgressBar } from '@components/ui/ProgressBar'
 import { Panel, PanelDivider, DataRow } from '@components/ui/Panel'
+import { useUserPreferences } from '@features/preferences'
 import { soccerHub } from '../../data/mockData'
 
 export function SoccerHubPanel() {
+  const { hobbyTabLabel } = useUserPreferences()
   const loadPct = Math.round(
     (soccerHub.weeklyWorkload.totalMinutes / soccerHub.weeklyWorkload.target) * 100,
   )
 
   return (
     <Panel
-      title="Soccer Hub"
+      title={`${hobbyTabLabel} Hub`}
       subtitle={soccerHub.currentFocus}
-      badge={<Badge variant="accent">Focus</Badge>}
+      badge={<Badge variant="accent">Preview</Badge>}
       action={
         <Link
           to="/soccer/overview"

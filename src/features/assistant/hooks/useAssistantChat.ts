@@ -8,28 +8,40 @@ import {
   loadConversations,
   saveConversations,
 } from '../utils/storage'
-import { getStubReply, WELCOME_MESSAGE } from '../utils/stubResponses'
-import { sendAssistantMessage, AssistantApiError } from '@services/assistant'
+import { getStubReply } from '../utils/stubResponses'
+import {
+  sendAssistantMessage,
+  fetchAssistantBootstrap,
+  AssistantApiError,
+  type AssistantMode,
+  type AssistantModule,
+  type ProactiveInsight,
+} from '@services/assistant'
 import { retrieveMemories } from '@services/memory'
 import { queryNeedsWebSearch, searchWeb } from '@services/search'
+import {
+  FALLBACK_MODULES,
+  FALLBACK_SUGGESTIONS,
+  FALLBACK_WELCOME,
+} from '../data/capabilities'
 
 const TYPING_INTERVAL_MS = 18
 
-function createWelcomeMessage(): ChatMessage {
+function createWelcomeMessage(content: string): ChatMessage {
   return {
     id: generateId(),
     role: 'assistant',
-    content: WELCOME_MESSAGE,
+    content,
     createdAt: new Date().toISOString(),
   }
 }
 
-function createConversation(): Conversation {
+function createConversation(welcome: string): Conversation {
   const now = new Date().toISOString()
   return {
     id: generateId(),
     title: 'New chat',
-    messages: [createWelcomeMessage()],
+    messages: [createWelcomeMessage(welcome)],
     createdAt: now,
     updatedAt: now,
   }
@@ -47,13 +59,39 @@ export function useAssistantChat() {
   const [conversations, setConversations] = useState<Conversation[]>(() => loadConversations())
   const [activeId, setActiveId] = useState<string | null>(() => loadActiveId())
   const [isTyping, setIsTyping] = useState(false)
+  const [activeMode, setActiveMode] = useState<AssistantMode>('chat')
+  const [modules, setModules] = useState<AssistantModule[]>(FALLBACK_MODULES)
+  const [suggestions, setSuggestions] = useState<string[]>([...FALLBACK_SUGGESTIONS])
+  const [proactiveInsights, setProactiveInsights] = useState<ProactiveInsight[]>([])
+  const [liveConnected, setLiveConnected] = useState(false)
+  const [lastMode, setLastMode] = useState<AssistantMode | null>(null)
   const streamRef = useRef<number | null>(null)
+  const welcomeRef = useRef(FALLBACK_WELCOME)
 
   const activeConversation = conversations.find((c) => c.id === activeId) ?? null
 
   useEffect(() => {
+    if (!session?.access_token) {
+      setLiveConnected(false)
+      return
+    }
+
+    void fetchAssistantBootstrap(session.access_token)
+      .then((bootstrap) => {
+        welcomeRef.current = bootstrap.welcome
+        setModules(bootstrap.modules)
+        setSuggestions(bootstrap.suggestions)
+        setProactiveInsights(bootstrap.proactiveInsights)
+        setLiveConnected(true)
+      })
+      .catch(() => {
+        setLiveConnected(false)
+      })
+  }, [session?.access_token])
+
+  useEffect(() => {
     if (conversations.length === 0) {
-      const first = createConversation()
+      const first = createConversation(welcomeRef.current)
       setConversations([first])
       setActiveId(first.id)
       return
@@ -115,15 +153,17 @@ export function useAssistantChat() {
   )
 
   const sendMessage = useCallback(
-    (content: string) => {
+    (content: string, modeOverride?: AssistantMode) => {
       const trimmed = content.trim()
       if (!trimmed || isTyping) return
+
+      const mode = modeOverride ?? activeMode
 
       let conversationId = activeId
       let conversationSnapshot = activeConversation
 
       if (!conversationId || !conversationSnapshot) {
-        const created = createConversation()
+        const created = createConversation(welcomeRef.current)
         conversationId = created.id
         conversationSnapshot = created
         setConversations((prev) => [created, ...prev])
@@ -158,13 +198,17 @@ export function useAssistantChat() {
       void (async () => {
         const history = buildHistory(conversationSnapshot!.messages)
 
-        // Production path: Vercel serverless API (memory + search + LLM on demand)
         if (session?.access_token) {
           try {
             const result = await sendAssistantMessage(session.access_token, {
               message: trimmed,
+              mode: mode === 'chat' ? undefined : mode,
               history,
             })
+            setLastMode(result.meta.mode)
+            if (result.meta.proactiveInsights.length > 0) {
+              setProactiveInsights(result.meta.proactiveInsights)
+            }
             streamAssistantReply(conversationId!, assistantMsg.id, result.reply)
             return
           } catch (err) {
@@ -176,11 +220,9 @@ export function useAssistantChat() {
               )
               return
             }
-            // 503/404/network → fall through to local dev fallback
           }
         }
 
-        // Local dev fallback: sidecar memory + search + stub LLM
         const [memorySettled, searchSettled] = await Promise.allSettled([
           retrieveMemories(trimmed, { limit: 8 }),
           queryNeedsWebSearch(trimmed) ? searchWeb(trimmed, { limit: 5 }) : Promise.resolve(null),
@@ -194,16 +236,17 @@ export function useAssistantChat() {
             searchSettled.status === 'fulfilled' && searchSettled.value
               ? searchSettled.value
               : undefined,
+          mode,
         })
 
         streamAssistantReply(conversationId!, assistantMsg.id, reply)
       })()
     },
-    [activeId, activeConversation, isTyping, session, streamAssistantReply, updateConversation],
+    [activeId, activeConversation, activeMode, isTyping, session, streamAssistantReply, updateConversation],
   )
 
   const newConversation = useCallback(() => {
-    const conv = createConversation()
+    const conv = createConversation(welcomeRef.current)
     setConversations((prev) => [conv, ...prev])
     setActiveId(conv.id)
   }, [])
@@ -225,7 +268,7 @@ export function useAssistantChat() {
           setActiveId(next[0]?.id ?? null)
         }
         if (next.length === 0) {
-          const fresh = createConversation()
+          const fresh = createConversation(welcomeRef.current)
           setActiveId(fresh.id)
           return [fresh]
         }
@@ -240,6 +283,13 @@ export function useAssistantChat() {
     activeConversation,
     activeId,
     isTyping,
+    activeMode,
+    setActiveMode,
+    modules,
+    suggestions,
+    proactiveInsights,
+    liveConnected,
+    lastMode,
     sendMessage,
     newConversation,
     selectConversation,

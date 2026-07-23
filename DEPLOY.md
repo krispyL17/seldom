@@ -31,6 +31,8 @@ In **Vercel Dashboard → Project → Settings → Environment Variables**, add:
 | `OPENAI_API_KEY` | Your OpenAI API key |
 | `OPENAI_CHAT_MODEL` | `gpt-4o-mini` (optional) |
 | `OPENAI_EMBED_MODEL` | `text-embedding-3-small` (optional) |
+| `RESEND_API_KEY` | For email reminders (optional) |
+| `RESEND_FROM` | Sender address, e.g. `Seldom <reminders@yourdomain.com>` |
 
 ### 4. Deploy
 

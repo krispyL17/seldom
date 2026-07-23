@@ -23,8 +23,8 @@ export function ApplicationStatusSection({
 
   return (
     <Panel
-      title="Application Status"
-      subtitle={isSeniorMode ? 'Current pipeline stage' : 'Research & planning stage'}
+      title={isSeniorMode ? 'Application Status' : 'Research Status'}
+      subtitle={isSeniorMode ? 'Current pipeline stage' : 'Where this school fits right now'}
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <StatusBadge status={college.status} />

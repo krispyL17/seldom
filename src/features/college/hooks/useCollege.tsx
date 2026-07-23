@@ -13,12 +13,6 @@ import { collegeActivityService } from '@services/database/collegeActivities'
 import { collegeAwardService } from '@services/database/collegeAwards'
 import { collegeProjectService } from '@services/database/collegeProjects'
 import { collegeUserDataService } from '@services/database/collegeUserData'
-import {
-  buildSeedActivities,
-  buildSeedAwards,
-  buildSeedColleges,
-  buildSeedProjects,
-} from '../data/seedData'
 import type {
   Activity,
   ApplicationPhase,
@@ -32,6 +26,7 @@ import type {
   CreateProjectInput,
   Project,
   ResumeSettings,
+  StudentProfile,
   TestScores,
   UpdateActivityInput,
   UpdateAwardInput,
@@ -40,7 +35,10 @@ import type {
 } from '../types'
 import { buildTimeline, computeDashboardStats } from '../utils'
 import { migrateChecklistToSenior } from '../phaseUtils'
-import { seniorFinancialAidData } from '../data/seedData'
+import {
+  buildJuniorFinancialAid,
+  buildSeniorFinancialAid,
+} from '../data/templates'
 
 interface CollegeContextValue {
   colleges: College[]
@@ -71,59 +69,21 @@ interface CollegeContextValue {
   updateResumeSettings: (settings: ResumeSettings) => Promise<void>
   updateFinancialAid: (items: CollegeUserData['financialAid']) => Promise<void>
   updateRecommendations: (items: CollegeUserData['recommendations']) => Promise<void>
+  updateAiRecommendations: (items: CollegeUserData['aiRecommendations']) => Promise<void>
   updateScholarships: (items: CollegeUserData['scholarships']) => Promise<void>
   applicationPhase: ApplicationPhase
   isSeniorMode: boolean
   enterSeniorMode: () => Promise<void>
   enterJuniorMode: () => Promise<void>
+  onboardingComplete: boolean
+  studentProfile: StudentProfile | null
+  completeOnboarding: (payload: {
+    resumeSettings: ResumeSettings
+    testScores: TestScores
+  }) => Promise<void>
 }
 
 const CollegeContext = createContext<CollegeContextValue | null>(null)
-
-async function seedIfEmpty(userId: string) {
-  const colleges = await collegeService.fetchAll()
-  if (colleges.length === 0) {
-    for (const seed of buildSeedColleges(userId)) {
-      await collegeService.create(userId, {
-        name: seed.name,
-        location: seed.location,
-        majors: seed.majors,
-        applicationType: seed.applicationType,
-        status: seed.status,
-        acceptanceRate: seed.acceptanceRate,
-        tuition: seed.tuition,
-      }).then(async (created) => {
-        await collegeService.update(created.id, {
-          checklist: seed.checklist,
-          essays: seed.essays,
-          deadlines: seed.deadlines,
-          documents: seed.documents,
-        })
-      })
-    }
-  }
-
-  const activities = await collegeActivityService.fetchAll()
-  if (activities.length === 0) {
-    for (const seed of buildSeedActivities(userId)) {
-      await collegeActivityService.create(userId, seed)
-    }
-  }
-
-  const awards = await collegeAwardService.fetchAll()
-  if (awards.length === 0) {
-    for (const seed of buildSeedAwards(userId)) {
-      await collegeAwardService.create(userId, seed)
-    }
-  }
-
-  const projects = await collegeProjectService.fetchAll()
-  if (projects.length === 0) {
-    for (const seed of buildSeedProjects(userId)) {
-      await collegeProjectService.create(userId, seed)
-    }
-  }
-}
 
 export function CollegeProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
@@ -148,7 +108,6 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
 
     setLoading(true)
     try {
-      await seedIfEmpty(user.id)
       const [c, a, aw, p, ud] = await Promise.all([
         collegeService.fetchAll(),
         collegeActivityService.fetchAll(),
@@ -160,7 +119,22 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
       setActivities(a)
       setAwards(aw)
       setProjects(p)
-      setUserData(ud)
+
+      let resolvedUserData = ud
+      if (
+        !ud.resumeSettings.onboardingCompletedAt &&
+        (c.length > 0 || a.length > 0 || aw.length > 0 || p.length > 0)
+      ) {
+        resolvedUserData = await collegeUserDataService.completeOnboarding(user.id, {
+          resumeSettings: {
+            ...ud.resumeSettings,
+            onboardingCompletedAt: new Date().toISOString(),
+          },
+          testScores: ud.testScores,
+        })
+      }
+
+      setUserData(resolvedUserData)
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load college data')
@@ -329,6 +303,15 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
     [user],
   )
 
+  const updateAiRecommendations = useCallback(
+    async (items: CollegeUserData['aiRecommendations']) => {
+      if (!user) throw new Error('Not authenticated')
+      const updated = await collegeUserDataService.updateAiRecommendations(user.id, items)
+      setUserData(updated)
+    },
+    [user],
+  )
+
   const updateScholarships = useCallback(
     async (items: CollegeUserData['scholarships']) => {
       if (!user) throw new Error('Not authenticated')
@@ -362,7 +345,7 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
       applicationPhase: 'senior',
       seniorModeStartedAt: new Date().toISOString(),
     })
-    await updateFinancialAid(seniorFinancialAidData)
+    await updateFinancialAid(buildSeniorFinancialAid(userData.resumeSettings.studentProfile?.graduationYear))
   }, [user, userData, colleges, updateResumeSettings, updateFinancialAid])
 
   const enterJuniorMode = useCallback(async () => {
@@ -371,7 +354,24 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
       ...userData.resumeSettings,
       applicationPhase: 'junior',
     })
-  }, [user, userData, updateResumeSettings])
+    if ((userData.financialAid ?? []).length === 0) {
+      await updateFinancialAid(
+        buildJuniorFinancialAid(userData.resumeSettings.studentProfile?.graduationYear),
+      )
+    }
+  }, [user, userData, updateResumeSettings, updateFinancialAid])
+
+  const onboardingComplete = Boolean(userData?.resumeSettings.onboardingCompletedAt)
+  const studentProfile = userData?.resumeSettings.studentProfile ?? null
+
+  const completeOnboarding = useCallback(
+    async (payload: { resumeSettings: ResumeSettings; testScores: TestScores }) => {
+      if (!user) throw new Error('Not authenticated')
+      const updated = await collegeUserDataService.completeOnboarding(user.id, payload)
+      setUserData(updated)
+    },
+    [user],
+  )
 
   const value: CollegeContextValue = {
     colleges,
@@ -402,11 +402,15 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
     updateResumeSettings,
     updateFinancialAid,
     updateRecommendations,
+    updateAiRecommendations,
     updateScholarships,
     applicationPhase,
     isSeniorMode,
     enterSeniorMode,
     enterJuniorMode,
+    onboardingComplete,
+    studentProfile,
+    completeOnboarding,
   }
 
   return <CollegeContext.Provider value={value}>{children}</CollegeContext.Provider>

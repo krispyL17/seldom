@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { cn } from '@lib/utils'
+import { sanitizeHref } from '@lib/safeUrl'
 
 interface MarkdownContentProps {
   content: string
@@ -28,6 +29,7 @@ function CodeBlock({ className, children }: { className?: string; children: Reac
         <button
           type="button"
           onClick={copy}
+          aria-label={copied ? 'Copied to clipboard' : 'Copy code to clipboard'}
           className="text-[10px] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
         >
           {copied ? 'Copied' : 'Copy'}
@@ -64,16 +66,20 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
               {children}
             </blockquote>
           ),
-          a: ({ href, children }) => (
-            <a
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              className="text-[var(--color-accent-muted)] underline underline-offset-2 hover:text-[var(--color-accent-hover)]"
-            >
-              {children}
-            </a>
-          ),
+          a: ({ href, children }) => {
+            const safeHref = sanitizeHref(href)
+            if (!safeHref) return <span className="text-[var(--color-text-secondary)]">{children}</span>
+            return (
+              <a
+                href={safeHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--color-accent-muted)] underline underline-offset-2 hover:text-[var(--color-accent-hover)]"
+              >
+                {children}
+              </a>
+            )
+          },
           code: ({ className: codeClass, children }) => {
             const isBlock = codeClass?.includes('language-')
             if (isBlock) {

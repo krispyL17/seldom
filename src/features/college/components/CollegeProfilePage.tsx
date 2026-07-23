@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import { PageSkeleton } from '@components/ui/PanelSkeleton'
 import { ProgressBar } from '@components/ui/ProgressBar'
 import { StatusBadge } from './shared/StatusBadge'
 import { BasicInfoSection } from './profile/BasicInfoSection'
@@ -18,11 +19,30 @@ import {
 
 export function CollegeProfilePage() {
   const { collegeId } = useParams<{ collegeId: string }>()
-  const { colleges, loading, updateCollege, toggleChecklistItem } = useCollege()
+  const { colleges, loading, error, reload, updateCollege, toggleChecklistItem, isSeniorMode } = useCollege()
   const college = collegeId ? getCollegeById(colleges, collegeId) : undefined
 
   if (loading) {
-    return <p className="text-sm text-[var(--color-text-secondary)]">Loading…</p>
+    return (
+      <div className="mx-auto max-w-[1200px]">
+        <PageSkeleton panels={3} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto max-w-3xl py-16 text-center">
+        <p className="text-sm text-[var(--color-text-secondary)]">{error}</p>
+        <button
+          type="button"
+          onClick={() => void reload()}
+          className="mt-4 text-sm text-[var(--color-accent-muted)] hover:underline"
+        >
+          Try again
+        </button>
+      </div>
+    )
   }
 
   if (!college) {
@@ -68,7 +88,7 @@ export function CollegeProfilePage() {
           <div className="w-full max-w-xs shrink-0">
             <ProgressBar
               value={progress}
-              label="Application checklist"
+              label={isSeniorMode ? 'Application checklist' : 'Prep checklist'}
               variant={progressVariant(progress)}
               size="md"
             />

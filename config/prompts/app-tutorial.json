@@ -1,0 +1,39 @@
+{
+  "id": "app-tutorial",
+  "version": 1,
+  "title": "Welcome to Seldom",
+  "subtitle": "A short conversation to personalize your workspace",
+  "welcome": "I'm **Seldom OS** — your operating layer for goals, habits, and performance. I help you track what matters, stay organized, and improve over time.\n\nLet's tailor Seldom to you. This takes about a minute.",
+  "completeMessage": "Got it. Next I'll walk you through each area of the app — quick and visual, not another Q&A.",
+  "steps": [
+    {
+      "id": "displayName",
+      "question": "First — what should I call you?",
+      "type": "text",
+      "field": "displayName",
+      "placeholder": "Your first name"
+    },
+    {
+      "id": "passion",
+      "question": "What's your main hobby, sport, or passion? This becomes the focus of your performance tab.",
+      "type": "text",
+      "field": "hobbyPassion",
+      "placeholder": "e.g. Soccer, Piano, Rock climbing"
+    },
+    {
+      "id": "tabLabel",
+      "question": "What should we name that tab in the sidebar? Keep it short — one or two words.",
+      "type": "text",
+      "field": "hobbyTabLabel",
+      "placeholder": "e.g. Soccer, Music, Climbing"
+    },
+    {
+      "id": "focus",
+      "question": "What's your current focus in that area? (Optional — type **skip** to leave blank)",
+      "type": "text",
+      "field": "currentFocus",
+      "optional": true,
+      "placeholder": "e.g. Making varsity, Recording an EP"
+    }
+  ]
+}

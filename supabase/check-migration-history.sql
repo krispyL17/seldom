@@ -11,5 +11,11 @@ order by version;
 --   20260722100002  journal_entries
 --   20260722100003  training_sessions
 --   20260722100004  college_applications
---
--- If you see old versions like 001, 002, 003, 004 → run repair commands in package.json (see below)
+--   20260722100005  ensure_indexes
+--   20260722100006  run_logs
+--   20260722100007  vector_memories
+--   20260722100008  soccer_coach
+--   20260722100009  soccer_user_data
+--   20260722100010  user_preferences
+--   20260722100011  notification_prefs
+--   20260722100012  ensure_rls_policies

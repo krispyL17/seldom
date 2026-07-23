@@ -1,0 +1,89 @@
+{
+  "id": "soccer-onboarding",
+  "version": 1,
+  "title": "Soccer Profile Setup",
+  "subtitle": "Tell me about yourself as a player — your tabs will start with your data, ready to edit.",
+  "welcome": "Hey! I'm your Seldom soccer assistant. I'll walk you through a quick setup so your **Soccer** tab reflects *you* — position, goals, strengths, and weaknesses. Everything stays editable after this.",
+  "completeMessage": "Your soccer profile is set. Training, matches, and the AI coach will use your info. Log sessions and matches as you go!",
+  "steps": [
+    {
+      "id": "name",
+      "question": "What's your name?",
+      "type": "text",
+      "field": "profile.name",
+      "placeholder": "e.g. Alex Johnson"
+    },
+    {
+      "id": "position",
+      "question": "What's your primary position?",
+      "type": "choice",
+      "options": ["GK", "CB", "LB", "RB", "CDM", "CM", "CAM", "LW", "RW", "ST"],
+      "field": "profile.position"
+    },
+    {
+      "id": "preferredFoot",
+      "question": "Preferred foot?",
+      "type": "choice",
+      "options": ["Right", "Left", "Both"],
+      "field": "profile.preferredFoot"
+    },
+    {
+      "id": "squadNumber",
+      "question": "Squad number? (type **skip** if none)",
+      "type": "text",
+      "field": "profile.squadNumber",
+      "optional": true,
+      "placeholder": "e.g. 8"
+    },
+    {
+      "id": "season",
+      "question": "Current season?",
+      "type": "text",
+      "field": "profile.season",
+      "placeholder": "e.g. 2026–27",
+      "defaultValue": "2026–27"
+    },
+    {
+      "id": "currentFocus",
+      "question": "What's your main development focus right now?",
+      "type": "text",
+      "field": "profile.currentFocus",
+      "placeholder": "e.g. First touch under pressure"
+    },
+    {
+      "id": "weakness1",
+      "question": "Name a weakness you're working on.",
+      "type": "text",
+      "field": "weaknesses.0.title",
+      "placeholder": "e.g. Weak-foot passing under pressure"
+    },
+    {
+      "id": "weakness1Detail",
+      "question": "Describe that weakness briefly.",
+      "type": "text",
+      "field": "weaknesses.0.description",
+      "placeholder": "What happens in games or training?"
+    },
+    {
+      "id": "strength1",
+      "question": "Name one of your strengths.",
+      "type": "text",
+      "field": "strengths.0.title",
+      "placeholder": "e.g. Pressing intensity"
+    },
+    {
+      "id": "strength1Detail",
+      "question": "Describe that strength briefly.",
+      "type": "text",
+      "field": "strengths.0.description",
+      "placeholder": "How does it show up on the pitch?"
+    },
+    {
+      "id": "goal",
+      "question": "What's one soccer goal you're chasing this season?",
+      "type": "text",
+      "field": "goal.title",
+      "placeholder": "e.g. Make varsity starter, improve weak foot"
+    }
+  ]
+}

@@ -27,6 +27,6 @@ export function isSupabaseConfigured(): boolean {
 /** Application metadata */
 export const APP_CONFIG = {
   name: 'Seldom',
-  tagline: 'Your personal AI operating system',
+  tagline: 'Your personal control center',
   version: '0.1.0',
 } as const

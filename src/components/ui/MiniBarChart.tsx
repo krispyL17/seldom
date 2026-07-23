@@ -20,6 +20,10 @@ export function MiniBarChart({
   className,
 }: MiniBarChartProps) {
   const max = Math.max(...data, 1)
+  const chartLabel =
+    labels && labels.length === data.length
+      ? labels.map((label, i) => `${label}: ${data[i]}`).join(', ')
+      : data.join(', ')
 
   return (
     <div className={cn('space-y-2', className)}>
@@ -27,7 +31,7 @@ export function MiniBarChart({
         className="flex items-end gap-1"
         style={{ height }}
         role="img"
-        aria-label="Bar chart"
+        aria-label={`Bar chart showing ${chartLabel}`}
       >
         {data.map((value, i) => (
           <div

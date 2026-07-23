@@ -22,6 +22,7 @@ export interface AuthContextValue {
   user: User | null
   session: Session | null
   loading: boolean
+  sessionError: string | null
   isConfigured: boolean
   isAuthenticated: boolean
   signIn: (credentials: SignInCredentials) => Promise<void>

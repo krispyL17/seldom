@@ -539,6 +539,183 @@ export interface Database {
         }
         Relationships: []
       }
+      soccer_matches: {
+        Row: {
+          id: string
+          user_id: string
+          match_date: string
+          opponent: string
+          competition: string | null
+          result: 'W' | 'D' | 'L'
+          score: string | null
+          minutes: number
+          goals: number
+          assists: number
+          rating: number | null
+          highlights: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          match_date?: string
+          opponent: string
+          competition?: string | null
+          result: 'W' | 'D' | 'L'
+          score?: string | null
+          minutes?: number
+          goals?: number
+          assists?: number
+          rating?: number | null
+          highlights?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          match_date?: string
+          opponent?: string
+          competition?: string | null
+          result?: 'W' | 'D' | 'L'
+          score?: string | null
+          minutes?: number
+          goals?: number
+          assists?: number
+          rating?: number | null
+          highlights?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      soccer_insights: {
+        Row: {
+          id: string
+          user_id: string
+          insight_type: 'weakness' | 'strength'
+          title: string
+          description: string | null
+          priority: 'high' | 'medium' | 'low' | null
+          category: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          insight_type: 'weakness' | 'strength'
+          title: string
+          description?: string | null
+          priority?: 'high' | 'medium' | 'low' | null
+          category?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          insight_type?: 'weakness' | 'strength'
+          title?: string
+          description?: string | null
+          priority?: 'high' | 'medium' | 'low' | null
+          category?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_prompts: {
+        Row: {
+          id: string
+          module: string
+          content: Json
+          active: boolean
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          module: string
+          content: Json
+          active?: boolean
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          module?: string
+          content?: Json
+          active?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      soccer_user_data: {
+        Row: {
+          user_id: string
+          profile: Json
+          onboarding_completed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          profile?: Json
+          onboarding_completed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          profile?: Json
+          onboarding_completed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          user_id: string
+          hobby_tab_label: string
+          hobby_passion: string
+          theme: 'dark' | 'light' | 'system'
+          animations_enabled: boolean
+          app_tutorial_completed_at: string | null
+          browser_notifications_enabled: boolean
+          email_notifications_enabled: boolean
+          reminder_lead_minutes: number
+          calendar_sync_prompted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          hobby_tab_label?: string
+          hobby_passion?: string
+          theme?: 'dark' | 'light' | 'system'
+          animations_enabled?: boolean
+          app_tutorial_completed_at?: string | null
+          browser_notifications_enabled?: boolean
+          email_notifications_enabled?: boolean
+          reminder_lead_minutes?: number
+          calendar_sync_prompted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          hobby_tab_label?: string
+          hobby_passion?: string
+          theme?: 'dark' | 'light' | 'system'
+          animations_enabled?: boolean
+          app_tutorial_completed_at?: string | null
+          browser_notifications_enabled?: boolean
+          email_notifications_enabled?: boolean
+          reminder_lead_minutes?: number
+          calendar_sync_prompted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

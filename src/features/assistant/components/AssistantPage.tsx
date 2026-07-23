@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { IconMenu } from '@components/ui/icons'
+import { Badge } from '@components/ui/Badge'
 import { useAssistantChat } from '../hooks/useAssistantChat'
 import { ConversationSidebar } from './ConversationSidebar'
 import { MessageList } from './MessageList'
 import { ChatComposer } from './ChatComposer'
+import { CapabilitiesPanel } from './CapabilitiesPanel'
+import { ProactiveInsightsPanel } from './ProactiveInsightsPanel'
+import { MODE_LABELS } from '../data/capabilities'
 import { cn } from '@lib/utils'
 
 export function AssistantPage() {
@@ -12,6 +16,13 @@ export function AssistantPage() {
     activeConversation,
     activeId,
     isTyping,
+    activeMode,
+    setActiveMode,
+    modules,
+    suggestions,
+    proactiveInsights,
+    liveConnected,
+    lastMode,
     sendMessage,
     newConversation,
     selectConversation,
@@ -20,6 +31,8 @@ export function AssistantPage() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  const modeLabel = lastMode ? MODE_LABELS[lastMode] : MODE_LABELS[activeMode]
+
   return (
     <div
       className={cn(
@@ -27,7 +40,6 @@ export function AssistantPage() {
         'h-[calc(100dvh-4rem)] md:h-[calc(100dvh-4.5rem)]',
       )}
     >
-      {/* Desktop sidebar */}
       <ConversationSidebar
         conversations={conversations}
         activeId={activeId}
@@ -37,7 +49,6 @@ export function AssistantPage() {
         className="hidden w-64 shrink-0 md:flex lg:w-72"
       />
 
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <>
           <button
@@ -63,7 +74,6 @@ export function AssistantPage() {
         </>
       )}
 
-      {/* Main chat column */}
       <div className="flex min-w-0 flex-1 flex-col bg-[var(--color-surface-base)]">
         <header className="flex items-center gap-3 border-b border-[var(--color-border)] px-4 py-3">
           <button
@@ -76,18 +86,26 @@ export function AssistantPage() {
           </button>
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
-              {activeConversation?.title ?? 'AI Assistant'}
+              {activeConversation?.title ?? 'Seldom OS'}
             </h2>
             <p className="text-[11px] text-[var(--color-text-tertiary)]">
-              Preview · simulated responses
+              {liveConnected ? `Live · ${modeLabel}` : 'Local preview · sidecars + stub LLM'}
             </p>
           </div>
+          <Badge variant={liveConnected ? 'success' : 'muted'}>
+            {liveConnected ? 'Connected' : 'Offline'}
+          </Badge>
         </header>
 
         {activeConversation ? (
           <>
             <MessageList messages={activeConversation.messages} isTyping={isTyping} />
-            <ChatComposer onSend={sendMessage} disabled={isTyping} />
+            <ChatComposer
+              onSend={sendMessage}
+              disabled={isTyping}
+              suggestions={suggestions}
+              activeMode={activeMode}
+            />
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center text-sm text-[var(--color-text-tertiary)]">
@@ -95,6 +113,15 @@ export function AssistantPage() {
           </div>
         )}
       </div>
+
+      <aside className="hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto border-l border-[var(--color-border)] bg-[var(--color-surface-base)] p-4 xl:flex">
+        <ProactiveInsightsPanel insights={proactiveInsights} onAct={(prompt) => sendMessage(prompt)} />
+        <CapabilitiesPanel
+          modules={modules}
+          activeMode={activeMode}
+          onSelectMode={setActiveMode}
+        />
+      </aside>
     </div>
   )
 }
