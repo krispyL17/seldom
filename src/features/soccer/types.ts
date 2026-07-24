@@ -89,7 +89,7 @@ export const SOCCER_NAV = [
   { id: 'weaknesses', label: 'Weaknesses', href: '/soccer/weaknesses' },
   { id: 'strengths', label: 'Strengths', href: '/soccer/strengths' },
   { id: 'coach', label: 'AI Coach', href: '/soccer/coach' },
-  { id: 'progress', label: 'Progress', href: '/soccer/progress' },
+  { id: 'progress', label: 'Performance', href: '/soccer/progress' },
 ] as const
 
 export type SoccerNavId = (typeof SOCCER_NAV)[number]['id']

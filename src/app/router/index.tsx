@@ -33,7 +33,7 @@ import {
   WeaknessesPage,
   StrengthsPage,
   AiCoachPage,
-  ProgressChartsPage,
+  PerformanceAnalysisPage,
   RunningPage,
 } from '@features/soccer'
 import { AnalyticsPage } from '@features/analytics'
@@ -78,7 +78,7 @@ export function AppRouter() {
             <Route path="weaknesses" element={<WeaknessesPage />} />
             <Route path="strengths" element={<StrengthsPage />} />
             <Route path="coach" element={<AiCoachPage />} />
-            <Route path="progress" element={<ProgressChartsPage />} />
+            <Route path="progress" element={<PerformanceAnalysisPage />} />
           </Route>
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="assistant" element={<AssistantPage />} />
