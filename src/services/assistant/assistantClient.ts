@@ -1,6 +1,4 @@
-/**
- * Production assistant client — calls Vercel serverless /api/assistant/chat.
- */
+import { openAiKeyHeaders } from '@lib/userOpenAiKey'
 
 export type AssistantMode =
   | 'chat'
@@ -86,6 +84,7 @@ async function authFetch(accessToken: string, init?: RequestInit): Promise<Respo
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
+      ...openAiKeyHeaders(),
       ...init?.headers,
     },
   })

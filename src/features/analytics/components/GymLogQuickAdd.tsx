@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
-import { addGymLog } from '@services/analytics/analyticsClient'
+import { addLocalGymLog } from '@services/analytics/gymLogsLocal'
 
 interface GymLogQuickAddProps {
   userId: string
@@ -18,7 +18,7 @@ export function GymLogQuickAdd({ userId, disabled, onLogged }: GymLogQuickAddPro
 
   const today = new Date().toISOString().slice(0, 10)
 
-  async function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const durationMin = Number(duration)
     if (!Number.isFinite(durationMin) || durationMin <= 0) {
@@ -29,7 +29,7 @@ export function GymLogQuickAdd({ userId, disabled, onLogged }: GymLogQuickAddPro
     setSaving(true)
     setError(null)
     try {
-      await addGymLog(userId, {
+      addLocalGymLog(userId, {
         session_date: today,
         duration_min: durationMin,
         workout_type: workoutType.trim() || undefined,
@@ -61,7 +61,7 @@ export function GymLogQuickAdd({ userId, disabled, onLogged }: GymLogQuickAddPro
 
   return (
     <form
-      onSubmit={(e) => void handleSubmit(e)}
+      onSubmit={handleSubmit}
       className="flex flex-wrap items-end gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-2"
     >
       <Input

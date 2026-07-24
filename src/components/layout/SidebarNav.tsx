@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '@lib/utils'
+import { useNavTabColorMap } from '@hooks/useNavTabColor'
 import { useSidebarNav } from '@hooks/useSidebarNav'
 
 interface SidebarNavProps {
@@ -9,14 +10,18 @@ interface SidebarNavProps {
 
 /**
  * Shared navigation list used by both desktop sidebar and mobile drawer.
+ * Each tab shows a palette-colored bookmark underscore.
  */
 export function SidebarNav({ onNavigate }: SidebarNavProps) {
   const navItems = useSidebarNav()
+  const tabColors = useNavTabColorMap()
 
   return (
     <nav aria-label="Primary" className="flex flex-1 flex-col gap-0.5 px-3 py-2">
       {navItems.map((item, index) => {
         const Icon = item.icon
+        const bookmarkColor = tabColors[item.id]
+
         return (
           <NavLink
             key={item.id}
@@ -26,7 +31,7 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
             style={{ animationDelay: `${index * 30}ms` }}
             className={({ isActive }) =>
               cn(
-                'animate-nav-in flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-medium',
+                'animate-nav-in relative flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 pb-3 text-sm font-medium',
                 'transition-colors duration-200',
                 isActive
                   ? 'bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)]'
@@ -34,8 +39,19 @@ export function SidebarNav({ onNavigate }: SidebarNavProps) {
               )
             }
           >
-            <Icon className="shrink-0" aria-hidden />
-            <span>{item.label}</span>
+            {({ isActive }) => (
+              <>
+                <Icon className="shrink-0" aria-hidden />
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {bookmarkColor && (
+                  <span
+                    className={cn('nav-tab-bookmark', isActive && 'nav-tab-bookmark--active')}
+                    style={{ backgroundColor: bookmarkColor }}
+                    aria-hidden
+                  />
+                )}
+              </>
+            )}
           </NavLink>
         )
       })}

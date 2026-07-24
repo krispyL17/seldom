@@ -30,10 +30,11 @@ interface UseOnboardingChatOptions {
 }
 
 export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptions) {
+  const hasQuestionSteps = config.steps.length > 0
   const [stepIndex, setStepIndex] = useState(0)
+  const [welcomeAcknowledged, setWelcomeAcknowledged] = useState(!hasQuestionSteps)
   const [messages, setMessages] = useState<OnboardingMessage[]>(() => [
     createAssistantMessage(config.welcome),
-    createAssistantMessage(config.steps[0]?.question ?? ''),
   ])
   const [input, setInput] = useState('')
   const [answers, setAnswers] = useState<OnboardingAnswers>({})
@@ -42,16 +43,42 @@ export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptio
   const [isComplete, setIsComplete] = useState(false)
 
   const currentStep = config.steps[stepIndex] ?? null
-  const progress = config.steps.length > 0 ? Math.round((stepIndex / config.steps.length) * 100) : 0
+
+  const totalPhases = hasQuestionSteps ? config.steps.length + 1 : 0
+
+  const progress = useMemo(() => {
+    if (!hasQuestionSteps) return isComplete ? 100 : 0
+    if (isComplete) return 100
+    if (!welcomeAcknowledged) return 0
+    const completedPhases = 1 + stepIndex
+    return Math.round((completedPhases / totalPhases) * 100)
+  }, [hasQuestionSteps, isComplete, welcomeAcknowledged, stepIndex, totalPhases])
+
+  const progressCaption = useMemo(() => {
+    if (!hasQuestionSteps) return isComplete ? 'Done' : null
+    if (isComplete) return 'Complete'
+    if (!welcomeAcknowledged) return `Step 1 of ${totalPhases}`
+    const current = 1 + stepIndex
+    return `Step ${current} of ${totalPhases}`
+  }, [hasQuestionSteps, isComplete, welcomeAcknowledged, stepIndex, totalPhases])
 
   const choiceOptions = useMemo(() => {
     if (currentStep?.type !== 'choice') return []
     return currentStep.options ?? []
   }, [currentStep])
 
+  const continueFromWelcome = useCallback(() => {
+    if (welcomeAcknowledged || !hasQuestionSteps) return
+    setWelcomeAcknowledged(true)
+    const firstQuestion = config.steps[0]?.question
+    if (firstQuestion) {
+      setMessages((prev) => [...prev, createAssistantMessage(firstQuestion)])
+    }
+  }, [config.steps, hasQuestionSteps, welcomeAcknowledged])
+
   const submitAnswer = useCallback(
     async (raw: string) => {
-      if (!currentStep || isSubmitting || isComplete) return
+      if (!currentStep || isSubmitting || isComplete || !welcomeAcknowledged) return
 
       const parsed = parseStepValue(raw, {
         optional: currentStep.optional,
@@ -94,8 +121,20 @@ export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptio
         setMessages((prev) => [...prev, createAssistantMessage(nextQuestion)])
       }
     },
-    [answers, config, currentStep, isComplete, isSubmitting, onComplete, stepIndex],
+    [answers, config, currentStep, isComplete, isSubmitting, onComplete, stepIndex, welcomeAcknowledged],
   )
+
+  const acknowledgeWelcome = useCallback(async () => {
+    if (hasQuestionSteps || isSubmitting || isComplete) return
+    setIsSubmitting(true)
+    try {
+      await onComplete({})
+      setIsComplete(true)
+      setMessages((prev) => [...prev, createAssistantMessage(config.completeMessage)])
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [config, hasQuestionSteps, isComplete, isSubmitting, onComplete])
 
   return {
     messages,
@@ -104,9 +143,14 @@ export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptio
     currentStep,
     choiceOptions,
     progress,
+    progressCaption,
     isSubmitting,
     isComplete,
     rawValues,
     submitAnswer,
+    hasQuestionSteps,
+    welcomeAcknowledged,
+    continueFromWelcome,
+    acknowledgeWelcome,
   }
 }

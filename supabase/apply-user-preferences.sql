@@ -31,7 +31,6 @@ create policy "Users can update own preferences"
 
 drop trigger if exists user_preferences_set_updated_at on public.user_preferences;
 
-create trigger user_preferences_set_updated_at
-  before update on public.user_preferences
-  for each row
-  execute function public.set_updated_at();
+alter table public.user_preferences
+  add column if not exists tab_intros_completed jsonb not null default '{}'::jsonb;
+

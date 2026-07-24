@@ -47,4 +47,23 @@ export const localPreferencesService = {
       app_tutorial_completed_at: new Date().toISOString(),
     })
   },
+
+  markTabIntroComplete(userId: string, tabId: string): UserPreferences {
+    const current = localPreferencesService.fetch(userId)
+    const tab_intros_completed = {
+      ...current.tab_intros_completed,
+      [tabId]: new Date().toISOString(),
+    }
+    return localPreferencesService.patch(userId, { tab_intros_completed })
+  },
+
+  resetTutorialState(userId: string): UserPreferences {
+    return localPreferencesService.patch(userId, {
+      app_tutorial_completed_at: null,
+      tab_intros_completed: {},
+      hobby_tab_label: 'Performance',
+      hobby_passion: '',
+      college_enabled: false,
+    })
+  },
 }

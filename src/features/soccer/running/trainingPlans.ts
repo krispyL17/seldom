@@ -38,28 +38,21 @@ const PLAN_CATALOG: Omit<TrainingPlanSuggestion, 'matchReason'>[] = [
   {
     id: 'nike-5k',
     title: 'Nike Run Club — 5K Plan',
-    description: 'Guided runs in the NRC app. Fits soccer players who want structured audio coaching.',
+    description: 'Guided runs in the NRC app. Structured audio coaching for busy schedules.',
     url: 'https://www.nike.com/running/5k-training-plan',
     source: 'Nike Run Club',
   },
   {
-    id: 'us-soccer-fitness',
-    title: 'US Soccer — Fitness & Conditioning',
-    description: 'Sport-specific conditioning including interval work that complements match fitness.',
-    url: 'https://www.ussoccer.com/coach/resources',
-    source: 'US Soccer',
-  },
-  {
     id: 'runners-world-mile',
     title: "Runner's World — Mile Speed Plans",
-    description: 'Short-distance speed development. Ideal for breaking a mile PR during season.',
+    description: 'Short-distance speed development. Ideal for breaking a mile PR during a busy season.',
     url: 'https://www.runnersworld.com/training/a20847201/how-to-run-a-faster-mile/',
     source: "Runner's World",
   },
   {
     id: 'strides-tempo',
-    title: 'Strides + Tempo (Soccer Pre-Season)',
-    description: '2× mile tempo + strides after training. Matches in-season maintenance for midfielders.',
+    title: 'Strides + Tempo (Maintenance)',
+    description: '2× mile tempo + strides after practice. In-season maintenance without extra volume.',
     url: 'https://www.runnersworld.com/training/a20847201/how-to-run-a-faster-mile/',
     source: 'Seldom AI',
   },
@@ -77,9 +70,7 @@ function weeklyRunVolume(runs: RunLog[]): number {
   return runs.filter((r) => r.run_date >= cutoffStr).length
 }
 
-/**
- * Suggests training plans based on run history, soccer training load, and memory context.
- */
+/** Suggests training plans based on run history, session load, and memory context. */
 export function suggestTrainingPlans(context: PlanContext): TrainingPlanSuggestion[] {
   const { runs, sessions, memorySnippets = [] } = context
   const mileSec = milePaceSec(runs)
@@ -100,17 +91,17 @@ export function suggestTrainingPlans(context: PlanContext): TrainingPlanSuggesti
     add('hal-higdon-5k-novice', 'No mile PR logged yet — start with a walk/run build.')
   } else if (mileSec > 480) {
     add('hal-higdon-5k-intermediate', `Mile PR ${formatDuration(mileSec)} — ready for structured speed work.`)
-    add('nike-5k', 'App-guided runs fit a busy student-athlete schedule.')
+    add('nike-5k', 'App-guided runs fit a busy schedule.')
   } else if (mileSec <= 360) {
     add('runners-world-mile', `Strong mile (${formatDuration(mileSec)}) — focus on race-pace sharpening.`)
     add('hal-higdon-half-novice', 'Your aerobic base supports half marathon training.')
   } else {
     add('runners-world-mile', `Mile PR ${formatDuration(mileSec)} (${pacePerMile(mileSec, MILE_M)}) — time to push threshold pace.`)
-    add('hal-higdon-5k-intermediate', 'Tempo intervals will translate to better match fitness.')
+    add('hal-higdon-5k-intermediate', 'Tempo intervals will translate to better endurance.')
   }
 
-  if (avgIntensity >= 7 || memoryText.includes('match') || memoryText.includes('intensity')) {
-    add('strides-tempo', 'High soccer load detected — short tempo runs maintain fitness without overtraining.')
+  if (avgIntensity >= 7 || memoryText.includes('intensity')) {
+    add('strides-tempo', 'High session load detected — short tempo runs maintain fitness without overtraining.')
   }
 
   if (volume < 2) {
@@ -122,12 +113,10 @@ export function suggestTrainingPlans(context: PlanContext): TrainingPlanSuggesti
     add('hal-higdon-5k-intermediate', `5K PR ${formatDuration(has5k.duration_sec)} — intermediate plan targets sub-25.`)
   }
 
-  add('us-soccer-fitness', 'Soccer-specific conditioning complements your distance work.')
-
   if (memoryText.includes('college') || memoryText.includes('junior')) {
     suggestions.forEach((s) => {
       if (s.id === 'nike-5k') {
-        s.matchReason += ' Flexible for school + soccer schedule.'
+        s.matchReason += ' Flexible for school + practice schedule.'
       }
     })
   }

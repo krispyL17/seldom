@@ -4,6 +4,7 @@ import type {
   Task,
   UpdateTaskInput,
 } from '@features/tasks/types'
+import { goalService } from '@services/database/goals'
 
 function requireClient() {
   const client = getSupabaseClient()
@@ -39,6 +40,7 @@ export const taskService = {
         deadline: input.deadline ?? null,
         estimated_duration: input.estimated_duration ?? null,
         notes: input.notes?.trim() || null,
+        goal_id: input.goal_id ?? null,
       })
       .select()
       .single()
@@ -82,6 +84,24 @@ export const taskService = {
   },
 
   async toggleComplete(id: string, completed: boolean): Promise<Task> {
-    return taskService.update(id, { completed })
+    const client = requireClient()
+    const { data: existing, error: fetchError } = await client
+      .from('tasks')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (fetchError) throw fetchError
+    const updated = await taskService.update(id, { completed })
+
+    if (completed && existing?.goal_id && !existing.completed) {
+      try {
+        await goalService.bumpProgress(existing.goal_id, 10)
+      } catch {
+        /* non-blocking */
+      }
+    }
+
+    return updated
   },
 }

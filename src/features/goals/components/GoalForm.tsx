@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
+import { DateTimeField } from '@components/ui/DateTimeField'
 import { ProgressBar } from '@components/ui/ProgressBar'
 import type { CreateGoalInput, Goal, GoalStatus, Milestone } from '@features/goals/types'
 import { GOAL_CATEGORIES, GOAL_STATUSES } from '@features/goals/types'
@@ -105,11 +106,13 @@ export function GoalForm({ goal, onSubmit, onCancel }: GoalFormProps) {
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Input
+        <DateTimeField
           label="Target date"
-          type="date"
-          value={targetDate}
-          onChange={(e) => setTargetDate(e.target.value)}
+          dateValue={targetDate}
+          timeValue=""
+          onDateChange={setTargetDate}
+          onTimeChange={() => {}}
+          dateOnly
         />
 
         <div className="space-y-1.5">

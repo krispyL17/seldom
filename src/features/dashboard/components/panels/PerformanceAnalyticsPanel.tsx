@@ -3,17 +3,19 @@ import { PanelSkeleton } from '@components/ui/PanelSkeleton'
 import { Panel, PanelDivider } from '@components/ui/Panel'
 import { MiniBarChart, MetricTile } from '@components/ui/MiniBarChart'
 import { useAnalytics } from '@features/analytics'
+import { analyticsHasEnoughData } from '@features/analytics/utils/unlock'
 import { useAuth } from '@hooks/useAuth'
 
 export function PerformanceAnalyticsPanel() {
   const { user } = useAuth()
   const { dashboard, loading } = useAnalytics()
+  const unlocked = analyticsHasEnoughData(dashboard)
 
   if (!user) {
     return (
-      <Panel title="Performance Analytics" subtitle="Sign in for live metrics" fullWidth>
+      <Panel title="Activity summary" subtitle="Sign in for live metrics" fullWidth>
         <p className="text-xs text-[var(--color-text-tertiary)]">
-          Log in to see your task, training, and goal trends here.
+          Log in to see trends from your tasks, training, and goals.
         </p>
       </Panel>
     )
@@ -21,8 +23,22 @@ export function PerformanceAnalyticsPanel() {
 
   if (loading || !dashboard) {
     return (
-      <Panel title="Performance Analytics" subtitle="Loading metrics…" fullWidth>
+      <Panel title="Activity summary" subtitle="Loading metrics…" fullWidth>
         <PanelSkeleton lines={4} />
+      </Panel>
+    )
+  }
+
+  if (!unlocked) {
+    return (
+      <Panel title="Activity summary" subtitle="Analytics unlocks as you log" fullWidth>
+        <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+          The <strong>Analytics</strong> tab appears in the sidebar once you log tasks, practice sessions,
+          journal entries, or runs. Keep using Seldom — charts will show up automatically.
+        </p>
+        <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
+          Tip: add a task with a deadline or log a practice session to get started.
+        </p>
       </Panel>
     )
   }
@@ -34,7 +50,7 @@ export function PerformanceAnalyticsPanel() {
 
   return (
     <Panel
-      title="Performance Analytics"
+      title="Activity summary"
       subtitle="Live from your data"
       fullWidth
       action={
@@ -42,7 +58,7 @@ export function PerformanceAnalyticsPanel() {
           to="/analytics"
           className="rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline"
         >
-          Full analytics
+          Full analytics →
         </Link>
       }
     >

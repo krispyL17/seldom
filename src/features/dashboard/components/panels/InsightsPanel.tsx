@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
-import { Badge } from '@components/ui/Badge'
+import { EmptyState } from '@components/ui/EmptyState'
 import { Panel } from '@components/ui/Panel'
-import { insightsData } from '../../data/mockData'
 
 /**
  * Right-side insights rail — collapses below main content on smaller screens.
@@ -9,72 +8,46 @@ import { insightsData } from '../../data/mockData'
 export function InsightsPanel() {
   return (
     <aside aria-label="Insights" className="space-y-4 xl:sticky xl:top-4 xl:w-72 xl:shrink-0">
-      <Panel title="AI Insights" badge={<Badge variant="muted">Preview</Badge>}>
-        <ul className="space-y-2.5">
-          {insightsData.aiInsights.map((insight) => (
-            <li
-              key={insight}
-              className="flex gap-2 text-xs leading-relaxed text-[var(--color-text-secondary)]"
+      <Panel title="AI Insights">
+        <EmptyState
+          title="Insights appear as you log"
+          description="Seldom OS generates insights from your tasks, goals, training, and journal — nothing is shown until there's real data to analyze."
+          action={
+            <Link
+              to="/assistant"
+              className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
             >
-              <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-[var(--color-accent)]" />
-              {insight}
-            </li>
-          ))}
-        </ul>
+              Ask Seldom OS
+            </Link>
+          }
+        />
       </Panel>
 
       <Panel title="Personal Records">
-        <ul className="space-y-0">
-          {insightsData.personalRecords.map((record) => (
-            <li
-              key={record.label}
-              className="flex items-center justify-between border-b border-[var(--color-border)] py-2.5 last:border-0"
-            >
-              <span className="text-xs text-[var(--color-text-secondary)]">{record.label}</span>
-              <span className="text-xs font-semibold tabular-nums text-[var(--color-text-primary)]">
-                {record.value}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <EmptyState
+          title="No records yet"
+          description="Personal records are calculated from runs, training, and goals you log."
+        />
       </Panel>
 
       <Panel title="Streaks">
-        <div className="space-y-3">
-          {insightsData.streaks.map((streak) => (
-            <div key={streak.label} className="flex items-center justify-between">
-              <span className="text-xs text-[var(--color-text-secondary)]">{streak.label}</span>
-              <div className="text-right">
-                <span className="text-lg font-bold tabular-nums text-[var(--color-accent-muted)]">
-                  {streak.count}
-                </span>
-                <span className="ml-1 text-[10px] text-[var(--color-text-tertiary)]">
-                  {streak.unit}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel title="Motivation">
-        <p className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
-          {insightsData.motivation}
-        </p>
+        <EmptyState
+          title="No streaks yet"
+          description="Streaks build automatically once you start logging consistently."
+        />
       </Panel>
 
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-accent)]/25 bg-[var(--color-accent)]/8 p-4 shadow-[var(--shadow-panel)]">
         <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-accent-muted)]">
-          Suggested Next Action
+          Suggested next step
         </p>
         <p className="mt-1.5 text-sm font-semibold text-[var(--color-text-primary)]">
-          {insightsData.suggestedAction.title}
+          Start with one log
         </p>
         <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-          {insightsData.suggestedAction.description}
+          Add a task, log a training session, or ask Seldom OS what to focus on first.
         </p>
-        <div className="mt-3 flex items-center justify-between">
-          <Badge variant="muted">{insightsData.suggestedAction.duration}</Badge>
+        <div className="mt-3">
           <Link
             to="/assistant"
             className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"

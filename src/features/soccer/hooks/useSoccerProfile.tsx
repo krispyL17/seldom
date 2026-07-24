@@ -79,7 +79,7 @@ export function SoccerProvider({ children }: { children: ReactNode }) {
       setOnboardingComplete(Boolean(data.onboarding_completed_at))
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load soccer profile')
+      setError(err instanceof Error ? err.message : 'Failed to load performance profile')
     } finally {
       setLoading(false)
     }
@@ -136,7 +136,7 @@ export function SoccerProvider({ children }: { children: ReactNode }) {
       if (extras.goalTitle) {
         await goalService.create(user.id, {
           title: extras.goalTitle,
-          category: 'soccer',
+          category: 'performance',
           progress: 0,
           status: 'active',
         })

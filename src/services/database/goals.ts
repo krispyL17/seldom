@@ -100,4 +100,23 @@ export const goalService = {
   async restore(id: string): Promise<Goal> {
     return goalService.update(id, { status: 'active' })
   },
+
+  /** Nudge linked goal progress after completing related work. */
+  async bumpProgress(id: string, amount = 5): Promise<Goal | null> {
+    const client = requireClient()
+    const { data: row, error: fetchError } = await client
+      .from('goals')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (fetchError) throw fetchError
+    if (!row || row.status !== 'active') return null
+
+    const next = Math.min(100, (row.progress ?? 0) + amount)
+    return goalService.update(id, {
+      progress: next,
+      status: next >= 100 ? 'completed' : 'active',
+    })
+  },
 }

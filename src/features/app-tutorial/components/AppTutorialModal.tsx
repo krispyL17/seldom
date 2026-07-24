@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Button } from '@components/ui/Button'
+import { useCallback } from 'react'
 import { IconSparkles } from '@components/ui/icons'
 import { OnboardingChatPanel } from '@features/onboarding/OnboardingChatPanel'
 import { appTutorialConfig } from '@config/onboardingPrompts'
@@ -7,42 +6,23 @@ import { useUserPreferences } from '@features/preferences'
 import { useAuth } from '@hooks/useAuth'
 import { authService } from '@services/auth'
 import { cn } from '@lib/utils'
-import { buildFeatureSlides } from '../featureSlides'
-import { TutorialFeatureTour } from './TutorialFeatureTour'
 
 interface AppTutorialModalProps {
   open: boolean
   onClose: () => void
 }
 
-type TutorialPhase = 'customize' | 'features' | 'done'
-
 export function AppTutorialModal({ open, onClose }: AppTutorialModalProps) {
   const { user } = useAuth()
-  const { updatePreferences, completeTutorial, hobbyTabLabel, tutorialCompleted } =
-    useUserPreferences()
-  const [phase, setPhase] = useState<TutorialPhase>('customize')
-  const [pendingLabel, setPendingLabel] = useState(hobbyTabLabel)
-
-  useEffect(() => {
-    if (open) {
-      setPhase('customize')
-      setPendingLabel(hobbyTabLabel)
-    }
-  }, [open, hobbyTabLabel])
-
-  const finishTutorial = useCallback(async () => {
-    await completeTutorial()
-    onClose()
-  }, [completeTutorial, onClose])
+  const { updatePreferences, completeTutorial, tutorialCompleted } = useUserPreferences()
 
   const handleDismiss = useCallback(() => {
     if (!tutorialCompleted) {
-      void finishTutorial()
+      void completeTutorial()
     } else {
       onClose()
     }
-  }, [tutorialCompleted, finishTutorial, onClose])
+  }, [tutorialCompleted, completeTutorial, onClose])
 
   const handleCustomizeComplete = useCallback(
     async (answers: Record<string, unknown>) => {
@@ -59,11 +39,29 @@ export function AppTutorialModal({ open, onClose }: AppTutorialModalProps) {
         }
       }
 
-      setPendingLabel(tabLabel)
+      const hsYear = String(answers.hsYear ?? '')
+      const collegeEnabled = hsYear.startsWith('Junior') || hsYear.startsWith('Senior')
+
       await updatePreferences({
         hobby_tab_label: tabLabel,
         hobby_passion: passion,
+        college_enabled: collegeEnabled,
       })
+
+      if (collegeEnabled && user?.id) {
+        try {
+          const { collegeUserDataService } = await import('@services/database/collegeUserData')
+          const existing = await collegeUserDataService.ensure(user.id)
+          if (!existing.resumeSettings.onboardingCompletedAt) {
+            await collegeUserDataService.updateResumeSettings(user.id, {
+              ...existing.resumeSettings,
+              applicationPhase: hsYear.startsWith('Senior') ? 'senior' : 'junior',
+            })
+          }
+        } catch {
+          /* non-blocking */
+        }
+      }
 
       if (focus && user?.id) {
         try {
@@ -77,13 +75,13 @@ export function AppTutorialModal({ open, onClose }: AppTutorialModalProps) {
             })
           }
         } catch {
-          /* optional */
+          /* optional — performance tab setup handles the rest */
         }
       }
 
-      setPhase('features')
+      await completeTutorial()
     },
-    [updatePreferences, user],
+    [completeTutorial, updatePreferences, user],
   )
 
   if (!open) return null
@@ -114,80 +112,31 @@ export function AppTutorialModal({ open, onClose }: AppTutorialModalProps) {
                   id="app-tutorial-title"
                   className="text-base font-semibold tracking-tight text-[var(--color-text-primary)]"
                 >
-                  {phase === 'customize'
-                    ? 'Meet Seldom OS'
-                    : phase === 'features'
-                      ? 'Your workspace'
-                      : "You're set"}
+                  Meet Seldom
                 </h2>
                 <p className="text-xs text-[var(--color-text-tertiary)]">
-                  {phase === 'customize'
-                    ? 'Step 1 of 2 — Personalize'
-                    : phase === 'features'
-                      ? 'Step 2 of 2 — Feature tour'
-                      : 'Welcome aboard'}
+                  Personalize your workspace — tabs introduce themselves as you explore
                 </p>
               </div>
             </div>
 
-            {phase !== 'done' && (
-              <button
-                type="button"
-                onClick={handleDismiss}
-                className="text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
-              >
-                {!tutorialCompleted ? 'Skip' : 'Close'}
-              </button>
-            )}
-          </div>
-
-          <div className="mt-4 flex gap-1.5">
-            <div
-              className={cn(
-                'h-1 flex-1 rounded-full transition-colors duration-300',
-                phase === 'customize' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-accent)]/40',
-              )}
-            />
-            <div
-              className={cn(
-                'h-1 flex-1 rounded-full transition-colors duration-300',
-                phase === 'features' || phase === 'done'
-                  ? 'bg-[var(--color-accent)]'
-                  : 'bg-[var(--color-surface-overlay)]',
-              )}
-            />
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
+            >
+              {!tutorialCompleted ? 'Skip' : 'Close'}
+            </button>
           </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-6">
-          {phase === 'customize' && (
-            <div className="animate-slide-up">
-              <OnboardingChatPanel
-                config={appTutorialConfig}
-                onComplete={handleCustomizeComplete}
-                embedded
-              />
-            </div>
-          )}
-
-          {phase === 'features' && (
-            <TutorialFeatureTour
-              slides={buildFeatureSlides(pendingLabel)}
-              onFinish={() => setPhase('done')}
-            />
-          )}
-
-          {phase === 'done' && (
-            <div className="animate-slide-up py-8 text-center">
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                Seldom is configured for you. Explore at your own pace — replay this tour anytime
-                from Settings.
-              </p>
-              <Button className="mt-6" onClick={() => void finishTutorial()}>
-                Enter Seldom
-              </Button>
-            </div>
-          )}
+          <OnboardingChatPanel
+            config={appTutorialConfig}
+            onComplete={handleCustomizeComplete}
+            embedded
+            progressLabel="Welcome setup"
+          />
         </div>
       </div>
     </div>

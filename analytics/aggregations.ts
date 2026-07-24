@@ -97,14 +97,18 @@ function computeTechnicalSkills(payload: AnalyticsSyncPayload): SkillTrendSeries
   }).filter((s) => s.data.some((v) => v > 0))
 }
 
-function computeRunning(payload: AnalyticsSyncPayload): ChartSeries {
+function computeRunning(payload: AnalyticsSyncPayload, distanceUnit: 'km' | 'mi' = 'mi'): ChartSeries {
   const weeks = lastNWeeks(8)
   const data = weeks.map(({ start }) => {
     const runs = payload.runLogs.filter((r) => isoInWeek(r.run_date, start))
+    if (distanceUnit === 'mi') {
+      const totalMi = runs.reduce((s, r) => s + r.distance_m / 1609.34, 0)
+      return Math.round(totalMi * 10) / 10
+    }
     const totalKm = runs.reduce((s, r) => s + r.distance_m / 1000, 0)
     return Math.round(totalKm * 10) / 10
   })
-  return { labels: weeks.map((w) => w.label), data, unit: 'km' }
+  return { labels: weeks.map((w) => w.label), data, unit: distanceUnit }
 }
 
 function computeGym(payload: AnalyticsSyncPayload): ChartSeries {
@@ -147,7 +151,11 @@ function computeJournalStreak(data: number[]): number {
   return streak
 }
 
-function computeKpis(payload: AnalyticsSyncPayload, dashboard: Omit<AnalyticsDashboard, 'kpis'>): AnalyticsKpi[] {
+function computeKpis(
+  payload: AnalyticsSyncPayload,
+  dashboard: Omit<AnalyticsDashboard, 'kpis'>,
+  distanceUnit: 'km' | 'mi' = 'mi',
+): AnalyticsKpi[] {
   const taskRate =
     payload.tasks.length > 0
       ? Math.round(
@@ -174,7 +182,7 @@ function computeKpis(payload: AnalyticsSyncPayload, dashboard: Omit<AnalyticsDas
     { label: 'Task completion', value: taskRate, unit: '%', trend: taskRate >= 50 ? 'up' : 'neutral' },
     { label: 'Goal progress', value: avgGoal, unit: '%', trend: 'up' },
     { label: 'Training / wk', value: weeklyTraining, unit: 'sessions', trend: 'up' },
-    { label: 'Running / wk', value: weeklyRuns, unit: 'km', trend: 'neutral' },
+    { label: 'Running / wk', value: weeklyRuns, unit: distanceUnit, trend: 'neutral' },
     { label: 'College progress', value: payload.college?.overallProgress ?? 0, unit: '%', trend: 'up' },
     { label: 'Journal streak', value: journalStreak, unit: 'days', trend: journalStreak >= 3 ? 'up' : 'neutral' },
   ]
@@ -183,6 +191,7 @@ function computeKpis(payload: AnalyticsSyncPayload, dashboard: Omit<AnalyticsDas
 export function buildAnalyticsDashboard(
   payload: AnalyticsSyncPayload,
   source: 'sqlite' | 'local',
+  distanceUnit: 'km' | 'mi' = 'mi',
 ): AnalyticsDashboard {
   const partial = {
     userId: payload.userId,
@@ -191,7 +200,7 @@ export function buildAnalyticsDashboard(
     goalProgress: computeGoalProgress(payload),
     trainingFrequency: computeTrainingFrequency(payload),
     technicalSkills: computeTechnicalSkills(payload),
-    running: computeRunning(payload),
+    running: computeRunning(payload, distanceUnit),
     gym: computeGym(payload),
     collegeProgress: computeCollegeProgress(payload),
     journalConsistency: computeJournalConsistency(payload),
@@ -200,6 +209,6 @@ export function buildAnalyticsDashboard(
 
   return {
     ...partial,
-    kpis: computeKpis(payload, partial),
+    kpis: computeKpis(payload, partial, distanceUnit),
   }
 }

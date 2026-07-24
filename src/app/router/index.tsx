@@ -41,9 +41,6 @@ const TimelinePage = lazy(() =>
 const SoccerLayout = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.SoccerLayout })),
 )
-const SoccerOverviewPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.SoccerOverviewPage })),
-)
 const TrainingSessionsPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.TrainingSessionsPage })),
 )
@@ -61,12 +58,6 @@ const WeaknessesPage = lazy(() =>
 )
 const StrengthsPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.StrengthsPage })),
-)
-const AiCoachPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.AiCoachPage })),
-)
-const ProgressChartsPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.ProgressChartsPage })),
 )
 const RunningPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.RunningPage })),
@@ -119,9 +110,9 @@ export function AppRouter() {
             </Route>
             <Route path="journal" element={<JournalPage />} />
             <Route path="calendar" element={<CalendarPage />} />
-            <Route path="soccer" element={<SoccerLayout />}>
-              <Route index element={<Navigate to="overview" replace />} />
-              <Route path="overview" element={<SoccerOverviewPage />} />
+              <Route path="soccer" element={<SoccerLayout />}>
+              <Route index element={<Navigate to="training" replace />} />
+              <Route path="overview" element={<Navigate to="/soccer/training" replace />} />
               <Route path="training" element={<TrainingSessionsPage />} />
               <Route path="running" element={<RunningPage />} />
               <Route path="matches" element={<MatchesPage />} />
@@ -129,8 +120,8 @@ export function AppRouter() {
               <Route path="physical" element={<PhysicalMetricsPage />} />
               <Route path="weaknesses" element={<WeaknessesPage />} />
               <Route path="strengths" element={<StrengthsPage />} />
-              <Route path="coach" element={<AiCoachPage />} />
-              <Route path="progress" element={<ProgressChartsPage />} />
+              <Route path="coach" element={<Navigate to="/assistant?mode=soccer_drills" replace />} />
+              <Route path="progress" element={<Navigate to="/analytics" replace />} />
             </Route>
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="assistant" element={<AssistantPage />} />

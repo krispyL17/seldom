@@ -23,7 +23,7 @@ export function TrainingPlanPanel({ runs, sessionCount, avgIntensity }: Training
       let memorySnippets: string[] = []
 
       try {
-        const result = await retrieveMemories('soccer training fitness running goals', { limit: 5 })
+        const result = await retrieveMemories('training fitness running goals performance', { limit: 5 })
         memorySnippets = result.memories.map((m) => m.text)
       } catch {
         // Memory server offline — still suggest from run data
@@ -50,7 +50,7 @@ export function TrainingPlanPanel({ runs, sessionCount, avgIntensity }: Training
   return (
     <Panel
       title="Suggested training plans"
-      subtitle="Matched to your mile times, soccer load, and memory context"
+      subtitle="Matched to your mile times, session load, and memory context"
       fullWidth
     >
       {loading ? (

@@ -66,26 +66,7 @@ export function buildSeniorFinancialAid(graduationYear?: string | null): Financi
 }
 
 export function buildStarterRecommendations(): AiRecommendation[] {
-  return [
-    {
-      id: 'ai-1',
-      type: 'plan',
-      title: 'Build a balanced list',
-      description: 'Aim for a mix of reach, target, and safety schools that fit your goals and budget.',
-    },
-    {
-      id: 'ai-2',
-      type: 'essay',
-      title: 'Capture story ideas',
-      description: 'Jot down moments from activities and classes — they become essay material senior year.',
-    },
-    {
-      id: 'ai-3',
-      type: 'school',
-      title: 'Research before you rank',
-      description: 'Add schools you are curious about, then compare fit, cost, and programs over time.',
-    },
-  ]
+  return []
 }
 
 export function inferApplicationPhase(graduationYear?: string | null): 'junior' | 'senior' {

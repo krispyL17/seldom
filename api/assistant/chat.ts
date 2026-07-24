@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { setApiCors } from '../../lib/cors.js'
 import { extractBearerToken, verifyAccessToken } from '../../lib/assistant/auth.js'
 import { getAssistantBootstrap, handleChat } from '../../lib/assistant/orchestrator.js'
-import { loadAssistantEnv } from '../../lib/assistant/types.js'
+import { loadAssistantEnv, extractUserOpenAiKey } from '../../lib/assistant/types.js'
 import type { OSMode } from '../../lib/orchestration/types.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(204).end()
   }
 
-  const env = loadAssistantEnv()
+  const env = loadAssistantEnv(extractUserOpenAiKey(req.headers))
   if (!env) {
     return res.status(503).json({
       error: 'Assistant not configured',

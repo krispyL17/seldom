@@ -40,7 +40,7 @@ export function JournalPanel() {
     <Panel
       title="Journal"
       subtitle="Recent entries"
-      action={<PanelActionLink to="/journal">New entry</PanelActionLink>}
+      action={<PanelActionLink to="/journal?new=1">New entry</PanelActionLink>}
     >
       {loading ? (
         <PanelSkeleton lines={4} />
@@ -50,7 +50,7 @@ export function JournalPanel() {
           description="Reflect on your day to build consistency."
           action={
             <Link
-              to="/journal"
+              to="/journal?new=1"
               className="text-xs font-medium text-[var(--color-accent-muted)] hover:underline"
             >
               Write an entry

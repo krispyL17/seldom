@@ -6,6 +6,7 @@ import type {
   TrainingSession,
   UpdateTrainingSessionInput,
 } from '@features/soccer/training/types'
+import { defaultTechnicalRatings } from '@features/soccer/training/types'
 import { parseTechnicalRatings } from '@features/soccer/training/utils'
 
 type TrainingSessionRow = Omit<TrainingSession, 'technical_ratings'> & { technical_ratings: Json }
@@ -23,7 +24,18 @@ function ratingsToJson(ratings: TechnicalRatings): Json {
 function normalizeSession(row: TrainingSessionRow): TrainingSession {
   const ratings = parseTechnicalRatings(row.technical_ratings)
   if (!ratings) throw new Error('Invalid technical ratings in database row')
-  return { ...row, technical_ratings: ratings }
+  return {
+    ...row,
+    high_points: row.high_points ?? null,
+    work_on: row.work_on ?? null,
+    goal_id: row.goal_id ?? null,
+    technical_ratings: ratings,
+  }
+}
+
+function focusLabel(focus: string): string {
+  const trimmed = focus.trim()
+  return trimmed || 'Session'
 }
 
 export const trainingSessionService = {
@@ -47,12 +59,15 @@ export const trainingSessionService = {
         user_id: userId,
         session_date: input.session_date,
         duration_min: input.duration_min,
-        position_played: input.position_played.trim(),
+        position_played: focusLabel(input.focus),
         intensity: input.intensity,
         mood: input.mood,
         energy_level: input.energy_level,
-        technical_ratings: ratingsToJson(input.technical_ratings),
+        technical_ratings: ratingsToJson(input.technical_ratings ?? defaultTechnicalRatings()),
+        high_points: input.high_points?.trim() || null,
+        work_on: input.work_on?.trim() || null,
         notes: input.notes?.trim() || null,
+        goal_id: input.goal_id ?? null,
       })
       .select()
       .single()
@@ -67,14 +82,17 @@ export const trainingSessionService = {
 
     if (input.session_date !== undefined) payload.session_date = input.session_date
     if (input.duration_min !== undefined) payload.duration_min = input.duration_min
-    if (input.position_played !== undefined) payload.position_played = input.position_played.trim()
+    if (input.focus !== undefined) payload.position_played = focusLabel(input.focus)
     if (input.intensity !== undefined) payload.intensity = input.intensity
     if (input.mood !== undefined) payload.mood = input.mood
     if (input.energy_level !== undefined) payload.energy_level = input.energy_level
+    if (input.high_points !== undefined) payload.high_points = input.high_points?.trim() || null
+    if (input.work_on !== undefined) payload.work_on = input.work_on?.trim() || null
+    if (input.notes !== undefined) payload.notes = input.notes?.trim() || null
+    if (input.goal_id !== undefined) payload.goal_id = input.goal_id
     if (input.technical_ratings !== undefined) {
       payload.technical_ratings = ratingsToJson(input.technical_ratings)
     }
-    if (input.notes !== undefined) payload.notes = input.notes?.trim() || null
 
     const { data, error } = await client
       .from('training_sessions')

@@ -1,10 +1,10 @@
 {
   "id": "college-onboarding",
   "version": 1,
-  "title": "College Setup",
-  "subtitle": "Let's build your rising-junior prep profile — a few questions and your workspace starts blank, ready for your schools and goals.",
-  "welcome": "Hi! I'm your Seldom college assistant. I'll ask a few quick questions so your **College** tab starts **empty** with *your* info — no demo schools or preset lists. You can edit everything later.",
-  "completeMessage": "Your college workspace is ready. Add schools as you explore, track prep progress, and expand your profile anytime.",
+  "title": "Junior Prep Setup",
+  "subtitle": "A few questions so your workspace starts blank — add schools and deadlines only when you're ready.",
+  "welcome": "Hi! I'll ask a few quick questions so your **Junior Prep** tab starts **empty** with *your* info — no demo schools or preset lists. You can edit everything later.",
+  "completeMessage": "Your prep workspace is ready. Add schools as you explore, track progress, and expand your profile anytime.",
   "steps": [
     {
       "id": "name",
@@ -29,13 +29,14 @@
     },
     {
       "id": "phase",
-      "question": "Where are you in the process?",
+      "question": "What year are you in high school?",
       "type": "choice",
-      "options": ["Rising junior — exploring schools", "Senior — applying now"],
+      "options": ["Junior", "Senior", "Neither / not in high school"],
       "field": "applicationPhase",
       "map": {
-        "Rising junior — exploring schools": "junior",
-        "Senior — applying now": "senior"
+        "Junior": "junior",
+        "Senior": "senior",
+        "Neither / not in high school": "junior"
       }
     },
     {

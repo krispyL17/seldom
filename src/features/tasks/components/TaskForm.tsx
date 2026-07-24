@@ -2,12 +2,10 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
+import { DateTimeField, combineDateTime, splitIsoDateTime } from '@components/ui/DateTimeField'
+import { GoalLinkSelect } from '@components/goals/GoalLinkSelect'
 import type { CreateTaskInput, Task, TaskPriority } from '@features/tasks/types'
 import { TASK_CATEGORIES } from '@features/tasks/types'
-import {
-  fromDatetimeLocalValue,
-  toDatetimeLocalValue,
-} from '@features/tasks/utils'
 import { cn } from '@lib/utils'
 
 interface TaskFormProps {
@@ -25,9 +23,11 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
   const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<TaskPriority>('medium')
   const [category, setCategory] = useState('')
-  const [deadline, setDeadline] = useState('')
+  const [deadlineDate, setDeadlineDate] = useState('')
+  const [deadlineTime, setDeadlineTime] = useState('17:00')
   const [estimatedDuration, setEstimatedDuration] = useState('')
   const [notes, setNotes] = useState('')
+  const [goalId, setGoalId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -37,9 +37,12 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
     setDescription(task.description ?? '')
     setPriority(task.priority)
     setCategory(task.category ?? '')
-    setDeadline(toDatetimeLocalValue(task.deadline))
+    const { date, time } = splitIsoDateTime(task.deadline)
+    setDeadlineDate(date)
+    setDeadlineTime(time || '17:00')
     setEstimatedDuration(task.estimated_duration?.toString() ?? '')
     setNotes(task.notes ?? '')
+    setGoalId(task.goal_id)
   }, [task])
 
   async function handleSubmit(e: FormEvent) {
@@ -58,9 +61,10 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
         description: description.trim() || undefined,
         priority,
         category: category.trim() || undefined,
-        deadline: fromDatetimeLocalValue(deadline),
+        deadline: combineDateTime(deadlineDate, deadlineTime),
         estimated_duration: estimatedDuration ? Number(estimatedDuration) : null,
         notes: notes.trim() || undefined,
+        goal_id: goalId,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save task')
@@ -133,23 +137,24 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input
-          label="Deadline"
-          type="datetime-local"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-        />
+      <DateTimeField
+        label="Deadline"
+        dateValue={deadlineDate}
+        timeValue={deadlineTime}
+        onDateChange={setDeadlineDate}
+        onTimeChange={setDeadlineTime}
+      />
 
-        <Input
-          label="Estimated duration (minutes)"
-          type="number"
-          min={0}
-          value={estimatedDuration}
-          onChange={(e) => setEstimatedDuration(e.target.value)}
-          placeholder="e.g. 45"
-        />
-      </div>
+      <Input
+        label="Estimated duration (minutes)"
+        type="number"
+        min={0}
+        value={estimatedDuration}
+        onChange={(e) => setEstimatedDuration(e.target.value)}
+        placeholder="e.g. 45"
+      />
+
+      <GoalLinkSelect value={goalId} onChange={setGoalId} />
 
       <Textarea
         label="Notes"

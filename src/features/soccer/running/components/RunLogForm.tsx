@@ -1,9 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
+import { useDistanceUnit } from '@hooks/useDistanceUnit'
 import type { CreateRunLogInput, RunLog } from '../types'
-import { DISTANCE_PRESETS } from '../types'
 import {
   durationInputFromSeconds,
   parseDurationInput,
@@ -19,14 +19,23 @@ interface RunLogFormProps {
 
 export function RunLogForm({ run, onSubmit, onCancel }: RunLogFormProps) {
   const isEdit = Boolean(run)
+  const { unit, shortLabel, presets, metersFromInput, inputFromMeters } = useDistanceUnit()
 
   const [runDate, setRunDate] = useState(todayIsoDate())
   const [presetId, setPresetId] = useState('1mi')
-  const [customDistanceMi, setCustomDistanceMi] = useState('')
+  const [customDistance, setCustomDistance] = useState('')
   const [durationInput, setDurationInput] = useState('8:00')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  const defaultPresetId = useMemo(() => (unit === 'km' ? '5k' : '1mi'), [unit])
+
+  useEffect(() => {
+    if (run) return
+    setPresetId(defaultPresetId)
+    setCustomDistance('')
+  }, [defaultPresetId, run])
 
   useEffect(() => {
     if (!run) return
@@ -34,24 +43,24 @@ export function RunLogForm({ run, onSubmit, onCancel }: RunLogFormProps) {
     setDurationInput(durationInputFromSeconds(run.duration_sec))
     setNotes(run.notes ?? '')
 
-    const preset = DISTANCE_PRESETS.find((p) => Math.abs(p.meters - run.distance_m) < 1)
+    const preset = presets.find((p) => Math.abs(p.meters - run.distance_m) < 1)
     if (preset) {
       setPresetId(preset.id)
-      setCustomDistanceMi('')
+      setCustomDistance('')
     } else {
       setPresetId('custom')
-      setCustomDistanceMi(String(Math.round((run.distance_m / 1609.34) * 100) / 100))
+      setCustomDistance(String(inputFromMeters(run.distance_m)))
     }
-  }, [run])
+  }, [run, presets, inputFromMeters])
 
   function resolveDistance(): { meters: number; label: string } | null {
     if (presetId === 'custom') {
-      const mi = Number(customDistanceMi)
-      if (Number.isNaN(mi) || mi <= 0) return null
-      const meters = Math.round(mi * 1609.34 * 100) / 100
-      return { meters, label: `${mi} mi` }
+      const value = Number(customDistance)
+      if (Number.isNaN(value) || value <= 0) return null
+      const meters = metersFromInput(value)
+      return { meters, label: `${value} ${shortLabel}` }
     }
-    const preset = DISTANCE_PRESETS.find((p) => p.id === presetId)
+    const preset = presets.find((p) => p.id === presetId)
     if (!preset) return null
     return { meters: preset.meters, label: preset.label }
   }
@@ -103,7 +112,7 @@ export function RunLogForm({ run, onSubmit, onCancel }: RunLogFormProps) {
           Distance
         </label>
         <div className="flex flex-wrap gap-2">
-          {DISTANCE_PRESETS.map((p) => (
+          {presets.map((p) => (
             <button
               key={p.id}
               type="button"
@@ -134,13 +143,13 @@ export function RunLogForm({ run, onSubmit, onCancel }: RunLogFormProps) {
         {presetId === 'custom' && (
           <Input
             className="mt-3"
-            label="Custom distance (miles)"
+            label={`Custom distance (${shortLabel})`}
             type="number"
             min={0.1}
             step={0.1}
-            value={customDistanceMi}
-            onChange={(e) => setCustomDistanceMi(e.target.value)}
-            placeholder="e.g. 3.2"
+            value={customDistance}
+            onChange={(e) => setCustomDistance(e.target.value)}
+            placeholder={unit === 'km' ? 'e.g. 5' : 'e.g. 3.2'}
           />
         )}
       </div>

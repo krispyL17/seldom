@@ -14,56 +14,6 @@ export type TechnicalRatingKey =
   | 'agility'
   | 'confidence'
 
-export interface TechnicalRatings {
-  first_touch: number
-  passing: number
-  dribbling: number
-  crossing: number
-  shooting: number
-  decision_making: number
-  weak_foot: number
-  acceleration: number
-  agility: number
-  confidence: number
-}
-
-export interface TrainingSession {
-  id: string
-  user_id: string
-  session_date: string
-  duration_min: number
-  position_played: string
-  intensity: number
-  mood: TrainingMood
-  energy_level: number
-  technical_ratings: TechnicalRatings
-  notes: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface CreateTrainingSessionInput {
-  session_date: string
-  duration_min: number
-  position_played: string
-  intensity: number
-  mood: TrainingMood
-  energy_level: number
-  technical_ratings: TechnicalRatings
-  notes?: string
-}
-
-export interface UpdateTrainingSessionInput {
-  session_date?: string
-  duration_min?: number
-  position_played?: string
-  intensity?: number
-  mood?: TrainingMood
-  energy_level?: number
-  technical_ratings?: TechnicalRatings
-  notes?: string | null
-}
-
 export const TECHNICAL_RATING_KEYS: TechnicalRatingKey[] = [
   'first_touch',
   'passing',
@@ -90,6 +40,66 @@ export const TECHNICAL_RATING_LABELS: Record<TechnicalRatingKey, string> = {
   confidence: 'Confidence',
 }
 
+export interface TechnicalRatings {
+  first_touch: number
+  passing: number
+  dribbling: number
+  crossing: number
+  shooting: number
+  decision_making: number
+  weak_foot: number
+  acceleration: number
+  agility: number
+  confidence: number
+}
+
+export interface TrainingSession {
+  id: string
+  user_id: string
+  session_date: string
+  duration_min: number
+  /** Session focus label (stored in position_played column for compatibility) */
+  position_played: string
+  intensity: number
+  mood: TrainingMood
+  energy_level: number
+  technical_ratings: TechnicalRatings
+  high_points: string | null
+  work_on: string | null
+  notes: string | null
+  goal_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateTrainingSessionInput {
+  session_date: string
+  duration_min: number
+  focus: string
+  intensity: number
+  mood: TrainingMood
+  energy_level: number
+  high_points?: string
+  work_on?: string
+  notes?: string
+  goal_id?: string | null
+  technical_ratings?: TechnicalRatings
+}
+
+export interface UpdateTrainingSessionInput {
+  session_date?: string
+  duration_min?: number
+  focus?: string
+  intensity?: number
+  mood?: TrainingMood
+  energy_level?: number
+  high_points?: string | null
+  work_on?: string | null
+  notes?: string | null
+  goal_id?: string | null
+  technical_ratings?: TechnicalRatings
+}
+
 export const TRAINING_MOODS: TrainingMood[] = ['great', 'good', 'okay', 'low', 'rough']
 
 export const TRAINING_MOOD_LABELS: Record<TrainingMood, string> = {
@@ -107,19 +117,6 @@ export const ENERGY_LABELS: Record<number, string> = {
   4: 'Energized',
   5: 'Peak',
 }
-
-export const POSITIONS = [
-  'GK',
-  'CB',
-  'LB',
-  'RB',
-  'CDM',
-  'CM',
-  'CAM',
-  'LW',
-  'RW',
-  'ST',
-] as const
 
 export function defaultTechnicalRatings(): TechnicalRatings {
   return {

@@ -35,10 +35,7 @@ import type {
 } from '../types'
 import { buildTimeline, computeDashboardStats } from '../utils'
 import { migrateChecklistToSenior } from '../phaseUtils'
-import {
-  buildJuniorFinancialAid,
-  buildSeniorFinancialAid,
-} from '../data/templates'
+import { buildSeniorFinancialAid } from '../data/templates'
 
 interface CollegeContextValue {
   colleges: College[]
@@ -119,22 +116,7 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
       setActivities(a)
       setAwards(aw)
       setProjects(p)
-
-      let resolvedUserData = ud
-      if (
-        !ud.resumeSettings.onboardingCompletedAt &&
-        (c.length > 0 || a.length > 0 || aw.length > 0 || p.length > 0)
-      ) {
-        resolvedUserData = await collegeUserDataService.completeOnboarding(user.id, {
-          resumeSettings: {
-            ...ud.resumeSettings,
-            onboardingCompletedAt: new Date().toISOString(),
-          },
-          testScores: ud.testScores,
-        })
-      }
-
-      setUserData(resolvedUserData)
+      setUserData(ud)
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load college data')
@@ -354,12 +336,7 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
       ...userData.resumeSettings,
       applicationPhase: 'junior',
     })
-    if ((userData.financialAid ?? []).length === 0) {
-      await updateFinancialAid(
-        buildJuniorFinancialAid(userData.resumeSettings.studentProfile?.graduationYear),
-      )
-    }
-  }, [user, userData, updateResumeSettings, updateFinancialAid])
+  }, [user, userData, updateResumeSettings])
 
   const onboardingComplete = Boolean(userData?.resumeSettings.onboardingCompletedAt)
   const studentProfile = userData?.resumeSettings.studentProfile ?? null

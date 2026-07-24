@@ -2,6 +2,8 @@
  * Soccer AI coach client — calls /api/soccer/coach/* routes.
  */
 
+import { openAiKeyHeaders } from '@lib/userOpenAiKey'
+
 export type CoachMode = 'chat' | 'training_plan' | 'technical' | 'tactical' | 'development'
 
 export interface CoachChatRequest {
@@ -50,6 +52,7 @@ export async function sendCoachMessage(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
+      ...openAiKeyHeaders(),
     },
     body: JSON.stringify(request),
   })
@@ -89,6 +92,7 @@ export async function generateCoachPlan(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
+      ...openAiKeyHeaders(),
     },
     body: JSON.stringify(request),
   })
@@ -114,7 +118,7 @@ export async function fetchCoachSuggestions(
   accessToken: string,
 ): Promise<{ suggestions: string[]; welcome?: string }> {
   const response = await fetch('/api/soccer/coach/chat', {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `Bearer ${accessToken}`, ...openAiKeyHeaders() },
   })
 
   const body = (await response.json().catch(() => ({}))) as {

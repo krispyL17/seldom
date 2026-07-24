@@ -8,10 +8,24 @@ import {
   type ReactNode,
 } from 'react'
 import { isSupabaseConfigured } from '@config/env'
+import {
+  TUTORIAL_RESET_STORAGE_KEY,
+  TUTORIAL_RESET_VERSION,
+} from '@config/tutorialReset'
 import { useAuth } from '@hooks/useAuth'
 import { userPreferencesService } from '@services/database/userPreferences'
+import { clearLocalAppData } from '@lib/clearLocalAppData'
+import { SIDEBAR_NAV } from '@config/navigation'
+import { applyThemeFromPreferences } from '@lib/theme'
 import { localPreferencesService } from '@services/preferences/localPreferences'
-import type { AppTheme, UserPreferences, UserPreferencesPatch } from '@/types/userPreferences'
+import type {
+  DistanceUnit,
+  NavTabColors,
+  ThemeAppearance,
+  ThemePalette,
+  UserPreferences,
+  UserPreferencesPatch,
+} from '@/types/userPreferences'
 
 interface UserPreferencesContextValue {
   preferences: UserPreferences | null
@@ -19,11 +33,16 @@ interface UserPreferencesContextValue {
   error: string | null
   hobbyTabLabel: string
   hobbyPassion: string
-  theme: AppTheme
+  theme: ThemeAppearance
+  themePalette: ThemePalette
+  navTabColors: NavTabColors
   animationsEnabled: boolean
   tutorialCompleted: boolean
+  distanceUnit: DistanceUnit
+  collegeEnabled: boolean
   updatePreferences: (patch: UserPreferencesPatch) => Promise<void>
   completeTutorial: (patch?: UserPreferencesPatch) => Promise<void>
+  markTabIntroComplete: (tabId: string) => Promise<void>
   reload: () => Promise<void>
   openTutorial: () => void
   tutorialOpen: boolean
@@ -34,19 +53,6 @@ interface UserPreferencesContextValue {
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextValue | null>(null)
-
-function applyThemeToDocument(theme: AppTheme, animationsEnabled: boolean) {
-  const root = document.documentElement
-  let resolved: 'dark' | 'light' = theme === 'light' ? 'light' : 'dark'
-
-  if (theme === 'system') {
-    resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  }
-
-  root.dataset.theme = resolved
-  root.classList.toggle('animations-disabled', !animationsEnabled)
-  root.style.colorScheme = resolved
-}
 
 interface UserPreferencesProviderProps {
   children: ReactNode
@@ -61,6 +67,21 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
   const userId = user?.id ?? 'local'
 
+  const applyLocalTutorialResetIfNeeded = useCallback((id: string) => {
+    try {
+      const applied = localStorage.getItem(TUTORIAL_RESET_STORAGE_KEY)
+      if (applied === String(TUTORIAL_RESET_VERSION)) return null
+      clearLocalAppData()
+      localStorage.setItem(TUTORIAL_RESET_STORAGE_KEY, String(TUTORIAL_RESET_VERSION))
+      if (!isSupabaseConfigured()) {
+        return localPreferencesService.resetTutorialState(id)
+      }
+      return null
+    } catch {
+      return null
+    }
+  }, [])
+
   const load = useCallback(async () => {
     if (!isAuthenticated) {
       setPreferences(null)
@@ -72,22 +93,26 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
     setError(null)
 
     try {
+      const localReset =
+        user?.id != null ? applyLocalTutorialResetIfNeeded(user.id) : applyLocalTutorialResetIfNeeded('local')
+
       if (isSupabaseConfigured() && user?.id) {
         const data = await userPreferencesService.ensure(user.id)
         setPreferences(data)
       } else if (user?.id) {
-        setPreferences(localPreferencesService.fetch(user.id))
+        setPreferences(localReset ?? localPreferencesService.fetch(user.id))
       } else {
-        setPreferences(localPreferencesService.fetch('local'))
+        setPreferences(localReset ?? localPreferencesService.fetch('local'))
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load preferences'
       setError(message)
-      setPreferences(localPreferencesService.fetch(userId))
+      const reset = applyLocalTutorialResetIfNeeded(userId)
+      setPreferences(reset ?? localPreferencesService.fetch(userId))
     } finally {
       setLoading(false)
     }
-  }, [isAuthenticated, user?.id, userId])
+  }, [isAuthenticated, user?.id, userId, applyLocalTutorialResetIfNeeded])
 
   useEffect(() => {
     void load()
@@ -102,14 +127,29 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
   useEffect(() => {
     if (!preferences) return
-    applyThemeToDocument(preferences.theme, preferences.animations_enabled)
+    const navIds = SIDEBAR_NAV.map((item) => item.id)
+    applyThemeFromPreferences(
+      preferences.theme_palette,
+      preferences.theme,
+      preferences.animations_enabled,
+      preferences.nav_tab_colors,
+      navIds,
+    )
   }, [preferences])
 
   useEffect(() => {
     if (!preferences || preferences.theme !== 'system') return
 
     const media = window.matchMedia('(prefers-color-scheme: dark)')
-    const handler = () => applyThemeToDocument('system', preferences.animations_enabled)
+    const navIds = SIDEBAR_NAV.map((item) => item.id)
+    const handler = () =>
+      applyThemeFromPreferences(
+        preferences.theme_palette,
+        'system',
+        preferences.animations_enabled,
+        preferences.nav_tab_colors,
+        navIds,
+      )
     media.addEventListener('change', handler)
     return () => media.removeEventListener('change', handler)
   }, [preferences])
@@ -145,6 +185,21 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
     [isAuthenticated, user?.id],
   )
 
+  const markTabIntroComplete = useCallback(
+    async (tabId: string) => {
+      if (!isAuthenticated) return
+
+      const id = user?.id ?? 'local'
+      const next =
+        isSupabaseConfigured() && user?.id
+          ? await userPreferencesService.markTabIntroComplete(user.id, tabId)
+          : localPreferencesService.markTabIntroComplete(id, tabId)
+
+      setPreferences(next)
+    },
+    [isAuthenticated, user?.id],
+  )
+
   const value = useMemo<UserPreferencesContextValue>(
     () => ({
       preferences,
@@ -153,13 +208,18 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
       hobbyTabLabel: preferences?.hobby_tab_label ?? 'Performance',
       hobbyPassion: preferences?.hobby_passion ?? '',
       theme: preferences?.theme ?? 'dark',
+      themePalette: preferences?.theme_palette ?? 'classic',
+      navTabColors: preferences?.nav_tab_colors ?? {},
       animationsEnabled: preferences?.animations_enabled ?? true,
       tutorialCompleted: Boolean(preferences?.app_tutorial_completed_at),
       browserNotificationsEnabled: preferences?.browser_notifications_enabled ?? false,
       emailNotificationsEnabled: preferences?.email_notifications_enabled ?? false,
       reminderLeadMinutes: preferences?.reminder_lead_minutes ?? 60,
+      distanceUnit: preferences?.distance_unit ?? 'mi',
+      collegeEnabled: preferences?.college_enabled ?? false,
       updatePreferences,
       completeTutorial,
+      markTabIntroComplete,
       reload: load,
       openTutorial: () => setTutorialOpen(true),
       tutorialOpen,
@@ -171,6 +231,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
       error,
       updatePreferences,
       completeTutorial,
+      markTabIntroComplete,
       load,
       tutorialOpen,
     ],

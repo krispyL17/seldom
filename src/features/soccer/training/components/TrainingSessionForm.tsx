@@ -2,22 +2,9 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
-import type {
-  CreateTrainingSessionInput,
-  TechnicalRatingKey,
-  TechnicalRatings,
-  TrainingSession,
-  TrainingMood,
-} from '../types'
-import {
-  defaultTechnicalRatings,
-  ENERGY_LABELS,
-  POSITIONS,
-  TECHNICAL_RATING_KEYS,
-  TECHNICAL_RATING_LABELS,
-  TRAINING_MOODS,
-  TRAINING_MOOD_LABELS,
-} from '../types'
+import { GoalLinkSelect } from '@components/goals/GoalLinkSelect'
+import type { CreateTrainingSessionInput, TrainingMood, TrainingSession } from '../types'
+import { ENERGY_LABELS, TRAINING_MOODS, TRAINING_MOOD_LABELS } from '../types'
 import { todayIsoDate } from '../utils'
 import { cn } from '@lib/utils'
 
@@ -27,20 +14,19 @@ interface TrainingSessionFormProps {
   onCancel: () => void
 }
 
-const selectClass =
-  'w-full rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]'
-
 export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSessionFormProps) {
   const isEdit = Boolean(session)
 
   const [sessionDate, setSessionDate] = useState(todayIsoDate())
-  const [durationMin, setDurationMin] = useState(90)
-  const [position, setPosition] = useState('CM')
+  const [durationMin, setDurationMin] = useState(60)
+  const [focus, setFocus] = useState('')
+  const [highPoints, setHighPoints] = useState('')
+  const [workOn, setWorkOn] = useState('')
   const [intensity, setIntensity] = useState(6)
   const [mood, setMood] = useState<TrainingMood>('good')
   const [energyLevel, setEnergyLevel] = useState(3)
-  const [ratings, setRatings] = useState<TechnicalRatings>(defaultTechnicalRatings())
   const [notes, setNotes] = useState('')
+  const [goalId, setGoalId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -48,17 +34,15 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
     if (!session) return
     setSessionDate(session.session_date)
     setDurationMin(session.duration_min)
-    setPosition(session.position_played)
+    setFocus(session.position_played === 'Session' ? '' : session.position_played)
+    setHighPoints(session.high_points ?? '')
+    setWorkOn(session.work_on ?? '')
     setIntensity(session.intensity)
     setMood(session.mood)
     setEnergyLevel(session.energy_level)
-    setRatings(session.technical_ratings)
     setNotes(session.notes ?? '')
+    setGoalId(session.goal_id)
   }, [session])
-
-  function setRating(key: TechnicalRatingKey, value: number) {
-    setRatings((prev) => ({ ...prev, [key]: value }))
-  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -68,18 +52,24 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
       setError('Duration must be greater than 0.')
       return
     }
+    if (!focus.trim()) {
+      setError('What was your session focus?')
+      return
+    }
 
     setSubmitting(true)
     try {
       await onSubmit({
         session_date: sessionDate,
         duration_min: durationMin,
-        position_played: position,
+        focus: focus.trim(),
         intensity,
         mood,
         energy_level: energyLevel,
-        technical_ratings: ratings,
+        high_points: highPoints.trim() || undefined,
+        work_on: workOn.trim() || undefined,
         notes: notes.trim() || undefined,
+        goal_id: goalId,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save session')
@@ -109,16 +99,29 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
         />
       </div>
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-[var(--color-text-secondary)]">
-          Position played
-        </label>
-        <select value={position} onChange={(e) => setPosition(e.target.value)} className={selectClass}>
-          {POSITIONS.map((p) => (
-            <option key={p} value={p}>{p}</option>
-          ))}
-        </select>
-      </div>
+      <Input
+        label="Session focus"
+        value={focus}
+        onChange={(e) => setFocus(e.target.value)}
+        placeholder="e.g. Endurance, Technique drills, Repertoire work, Scrimmage"
+        required
+      />
+
+      <Textarea
+        label="High points"
+        value={highPoints}
+        onChange={(e) => setHighPoints(e.target.value)}
+        placeholder="What went well during this session?"
+        rows={2}
+      />
+
+      <Textarea
+        label="To work on"
+        value={workOn}
+        onChange={(e) => setWorkOn(e.target.value)}
+        placeholder="What do you want to improve next time?"
+        rows={2}
+      />
 
       <div>
         <label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">
@@ -169,35 +172,13 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
         />
       </div>
 
-      <div>
-        <p className="mb-3 text-sm font-medium text-[var(--color-text-secondary)]">
-          Technical ratings (1–10)
-        </p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {TECHNICAL_RATING_KEYS.map((key) => (
-            <div key={key}>
-              <div className="mb-1 flex justify-between text-xs">
-                <span className="text-[var(--color-text-secondary)]">{TECHNICAL_RATING_LABELS[key]}</span>
-                <span className="tabular-nums text-[var(--color-text-tertiary)]">{ratings[key]}</span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={10}
-                value={ratings[key]}
-                onChange={(e) => setRating(key, Number(e.target.value))}
-                className="w-full accent-[var(--color-accent)]"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      <GoalLinkSelect value={goalId} onChange={setGoalId} />
 
       <Textarea
         label="Notes"
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        placeholder="Session observations, focus areas, how you felt…"
+        placeholder="Anything else worth remembering…"
         rows={3}
       />
 

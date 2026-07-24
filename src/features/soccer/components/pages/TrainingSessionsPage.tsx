@@ -61,7 +61,7 @@ export function TrainingSessionsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs text-[var(--color-text-tertiary)]">
-          Log sessions with technical ratings — track development over time
+          Log practice sessions with optional skill ratings — track development over time
         </p>
         <Button onClick={openCreate} size="sm" className="gap-1.5">
           <IconPlus width={16} height={16} />

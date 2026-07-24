@@ -15,6 +15,7 @@ export interface Task {
   completed: boolean
   estimated_duration: number | null
   notes: string | null
+  goal_id: string | null
   created_at: string
   updated_at: string
 }
@@ -28,6 +29,7 @@ export interface CreateTaskInput {
   deadline?: string | null
   estimated_duration?: number | null
   notes?: string
+  goal_id?: string | null
 }
 
 /** Fields that can be updated on an existing task */
@@ -40,6 +42,7 @@ export interface UpdateTaskInput {
   completed?: boolean
   estimated_duration?: number | null
   notes?: string | null
+  goal_id?: string | null
 }
 
 export type TaskSortField = 'deadline' | 'priority' | 'title' | 'created_at'
@@ -70,7 +73,7 @@ export const TASK_CATEGORIES = [
   'Recovery',
   'Personal',
   'Work',
-  'Soccer',
+  'Performance',
   'Health',
   'Other',
 ] as const

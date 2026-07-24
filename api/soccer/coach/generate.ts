@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { setApiCors } from '../../../lib/cors.js'
 import { extractBearerToken, verifyAccessToken } from '../../../lib/assistant/auth.js'
-import { loadAssistantEnv } from '../../../lib/assistant/types.js'
+import { loadAssistantEnv, extractUserOpenAiKey } from '../../../lib/assistant/types.js'
 import { handleCoachRequest } from '../../../lib/soccer-coach/orchestrator.js'
 import type { CoachGenerateRequest } from '../../../lib/soccer-coach/types.js'
 
@@ -18,7 +18,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const env = loadAssistantEnv()
+  const env = loadAssistantEnv(extractUserOpenAiKey(req.headers))
   if (!env) {
     return res.status(503).json({
       error: 'Soccer coach not configured',

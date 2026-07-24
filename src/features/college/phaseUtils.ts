@@ -27,7 +27,7 @@ export function checklistForPhase(phase: ApplicationPhase, checklist: ChecklistI
 }
 
 export function phaseLabel(phase: ApplicationPhase): string {
-  return phase === 'junior' ? 'Rising Junior Prep' : 'Senior Applications'
+  return phase === 'junior' ? 'Junior Prep' : 'Senior Applications'
 }
 
 export function phaseDescription(phase: ApplicationPhase): string {

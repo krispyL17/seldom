@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
 import { trainingSessionService } from '@services/database/trainingSessions'
+import { goalService } from '@services/database/goals'
 import type {
   CreateTrainingSessionInput,
   TrainingSession,
@@ -41,6 +42,13 @@ export function useTrainingSessions() {
     async (input: CreateTrainingSessionInput) => {
       if (!user) throw new Error('Not authenticated')
       const created = await trainingSessionService.create(user.id, input)
+      if (input.goal_id) {
+        try {
+          await goalService.bumpProgress(input.goal_id, 5)
+        } catch {
+          /* non-blocking */
+        }
+      }
       setSessions((prev) => sortSessionsChronologically([created, ...prev]))
       return created
     },

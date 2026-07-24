@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { setApiCors } from '../../lib/cors.js'
-import { extractBearerToken, verifyAccessToken } from '../../lib/assistant/auth.js'
-import { loadAssistantEnv } from '../../lib/assistant/types.js'
-import { getCoachSuggestions, getCoachWelcome, handleCoachRequest } from '../../lib/soccer-coach/orchestrator.js'
-import type { CoachChatRequest, CoachMode } from '../../lib/soccer-coach/types.js'
+import { setApiCors } from '../../../lib/cors.js'
+import { extractBearerToken, verifyAccessToken } from '../../../lib/assistant/auth.js'
+import { loadAssistantEnv, extractUserOpenAiKey } from '../../../lib/assistant/types.js'
+import { getCoachSuggestions, getCoachWelcome, handleCoachRequest } from '../../../lib/soccer-coach/orchestrator.js'
+import type { CoachChatRequest, CoachMode } from '../../../lib/soccer-coach/types.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   setApiCors(res, req.headers.origin)
@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(204).end()
   }
 
-  const env = loadAssistantEnv()
+  const env = loadAssistantEnv(extractUserOpenAiKey(req.headers))
   if (!env) {
     return res.status(503).json({
       error: 'Soccer coach not configured',
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {
     try {
       const suggestions = await getCoachSuggestions(auth.client)
-      const welcome = await getCoachWelcome(auth.client)
+      const welcome = await getCoachWelcome(auth.client, auth.userId)
       return res.status(200).json({ suggestions, welcome })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load suggestions'

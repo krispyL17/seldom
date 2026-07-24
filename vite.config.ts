@@ -30,6 +30,10 @@ export default defineConfig({
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,
       },
+      '/api/soccer': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+      },
       '/api/health': {
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,

@@ -1,4 +1,3 @@
-import { Badge } from '@components/ui/Badge'
 import { Button } from '@components/ui/Button'
 import { AnalyticsKpiRow, ChartPanel, SkillTrendGrid } from '@components/charts'
 import { Panel } from '@components/ui/Panel'
@@ -9,7 +8,7 @@ import { GymLogQuickAdd } from './GymLogQuickAdd'
 
 export function AnalyticsPage() {
   const { user } = useAuth()
-  const { dashboard, loading, error, sqliteConnected, reload, refreshing } = useAnalytics()
+  const { dashboard, loading, error, reload, refreshing } = useAnalytics()
 
   if (loading && !dashboard) {
     return <AnalyticsPageSkeleton />
@@ -48,14 +47,6 @@ export function AnalyticsPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={sqliteConnected ? 'success' : 'muted'}>
-            {sqliteConnected ? 'SQLite connected' : 'Local compute'}
-          </Badge>
-          {!sqliteConnected && (
-            <span className="text-[10px] text-[var(--color-text-tertiary)]">
-              Run <code className="rounded bg-[var(--color-surface-overlay)] px-1">npm run analytics:server</code>
-            </span>
-          )}
           <Button
             type="button"
             variant="secondary"
@@ -87,7 +78,7 @@ export function AnalyticsPage() {
         />
         <ChartPanel
           title="Training Frequency"
-          subtitle="Soccer sessions per week"
+          subtitle="Practice sessions per week"
           series={dashboard.trainingFrequency}
           color="var(--color-accent)"
         />
@@ -99,15 +90,11 @@ export function AnalyticsPage() {
         />
         <ChartPanel
           title="Gym"
-          subtitle="Weekly gym minutes (SQLite)"
+          subtitle="Weekly gym minutes"
           series={dashboard.gym}
           color="#636366"
           emptyMessage="No gym sessions yet. Log one below to start tracking."
-          action={
-            sqliteConnected ? (
-              <GymLogQuickAdd userId={user.id} onLogged={() => void reload()} />
-            ) : undefined
-          }
+          action={<GymLogQuickAdd userId={user.id} onLogged={() => void reload()} />}
         />
         <ChartPanel
           title="College Application Progress"
@@ -129,8 +116,7 @@ export function AnalyticsPage() {
       </div>
 
       <p className="mt-4 text-[10px] text-[var(--color-text-tertiary)]">
-        Last computed {new Date(dashboard.computedAt).toLocaleString()} · Source:{' '}
-        {dashboard.source === 'sqlite' ? 'SQLite analytics cache' : 'in-browser fallback'}
+        Last computed {new Date(dashboard.computedAt).toLocaleString()}
       </p>
     </div>
   )

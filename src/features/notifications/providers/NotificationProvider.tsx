@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { useAuth } from '@hooks/useAuth'
 import { useUserPreferences } from '@features/preferences'
+import { useGoals } from '@features/goals/hooks/useGoals'
 import { useTasks } from '@features/tasks/hooks/useTasks'
 import { showBrowserNotification } from '@lib/notifications/browserNotifications'
 import type { AppNotification } from '../types'
@@ -55,6 +56,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const { browserNotificationsEnabled, emailNotificationsEnabled, reminderLeadMinutes } =
     useUserPreferences()
   const { tasks } = useTasks()
+  const { goals } = useGoals()
 
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
@@ -90,15 +92,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
       const deadlineMs = new Date(task.deadline).getTime()
       if (Number.isNaN(deadlineMs)) continue
 
-      const key = `${task.id}:${task.deadline}`
-      if (sentRef.current.has(key)) continue
-
       const diff = deadlineMs - now
-      if (diff > leadMs || diff < -5 * 60 * 1000) continue
-
-      sentRef.current.add(key)
-      saveSentIds(sentRef.current)
-
       const timeLabel = new Date(task.deadline).toLocaleString(undefined, {
         weekday: 'short',
         month: 'short',
@@ -106,6 +100,30 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         hour: 'numeric',
         minute: '2-digit',
       })
+
+      if (diff < 0) {
+        const key = `overdue:${task.id}:${task.deadline}`
+        if (sentRef.current.has(key)) continue
+        sentRef.current.add(key)
+        saveSentIds(sentRef.current)
+
+        pushNotification({
+          title: 'Overdue task',
+          body: `${task.title} was due ${timeLabel}`,
+          kind: 'deadline',
+          at: new Date().toISOString(),
+          href: '/tasks',
+        })
+        continue
+      }
+
+      if (diff > leadMs) continue
+
+      const key = `reminder:${task.id}:${task.deadline}`
+      if (sentRef.current.has(key)) continue
+
+      sentRef.current.add(key)
+      saveSentIds(sentRef.current)
 
       pushNotification({
         title: 'Task reminder',
@@ -141,9 +159,40 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
         }
       }
     }
+
+    const weekMs = 7 * 24 * 60 * 60 * 1000
+    for (const goal of goals) {
+      if (goal.status !== 'active' || !goal.target_date) continue
+      const targetMs = new Date(`${goal.target_date}T12:00:00`).getTime()
+      if (Number.isNaN(targetMs)) continue
+
+      const diff = targetMs - now
+      if (diff < 0 || diff > weekMs) continue
+
+      const key = `goal:${goal.id}:${goal.target_date}`
+      if (sentRef.current.has(key)) continue
+
+      sentRef.current.add(key)
+      saveSentIds(sentRef.current)
+
+      const dateLabel = new Date(`${goal.target_date}T12:00:00`).toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      })
+
+      pushNotification({
+        title: 'Goal deadline approaching',
+        body: `${goal.title} — target ${dateLabel}`,
+        kind: 'deadline',
+        at: new Date().toISOString(),
+        href: '/goals',
+      })
+    }
   }, [
     browserNotificationsEnabled,
     emailNotificationsEnabled,
+    goals,
     pushNotification,
     reminderLeadMinutes,
     session?.access_token,

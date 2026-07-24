@@ -13,6 +13,11 @@ interface OnboardingChatPanelProps {
   onFinished?: () => void
   /** Render without outer Panel wrapper (e.g. inside a modal) */
   embedded?: boolean
+  /** Shorter transcript area for inline tab intros */
+  compact?: boolean
+  /** Hide the progress bar (e.g. welcome-only intros) */
+  showProgress?: boolean
+  progressLabel?: string
 }
 
 export function OnboardingChatPanel({
@@ -20,6 +25,9 @@ export function OnboardingChatPanel({
   onComplete,
   onFinished,
   embedded = false,
+  compact = false,
+  showProgress = true,
+  progressLabel = 'Setup progress',
 }: OnboardingChatPanelProps) {
   const {
     messages,
@@ -27,9 +35,15 @@ export function OnboardingChatPanel({
     setInput,
     choiceOptions,
     progress,
+    progressCaption,
     isSubmitting,
     isComplete,
     submitAnswer,
+    hasQuestionSteps,
+    welcomeAcknowledged,
+    continueFromWelcome,
+    acknowledgeWelcome,
+    currentStep,
   } = useOnboardingChat({ config, onComplete })
 
   const listRef = useRef<HTMLUListElement>(null)
@@ -47,22 +61,26 @@ export function OnboardingChatPanel({
     void submitAnswer(input)
   }
 
+  const showProgressBar = showProgress && (hasQuestionSteps || isComplete)
+
   const chatBody = (
     <>
-      <div className="mb-3">
-        <div className="mb-1 flex items-center justify-between text-[10px] text-[var(--color-text-tertiary)]">
-          <span>Setup progress</span>
-          <span>{progress}%</span>
+      {showProgressBar && (
+        <div className="mb-3">
+          <div className="mb-1 flex items-center justify-between text-[10px] text-[var(--color-text-tertiary)]">
+            <span>{progressLabel}</span>
+            <span>{progressCaption ?? `${progress}%`}</span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-surface-overlay)]">
+            <div
+              className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-500 ease-out"
+              style={{ width: `${Math.max(progress, welcomeAcknowledged ? 8 : 4)}%` }}
+            />
+          </div>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-surface-overlay)]">
-          <div
-            className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-500 ease-out"
-            style={{ width: `${Math.max(progress, 8)}%` }}
-          />
-        </div>
-      </div>
+      )}
 
-      <div className="flex h-[26rem] flex-col">
+      <div className={cn('flex flex-col', compact ? 'max-h-40' : 'h-[26rem]')}>
         <ul ref={listRef} className="flex-1 space-y-3 overflow-y-auto pr-1" aria-live="polite">
           {messages.map((msg) => (
             <li
@@ -90,7 +108,15 @@ export function OnboardingChatPanel({
           ))}
         </ul>
 
-        {!isComplete && (
+        {!isComplete && hasQuestionSteps && !welcomeAcknowledged && (
+          <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+            <Button type="button" size="sm" onClick={continueFromWelcome}>
+              Continue
+            </Button>
+          </div>
+        )}
+
+        {!isComplete && hasQuestionSteps && welcomeAcknowledged && (
           <>
             {choiceOptions.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
@@ -113,7 +139,7 @@ export function OnboardingChatPanel({
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your answer…"
+                placeholder={currentStep?.placeholder ?? 'Type your answer…'}
                 disabled={isSubmitting}
                 aria-label="Your answer"
                 className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2 text-xs focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-60"
@@ -123,6 +149,14 @@ export function OnboardingChatPanel({
               </Button>
             </form>
           </>
+        )}
+
+        {!isComplete && !hasQuestionSteps && (
+          <div className="mt-3 border-t border-[var(--color-border)] pt-3">
+            <Button type="button" size="sm" disabled={isSubmitting} onClick={() => void acknowledgeWelcome()}>
+              {isSubmitting ? 'Saving…' : 'Got it'}
+            </Button>
+          </div>
         )}
       </div>
     </>

@@ -1,8 +1,9 @@
 import { Badge } from '@components/ui/Badge'
 import { Button } from '@components/ui/Button'
 import { ProgressBar } from '@components/ui/ProgressBar'
+import { useDistanceUnit } from '@hooks/useDistanceUnit'
 import type { RunGoal, RunLog } from '../types'
-import { bestRunForDistance, formatDuration, pacePerMile } from '../utils'
+import { bestRunForDistance, formatDuration } from '../utils'
 
 interface RunGoalCardProps {
   goal: RunGoal
@@ -13,6 +14,7 @@ interface RunGoalCardProps {
 }
 
 export function RunGoalCard({ goal, runs, onEdit, onDelete, onMarkAchieved }: RunGoalCardProps) {
+  const { formatPace } = useDistanceUnit()
   const best = bestRunForDistance(runs, goal.distance_m)
   const achieved = goal.achieved_at !== null
   const beatTarget = best && best.duration_sec <= goal.target_duration_sec
@@ -29,7 +31,7 @@ export function RunGoalCard({ goal, runs, onEdit, onDelete, onMarkAchieved }: Ru
             {goal.distance_label} under {formatDuration(goal.target_duration_sec)}
           </p>
           <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
-            Target pace: {pacePerMile(goal.target_duration_sec, goal.distance_m)}
+            Target pace: {formatPace(goal.target_duration_sec, goal.distance_m)}
             {goal.deadline && ` · by ${goal.deadline}`}
           </p>
         </div>

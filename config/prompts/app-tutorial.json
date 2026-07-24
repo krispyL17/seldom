@@ -3,37 +3,44 @@
   "version": 1,
   "title": "Welcome to Seldom",
   "subtitle": "A short conversation to personalize your workspace",
-  "welcome": "I'm **Seldom OS** — your operating layer for goals, habits, and performance. I help you track what matters, stay organized, and improve over time.\n\nLet's tailor Seldom to you. This takes about a minute.",
-  "completeMessage": "Got it. Next I'll walk you through each area of the app — quick and visual, not another Q&A.",
+  "welcome": "I'm **Seldom AI** — your assistant across tasks, goals, performance, and junior prep when you need it.\n\nI'll ask a few quick questions to personalize your workspace. Each tab will introduce itself the first time you open it.\n\nNothing is pre-filled — your data starts when you add it.",
+  "completeMessage": "You're set. Explore the sidebar — each section will say hello when you visit it for the first time.",
   "steps": [
     {
       "id": "displayName",
-      "question": "First — what should I call you?",
+      "question": "What should I call you in Seldom?",
       "type": "text",
       "field": "displayName",
       "placeholder": "Your first name"
     },
     {
       "id": "passion",
-      "question": "What's your main hobby, sport, or passion? This becomes the focus of your performance tab.",
+      "question": "What's your main hobby, sport, or passion? This becomes the focus of your performance tab.\n\nBe specific — e.g. **soccer** or **American football**, not just \"football\".",
       "type": "text",
       "field": "hobbyPassion",
-      "placeholder": "e.g. Soccer, Piano, Rock climbing"
+      "placeholder": "e.g. Soccer, American football, Piano, Rock climbing"
     },
     {
       "id": "tabLabel",
-      "question": "What should we name that tab in the sidebar? Keep it short — one or two words.",
+      "question": "What short name should appear in the sidebar for that tab? (One or two words works best.)",
       "type": "text",
       "field": "hobbyTabLabel",
       "placeholder": "e.g. Soccer, Music, Climbing"
     },
     {
       "id": "focus",
-      "question": "What's your current focus in that area? (Optional — type **skip** to leave blank)",
+      "question": "What's your current focus in that area? Optional — type **skip** to leave blank for now.",
       "type": "text",
       "field": "currentFocus",
       "optional": true,
       "placeholder": "e.g. Making varsity, Recording an EP"
+    },
+    {
+      "id": "hsYear",
+      "question": "Where are you in high school? This controls whether **Junior Prep** shows in the sidebar.",
+      "type": "choice",
+      "field": "hsYear",
+      "options": ["Junior", "Senior", "Neither — hide Junior Prep for now"]
     }
   ]
 }

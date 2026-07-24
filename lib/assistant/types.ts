@@ -47,10 +47,10 @@ export interface ChatResponse {
   }
 }
 
-export function loadAssistantEnv(): AssistantEnv | null {
+export function loadAssistantEnv(userOpenAiKey?: string | null): AssistantEnv | null {
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY
-  const openaiApiKey = process.env.OPENAI_API_KEY
+  const openaiApiKey = (userOpenAiKey?.trim() || process.env.OPENAI_API_KEY)?.trim()
 
   if (!supabaseUrl || !supabaseAnonKey || !openaiApiKey) return null
 
@@ -74,7 +74,15 @@ export function getAssistantEnvStatus(): {
 
   if (!supabaseUrl) missing.push('SUPABASE_URL or VITE_SUPABASE_URL')
   if (!supabaseAnonKey) missing.push('SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY')
-  if (!openaiApiKey) missing.push('OPENAI_API_KEY')
+  if (!openaiApiKey) missing.push('OPENAI_API_KEY (or X-User-OpenAI-Key header)')
 
   return { ready: missing.length === 0, missing }
+}
+
+export function extractUserOpenAiKey(
+  headers: Record<string, string | string[] | undefined>,
+): string | undefined {
+  const raw = headers['x-user-openai-key']
+  if (typeof raw === 'string' && raw.trim()) return raw.trim()
+  return undefined
 }

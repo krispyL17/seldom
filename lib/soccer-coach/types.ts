@@ -30,6 +30,13 @@ export interface CoachResponse {
 }
 
 export interface SoccerPlayerContext {
+  playerProfile?: {
+    name?: string
+    position?: string
+    currentFocus?: string
+    preferredFoot?: string
+    season?: string
+  } | null
   trainingSessions: TrainingSessionSummary[]
   matches: MatchSummary[]
   weaknesses: InsightSummary[]

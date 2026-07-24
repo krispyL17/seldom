@@ -52,7 +52,7 @@ export function TasksPanel() {
           description="Add tasks in the Tasks tab to track them here."
           action={
             <Link
-              to="/tasks"
+              to="/tasks?new=1"
               className="text-xs font-medium text-[var(--color-accent-muted)] hover:underline"
             >
               Go to Tasks

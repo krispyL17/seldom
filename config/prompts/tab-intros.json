@@ -1,0 +1,221 @@
+{
+  "home": {
+    "id": "tab-intro-home",
+    "version": 1,
+    "title": "Welcome to Home",
+    "subtitle": "Your command center starts empty",
+    "welcome": "This is your **Home** dashboard. Nothing here is pre-filled — panels populate only from tasks, goals, journal entries, and performance logs you add.\n\nWant a daily briefing? Open **Seldom AI** and ask for one once you have some data.",
+    "completeMessage": "You're all set. Add a task or goal to see Home come alive.",
+    "steps": []
+  },
+  "tasks": {
+    "id": "tab-intro-tasks",
+    "version": 1,
+    "title": "Tasks",
+    "subtitle": "Capture what you need to do",
+    "welcome": "The **Tasks** tab is your inbox. Add items with due dates and categories — they'll show up on Home and Calendar automatically.\n\nThere are no sample tasks. Yours start from a blank list.",
+    "completeMessage": "Got it. Add your first task whenever you're ready.",
+    "steps": []
+  },
+  "goals": {
+    "id": "tab-intro-goals",
+    "version": 1,
+    "title": "Goals",
+    "subtitle": "Long-term targets with milestones",
+    "welcome": "Use **Goals** for outcomes that take weeks or months — with milestones so progress stays visible.\n\nEverything starts empty. Define goals that matter to you; Seldom AI can help you break them down.",
+    "completeMessage": "Goals are ready when you are.",
+    "steps": []
+  },
+  "college": {
+    "id": "tab-intro-college",
+    "version": 1,
+    "title": "Junior Prep",
+    "subtitle": "Explore schools on your timeline",
+    "welcome": "**Junior Prep** helps rising juniors and seniors research schools, plan tests and visits, and track prep — nothing is pre-filled.\n\nDeadlines and school lists come only from what you add.",
+    "completeMessage": "Your prep workspace is ready when you are.",
+    "steps": []
+  },
+  "college-activities": {
+    "id": "tab-intro-college-activities",
+    "version": 1,
+    "title": "Activities & resume",
+    "subtitle": "What you've done outside class",
+    "welcome": "Track **activities, roles, and hours** for your resume and Common App.\n\nNothing is pre-filled — add what you're actually involved in.",
+    "completeMessage": "Add activities as you go.",
+    "steps": []
+  },
+  "college-common-app": {
+    "id": "tab-intro-college-common-app",
+    "version": 1,
+    "title": "Common App",
+    "subtitle": "Essays and application sections",
+    "welcome": "Draft **personal statements, activities, and supplements** here. Senior mode unlocks full submission tracking.",
+    "completeMessage": "Open a section above to start.",
+    "steps": []
+  },
+  "college-timeline": {
+    "id": "tab-intro-college-timeline",
+    "version": 1,
+    "title": "Timeline",
+    "subtitle": "Deadlines in one view",
+    "welcome": "Your **application timeline** pulls deadlines from schools you add — not generic sample dates.\n\nAdd colleges first, then deadlines appear here.",
+    "completeMessage": "Add schools to populate your timeline.",
+    "steps": []
+  },
+  "performance": {
+    "id": "tab-intro-performance",
+    "version": 1,
+    "title": "Performance hub",
+    "subtitle": "Your sport or hobby workspace",
+    "welcome": "This is your **performance hub**. Sessions, metrics, and notes all start blank — you log what matters.\n\nEach sub-tab will introduce itself the first time you open it.",
+    "completeMessage": "Pick a sub-tab above to get started — Sessions is a good first stop.",
+    "steps": []
+  },
+  "journal": {
+    "id": "tab-intro-journal",
+    "version": 1,
+    "title": "Journal",
+    "subtitle": "Reflect and debrief",
+    "welcome": "The **Journal** is for reflections, session debriefs, and noting patterns over time.\n\nEntries are searchable and feed into analytics — but only after you write them.",
+    "completeMessage": "Write your first entry when something worth remembering happens.",
+    "steps": []
+  },
+  "calendar": {
+    "id": "tab-intro-calendar",
+    "version": 1,
+    "title": "Calendar",
+    "subtitle": "Deadlines from your data",
+    "welcome": "The **Calendar** pulls deadlines from tasks and goals you create — week, month, and list views.\n\nIt stays empty until you add items with due dates. You can export events or enable reminders in Settings.",
+    "completeMessage": "Calendar will populate as you add dated tasks and goals.",
+    "steps": []
+  },
+  "analytics": {
+    "id": "tab-intro-analytics",
+    "version": 1,
+    "title": "Analytics",
+    "subtitle": "Trends from your logs",
+    "welcome": "**Analytics** shows cross-domain trends once you've logged tasks, sessions, journal entries, or runs.\n\nThe tab stays hidden in the sidebar until there's data to chart — Home will tell you when it unlocks.",
+    "completeMessage": "Keep logging — charts will build themselves over time.",
+    "steps": []
+  },
+  "assistant": {
+    "id": "tab-intro-assistant",
+    "version": 1,
+    "title": "Seldom AI",
+    "subtitle": "One assistant across Seldom",
+    "welcome": "**Seldom AI** handles daily plans, training ideas, goal breakdowns, college questions, and more — using your logged data when available.\n\nYou can ask anything anytime; context makes answers sharper.",
+    "completeMessage": "Try asking what you'd like help with today.",
+    "steps": []
+  },
+  "settings": {
+    "id": "tab-intro-settings",
+    "version": 1,
+    "title": "Settings",
+    "subtitle": "Make Seldom yours",
+    "welcome": "**Settings** holds theme, animations, your performance tab label, notifications, and the option to replay welcome setup.\n\nChanges here apply immediately.",
+    "completeMessage": "Customize whenever you like.",
+    "steps": []
+  },
+  "soccer-training": {
+    "id": "tab-intro-soccer-training",
+    "version": 1,
+    "title": "Practice sessions",
+    "subtitle": "Log what you actually did",
+    "welcome": "Log **practice or training sessions** here — date, duration, intensity, and optional skill ratings.\n\nCharts and trends appear only after you log sessions.",
+    "completeMessage": "Hit **Log session** when you're ready.",
+    "steps": []
+  },
+  "soccer-running": {
+    "id": "tab-intro-soccer-running",
+    "version": 1,
+    "title": "Cardio",
+    "subtitle": "Runs and pace goals",
+    "welcome": "Track **runs** with distance, time, and notes. Set pace goals if you want targets to work toward.\n\nEverything is relative to your own goals — nothing is pre-seeded.",
+    "completeMessage": "Log a run or set a goal to begin.",
+    "steps": []
+  },
+  "soccer-matches": {
+    "id": "tab-intro-soccer-matches",
+    "version": 1,
+    "title": "Events",
+    "subtitle": "Record appearances — no subjective ratings",
+    "welcome": "Log **events or competitions** here — date, context, duration, and notes.\n\nWe skip subjective ratings. Focus on facts you can track: time spent, contributions, and what went well.",
+    "completeMessage": "Your event log starts empty. Add entries as they happen.",
+    "steps": [
+      {
+        "id": "eventLevel",
+        "question": "What level do you usually compete at? (Optional — helps Seldom OS give better context)",
+        "type": "text",
+        "field": "matchLevel",
+        "optional": true,
+        "placeholder": "e.g. Varsity, Regional, Rec league"
+      }
+    ]
+  },
+  "soccer-technical": {
+    "id": "tab-intro-soccer-technical",
+    "version": 1,
+    "title": "Skills",
+    "subtitle": "Self-assessed attributes",
+    "welcome": "**Skills** are self-rated attributes (1–20 style) you define for yourself.\n\nThey stay at zero until you set them — either here or through session ratings over time.",
+    "completeMessage": "Rate yourself when you're ready, or let session logs build the picture.",
+    "steps": []
+  },
+  "soccer-physical": {
+    "id": "tab-intro-soccer-physical",
+    "version": 1,
+    "title": "Physical metrics",
+    "subtitle": "Baselines optional — progress is relative",
+    "welcome": "This tab tracks **physical metrics** — speed, endurance, strength benchmarks, and similar.\n\nYou can **set baselines now** or **leave everything at zero**. All progress is measured relative to *your* goals, not preset numbers.",
+    "completeMessage": "Add baselines when you want them, or start logging and build from zero.",
+    "steps": [
+      {
+        "id": "physicalApproach",
+        "question": "How do you want to start?",
+        "type": "choice",
+        "field": "physicalApproach",
+        "options": [
+          "Leave at zero for now — I'll log as I go",
+          "I'll set baselines when I have numbers",
+          "Ask Seldom OS to help me choose metrics"
+        ]
+      }
+    ]
+  },
+  "soccer-weaknesses": {
+    "id": "tab-intro-soccer-weaknesses",
+    "version": 1,
+    "title": "Development areas",
+    "subtitle": "What you're working on",
+    "welcome": "Track **weaknesses and development areas** you want to improve — prioritized by what matters most to you.\n\nNothing is pre-filled. Add items as you identify them, or ask Seldom OS for suggestions based on your logs.",
+    "completeMessage": "Add development areas when you're ready.",
+    "steps": []
+  },
+  "soccer-strengths": {
+    "id": "tab-intro-soccer-strengths",
+    "version": 1,
+    "title": "Strengths",
+    "subtitle": "What you do well",
+    "welcome": "Document your **strengths** so you know what to lean on during practice and performance.\n\nThis stays empty until you add them — no generic lists.",
+    "completeMessage": "Note your strengths as you discover them.",
+    "steps": []
+  },
+  "soccer-coach": {
+    "id": "tab-intro-soccer-coach",
+    "version": 1,
+    "title": "AI Coach",
+    "subtitle": "Performance-specific guidance",
+    "welcome": "The **AI Coach** gives performance-specific advice based on your training logs, goals, and notes.\n\nIt won't invent data — ask for a plan or review once you've logged some sessions.",
+    "completeMessage": "Generate insights after you have logged sessions.",
+    "steps": []
+  },
+  "soccer-progress": {
+    "id": "tab-intro-soccer-progress",
+    "version": 1,
+    "title": "Progress charts",
+    "subtitle": "Trends from your logs",
+    "welcome": "**Progress charts** visualize training load, intensity, and session trends from what you log.\n\nCharts appear after you have sessions — no demo data.",
+    "completeMessage": "Log sessions to see trends here.",
+    "steps": []
+  }
+}

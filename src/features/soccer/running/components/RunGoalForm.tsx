@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
+import { DateTimeField } from '@components/ui/DateTimeField'
+import { useDistanceUnit } from '@hooks/useDistanceUnit'
 import type { CreateRunGoalInput, RunGoal } from '../types'
-import { DISTANCE_PRESETS } from '../types'
 import {
   durationInputFromSeconds,
   parseDurationInput,
@@ -18,14 +19,23 @@ interface RunGoalFormProps {
 
 export function RunGoalForm({ goal, onSubmit, onCancel }: RunGoalFormProps) {
   const isEdit = Boolean(goal)
+  const { unit, shortLabel, presets, metersFromInput, inputFromMeters } = useDistanceUnit()
 
   const [presetId, setPresetId] = useState('1mi')
-  const [customDistanceMi, setCustomDistanceMi] = useState('')
+  const [customDistance, setCustomDistance] = useState('')
   const [targetTime, setTargetTime] = useState('7:00')
   const [deadline, setDeadline] = useState('')
   const [notes, setNotes] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  const defaultPresetId = useMemo(() => (unit === 'km' ? '5k' : '1mi'), [unit])
+
+  useEffect(() => {
+    if (goal) return
+    setPresetId(defaultPresetId)
+    setCustomDistance('')
+  }, [defaultPresetId, goal])
 
   useEffect(() => {
     if (!goal) return
@@ -33,23 +43,24 @@ export function RunGoalForm({ goal, onSubmit, onCancel }: RunGoalFormProps) {
     setDeadline(goal.deadline ?? '')
     setNotes(goal.notes ?? '')
 
-    const preset = DISTANCE_PRESETS.find((p) => Math.abs(p.meters - goal.distance_m) < 1)
+    const preset = presets.find((p) => Math.abs(p.meters - goal.distance_m) < 1)
     if (preset) {
       setPresetId(preset.id)
-      setCustomDistanceMi('')
+      setCustomDistance('')
     } else {
       setPresetId('custom')
-      setCustomDistanceMi(String(Math.round((goal.distance_m / 1609.34) * 100) / 100))
+      setCustomDistance(String(inputFromMeters(goal.distance_m)))
     }
-  }, [goal])
+  }, [goal, presets, inputFromMeters])
 
   function resolveDistance(): { meters: number; label: string } | null {
     if (presetId === 'custom') {
-      const mi = Number(customDistanceMi)
-      if (Number.isNaN(mi) || mi <= 0) return null
-      return { meters: Math.round(mi * 1609.34 * 100) / 100, label: `${mi} mi` }
+      const value = Number(customDistance)
+      if (Number.isNaN(value) || value <= 0) return null
+      const meters = metersFromInput(value)
+      return { meters, label: `${value} ${shortLabel}` }
     }
-    const preset = DISTANCE_PRESETS.find((p) => p.id === presetId)
+    const preset = presets.find((p) => p.id === presetId)
     return preset ? { meters: preset.meters, label: preset.label } : null
   }
 
@@ -87,7 +98,7 @@ export function RunGoalForm({ goal, onSubmit, onCancel }: RunGoalFormProps) {
           Distance
         </label>
         <div className="flex flex-wrap gap-2">
-          {DISTANCE_PRESETS.map((p) => (
+          {presets.map((p) => (
             <button
               key={p.id}
               type="button"
@@ -118,12 +129,12 @@ export function RunGoalForm({ goal, onSubmit, onCancel }: RunGoalFormProps) {
         {presetId === 'custom' && (
           <Input
             className="mt-3"
-            label="Custom distance (miles)"
+            label={`Custom distance (${shortLabel})`}
             type="number"
             min={0.1}
             step={0.1}
-            value={customDistanceMi}
-            onChange={(e) => setCustomDistanceMi(e.target.value)}
+            value={customDistance}
+            onChange={(e) => setCustomDistance(e.target.value)}
           />
         )}
       </div>
@@ -136,11 +147,13 @@ export function RunGoalForm({ goal, onSubmit, onCancel }: RunGoalFormProps) {
         required
       />
 
-      <Input
+      <DateTimeField
         label="Deadline (optional)"
-        type="date"
-        value={deadline}
-        onChange={(e) => setDeadline(e.target.value)}
+        dateValue={deadline}
+        timeValue=""
+        onDateChange={setDeadline}
+        onTimeChange={() => {}}
+        dateOnly
       />
 
       <Textarea

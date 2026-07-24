@@ -3,6 +3,7 @@ import type {
   SkillRating,
   TrainingSession,
 } from './types'
+import { getPerformancePageTitle } from './utils/performanceNav'
 
 export function ratingVariant(value: number, max = 20): 'success' | 'accent' | 'warning' | 'danger' {
   const pct = (value / max) * 100
@@ -61,19 +62,8 @@ export function avgMatchRating(matches: MatchRecord[]): number {
   return Math.round((sum / matches.length) * 10) / 10
 }
 
-export function getSoccerPageTitle(pathname: string): string {
-  const segment = pathname.split('/').pop() ?? 'overview'
-  const nav = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'training', label: 'Training Sessions' },
-    { id: 'running', label: 'Distance Running' },
-    { id: 'matches', label: 'Matches' },
-    { id: 'technical', label: 'Technical Skills' },
-    { id: 'physical', label: 'Physical Metrics' },
-    { id: 'weaknesses', label: 'Weaknesses' },
-    { id: 'strengths', label: 'Strengths' },
-    { id: 'coach', label: 'AI Coach' },
-    { id: 'progress', label: 'Progress Charts' },
-  ].find((n) => n.id === segment)
-  return nav?.label ?? 'Soccer'
+export function getSoccerPageTitle(pathname: string, hobbyPassion = ''): string {
+  return getPerformancePageTitle(pathname, hobbyPassion)
 }
+
+export { getPerformanceNav, getPerformancePageTitle } from './utils/performanceNav'

@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
+import { useOpenCreateFromQuery } from '@hooks/useOpenCreateFromQuery'
 import { TaskForm } from './TaskForm'
 import { TaskItem } from './TaskItem'
 import { TaskToolbar } from './TaskToolbar'
@@ -32,10 +33,12 @@ export function TasksPage() {
     return sortTasks(filtered, sortField, sortDirection)
   }, [tasks, filters, sortField, sortDirection])
 
-  function openCreate() {
+  const openCreate = useCallback(() => {
     setEditingTask(null)
     setModalOpen(true)
-  }
+  }, [])
+
+  useOpenCreateFromQuery(openCreate)
 
   function openEdit(task: Task) {
     setEditingTask(task)

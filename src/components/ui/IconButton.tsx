@@ -7,13 +7,17 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string
   /** Show a notification dot indicator */
   dot?: boolean
+  /** Numeric badge (e.g. unread notification count) */
+  badgeCount?: number
 }
 
 /**
  * Circular icon button used in the top bar and mobile header.
  */
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  function IconButton({ children, label, dot = false, className, ...props }, ref) {
+  function IconButton({ children, label, dot = false, badgeCount = 0, className, ...props }, ref) {
+    const showBadge = badgeCount > 0
+
     return (
       <button
         ref={ref}
@@ -29,8 +33,21 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         {...props}
       >
         {children}
-        {dot && (
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+        {showBadge ? (
+          <span
+            className={cn(
+              'absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full',
+              'bg-[var(--color-danger)] px-1 text-[9px] font-bold leading-none text-white',
+              'ring-2 ring-[var(--color-surface-base)]',
+            )}
+            aria-hidden
+          >
+            {badgeCount > 9 ? '9+' : badgeCount}
+          </span>
+        ) : (
+          dot && (
+            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+          )
         )}
       </button>
     )

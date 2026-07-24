@@ -9,8 +9,8 @@ import {
 import type { CoachInsight, CoachMessage } from '../types'
 import { INSIGHT_MODES } from '../types'
 import {
-  COACH_WELCOME,
   DEFAULT_COACH_SUGGESTIONS,
+  buildCoachWelcome,
   getStubCoachReply,
   getStubInsight,
 } from '../utils/stubCoach'
@@ -28,11 +28,11 @@ function buildHistory(messages: CoachMessage[]): Array<{ role: 'user' | 'assista
     .map((m) => ({ role: m.role, content: m.content }))
 }
 
-function createWelcomeMessage(): CoachMessage {
+function createWelcomeMessage(displayName?: string | null): CoachMessage {
   return {
     id: generateId(),
     role: 'assistant',
-    content: COACH_WELCOME,
+    content: buildCoachWelcome(displayName),
     timestamp: new Date().toISOString(),
   }
 }
@@ -49,14 +49,20 @@ function initialInsights(): CoachInsight[] {
 }
 
 export function useSoccerCoach() {
-  const { session } = useAuth()
-  const [messages, setMessages] = useState<CoachMessage[]>(() => [createWelcomeMessage()])
+  const { session, user } = useAuth()
+  const displayName =
+    typeof user?.user_metadata?.display_name === 'string' ? user.user_metadata.display_name : null
+  const [messages, setMessages] = useState<CoachMessage[]>(() => [createWelcomeMessage(displayName)])
   const [input, setInput] = useState('')
   const [suggestions, setSuggestions] = useState<string[]>([...DEFAULT_COACH_SUGGESTIONS])
   const [insights, setInsights] = useState<CoachInsight[]>(initialInsights)
   const [isTyping, setIsTyping] = useState(false)
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false)
   const streamRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    setMessages([createWelcomeMessage(displayName)])
+  }, [displayName])
 
   useEffect(() => {
     if (!session?.access_token) return
@@ -71,7 +77,7 @@ export function useSoccerCoach() {
           })
         }
       })
-  }, [session?.access_token])
+  }, [session?.access_token, displayName])
 
   useEffect(() => {
     return () => {

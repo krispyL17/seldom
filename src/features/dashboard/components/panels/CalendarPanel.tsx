@@ -51,8 +51,8 @@ export function CalendarPanel() {
           </Link>
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {days.slice(0, 5).map((day) => {
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+          {days.map((day) => {
             const iso = day.toISOString().slice(0, 10)
             const dayEvents = weekEvents.filter((e) => e.at.slice(0, 10) === iso)
             const isToday = iso === todayIso

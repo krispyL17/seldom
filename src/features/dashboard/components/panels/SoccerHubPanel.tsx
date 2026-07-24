@@ -1,85 +1,75 @@
 import { Link } from 'react-router-dom'
-import { Badge } from '@components/ui/Badge'
-import { ProgressBar } from '@components/ui/ProgressBar'
-import { Panel, PanelDivider, DataRow } from '@components/ui/Panel'
+import { EmptyState } from '@components/ui/EmptyState'
+import { Panel, PanelActionLink } from '@components/ui/Panel'
 import { useUserPreferences } from '@features/preferences'
-import { soccerHub } from '../../data/mockData'
+import { useRunLogs } from '@features/soccer/running/hooks/useRunLogs'
+import { useTrainingSessions } from '@features/soccer/training/hooks/useTrainingSessions'
 
 export function SoccerHubPanel() {
   const { hobbyTabLabel } = useUserPreferences()
-  const loadPct = Math.round(
-    (soccerHub.weeklyWorkload.totalMinutes / soccerHub.weeklyWorkload.target) * 100,
-  )
+  const { sessions, loading: sessionsLoading } = useTrainingSessions()
+  const { runs, loading: runsLoading } = useRunLogs()
+
+  const loading = sessionsLoading || runsLoading
+  const hasLoggedData = sessions.length > 0 || runs.length > 0
+  const latestSession = sessions[0]
+
+  if (loading) {
+    return (
+      <Panel title={`${hobbyTabLabel} Hub`} subtitle="Loading…">
+        <p className="py-6 text-center text-xs text-[var(--color-text-tertiary)]">Loading…</p>
+      </Panel>
+    )
+  }
 
   return (
     <Panel
       title={`${hobbyTabLabel} Hub`}
-      subtitle={soccerHub.currentFocus}
-      badge={<Badge variant="accent">Preview</Badge>}
+      subtitle="Your performance snapshot"
       action={
-        <Link
-          to="/soccer/overview"
-          className="rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline"
-        >
-          Full hub
-        </Link>
+        <PanelActionLink to="/soccer/overview">{`Open ${hobbyTabLabel}`}</PanelActionLink>
       }
     >
-      <div className="rounded-[var(--radius-md)] border border-[var(--color-accent)]/20 bg-[var(--color-accent)]/5 p-3">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-accent-muted)]">
-          Next Training
-        </p>
-        <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
-          {soccerHub.nextTraining.type}
-        </p>
-        <p className="text-xs text-[var(--color-text-secondary)]">
-          {soccerHub.nextTraining.time} · {soccerHub.nextTraining.duration}
-        </p>
-        <Badge variant="muted" className="mt-2">
-          {soccerHub.nextTraining.intensity}
-        </Badge>
-      </div>
-
-      <PanelDivider label="Technical Ratings" />
-      <div className="space-y-2">
-        {soccerHub.technicalRatings.map((rating) => (
-          <ProgressBar
-            key={rating.skill}
-            label={rating.skill}
-            value={rating.value}
-            max={rating.max}
-            variant="accent"
-          />
-        ))}
-      </div>
-
-      <PanelDivider label="Last Session" />
-      <DataRow label="Date" value={soccerHub.lastSession.date} />
-      <DataRow label="Type" value={soccerHub.lastSession.type} />
-      <DataRow label="Rating" value={`${soccerHub.lastSession.rating} / 10`} />
-      <p className="mt-2 text-[11px] leading-relaxed text-[var(--color-text-tertiary)]">
-        {soccerHub.lastSession.notes}
-      </p>
-
-      <PanelDivider label="Weekly Workload" />
-      <ProgressBar
-        value={loadPct}
-        label={`${soccerHub.weeklyWorkload.totalMinutes} / ${soccerHub.weeklyWorkload.target} min`}
-        variant={loadPct > 95 ? 'warning' : 'success'}
-        size="md"
-      />
-      <p className="mt-2 text-[10px] text-[var(--color-text-tertiary)]">
-        {soccerHub.weeklyWorkload.sessions} sessions · {soccerHub.weeklyWorkload.loadStatus}
-      </p>
-
-      <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-accent-muted)]">
-          AI Recommendation
-        </p>
-        <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-text-secondary)]">
-          {soccerHub.aiRecommendation}
-        </p>
-      </div>
+      {!hasLoggedData ? (
+        <EmptyState
+          title="Nothing logged yet"
+          description={`This panel stays blank until you add data in your ${hobbyTabLabel} tab — sessions, runs, or other logs.`}
+          action={
+            <Link
+              to="/soccer/overview"
+              className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
+            >
+              {`Open ${hobbyTabLabel}`}
+            </Link>
+          }
+        />
+      ) : (
+        <>
+          {latestSession && (
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                Latest session
+              </p>
+              <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
+                {latestSession.position_played} · {latestSession.duration_min} min
+              </p>
+              <p className="text-xs text-[var(--color-text-secondary)]">
+                Intensity {latestSession.intensity}/10
+              </p>
+            </div>
+          )}
+          {runs[0] && (
+            <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                Latest run
+              </p>
+              <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
+                {(runs[0].distance_m / 1000).toFixed(2)} km
+              </p>
+            </div>
+          )}
+        </>
+      )}
     </Panel>
   )
 }

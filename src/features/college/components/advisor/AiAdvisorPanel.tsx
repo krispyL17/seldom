@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Panel } from '@components/ui/Panel'
 import { IconSparkles } from '@components/ui/icons'
-import { PreviewBadge } from '../shared/PreviewBadge'
-import { advisorWelcomeMessage } from '../../data/mockData'
+import { MarkdownContent } from '@features/assistant/components/MarkdownContent'
 import { useCollege } from '../../hooks/useCollege'
-import type { AdvisorMessage } from '../../types'
+import { useCollegeAdvisor } from '../../hooks/useCollegeAdvisor'
 import { cn } from '@lib/utils'
 
 const JUNIOR_SUGGESTIONS = [
@@ -24,48 +23,23 @@ const SENIOR_SUGGESTIONS = [
 
 export function AiAdvisorPanel() {
   const { isSeniorMode } = useCollege()
-  const [messages, setMessages] = useState<AdvisorMessage[]>([advisorWelcomeMessage])
-  const [input, setInput] = useState('')
+  const { messages, input, setInput, isTyping, sendMessage } = useCollegeAdvisor(isSeniorMode)
   const listRef = useRef<HTMLUListElement>(null)
   const suggestions = isSeniorMode ? SENIOR_SUGGESTIONS : JUNIOR_SUGGESTIONS
 
   useEffect(() => {
-    const list = listRef.current
-    if (!list) return
-    list.scrollTop = list.scrollHeight
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight })
   }, [messages])
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    const trimmed = input.trim()
-    if (!trimmed) return
-
-    const now = Date.now()
-    const userMsg: AdvisorMessage = {
-      id: `msg-${now}`,
-      role: 'user',
-      content: trimmed,
-      timestamp: new Date(now).toISOString(),
-    }
-
-    const assistantMsg: AdvisorMessage = {
-      id: `msg-${now}-reply`,
-      role: 'assistant',
-      content: isSeniorMode
-        ? 'AI advisor is coming soon. I will help with essays, deadline planning, school comparisons, and application checklists.'
-        : 'AI advisor is coming soon. I will help you explore schools, plan testing, compare fit, and prepare before application season.',
-      timestamp: new Date(now + 1).toISOString(),
-    }
-
-    setMessages((prev) => [...prev, userMsg, assistantMsg])
-    setInput('')
+    sendMessage(input)
   }
 
   return (
     <Panel
       title="AI College Advisor"
-      subtitle={isSeniorMode ? 'Essays · deadlines · applications' : 'Exploration · planning · prep'}
-      badge={<PreviewBadge />}
+      subtitle="Powered by Seldom AI"
     >
       <div className="flex h-72 flex-col">
         <ul
@@ -84,15 +58,19 @@ export function AiAdvisorPanel() {
                   : 'mr-auto bg-[var(--color-surface-overlay)] text-[var(--color-text-secondary)]',
               )}
             >
-              {msg.role === 'assistant' && (
-                <IconSparkles
-                  width={12}
-                  height={12}
-                  className="mb-1 inline text-[var(--color-accent-muted)]"
-                  aria-hidden
-                />
-              )}{' '}
-              {msg.content}
+              {msg.role === 'assistant' ? (
+                <div>
+                  <IconSparkles
+                    width={12}
+                    height={12}
+                    className="mb-1 inline text-[var(--color-accent-muted)]"
+                    aria-hidden
+                  />
+                  <MarkdownContent content={msg.content} className="prose-xs max-w-none [&_*]:text-xs" />
+                </div>
+              ) : (
+                msg.content
+              )}
             </li>
           ))}
         </ul>
@@ -105,15 +83,16 @@ export function AiAdvisorPanel() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            disabled={isTyping}
             placeholder={
               isSeniorMode
                 ? 'Ask about essays, schools, deadlines…'
                 : 'Ask about exploring schools, testing, summer plans…'
             }
             aria-label="Message to AI advisor"
-            className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+            className="flex-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] disabled:opacity-60"
           />
-          <Button type="submit" size="sm" disabled={!input.trim()}>
+          <Button type="submit" size="sm" disabled={!input.trim() || isTyping}>
             Send
           </Button>
         </form>
@@ -124,8 +103,9 @@ export function AiAdvisorPanel() {
           <button
             key={suggestion}
             type="button"
-            onClick={() => setInput(suggestion)}
-            className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2.5 py-1 text-[10px] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)]"
+            disabled={isTyping}
+            onClick={() => sendMessage(suggestion)}
+            className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2.5 py-1 text-[10px] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
           >
             {suggestion}
           </button>

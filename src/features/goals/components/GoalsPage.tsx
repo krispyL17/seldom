@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
+import { useOpenCreateFromQuery } from '@hooks/useOpenCreateFromQuery'
 import { GoalCard } from './GoalCard'
 import { GoalForm } from './GoalForm'
 import { GoalToolbar } from './GoalToolbar'
@@ -41,10 +42,12 @@ export function GoalsPage() {
     return sortGoals(filtered, sortField, sortDirection)
   }, [goals, filters, sortField, sortDirection])
 
-  function openCreate() {
+  const openCreate = useCallback(() => {
     setEditingGoal(null)
     setModalOpen(true)
-  }
+  }, [])
+
+  useOpenCreateFromQuery(openCreate)
 
   function openEdit(goal: Goal) {
     setEditingGoal(goal)

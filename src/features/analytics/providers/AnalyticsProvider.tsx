@@ -11,24 +11,22 @@ import { useAuth } from '@hooks/useAuth'
 import { buildAnalyticsDashboard } from '@analytics/aggregations'
 import type { AnalyticsDashboard, AnalyticsSyncPayload } from '@analytics/types'
 import { computeDashboardStats, overallProgress, collegeProgress } from '@features/college/utils'
+import { useUserPreferences } from '@features/preferences'
+import { parseDistanceUnit } from '@lib/distanceUnits'
 import { collegeService } from '@services/database/colleges'
 import { goalService } from '@services/database/goals'
 import { journalService } from '@services/database/journal'
 import { runLogService } from '@services/database/runLogs'
 import { taskService } from '@services/database/tasks'
 import { trainingSessionService } from '@services/database/trainingSessions'
-import {
-  fetchGymLogs,
-  isAnalyticsServerAvailable,
-  syncAnalytics,
-} from '@services/analytics/analyticsClient'
+import { fetchLocalGymLogs } from '@services/analytics/gymLogsLocal'
+import { isAnalyticsServerAvailable, syncAnalytics } from '@services/analytics/analyticsClient'
 
 interface AnalyticsContextValue {
   dashboard: AnalyticsDashboard | null
   loading: boolean
   refreshing: boolean
   error: string | null
-  sqliteConnected: boolean
   reload: () => Promise<void>
 }
 
@@ -36,11 +34,12 @@ const AnalyticsContext = createContext<AnalyticsContextValue | null>(null)
 
 export function AnalyticsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth()
+  const { distanceUnit } = useUserPreferences()
+  const unit = parseDistanceUnit(distanceUnit)
   const [dashboard, setDashboard] = useState<AnalyticsDashboard | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [sqliteConnected, setSqliteConnected] = useState(false)
 
   const load = useCallback(async (isRefresh = false) => {
     if (!user) {
@@ -87,17 +86,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       const collegeStats =
         colleges.length > 0 ? computeDashboardStats(colleges, [], []) : null
 
-      const sqliteUp = await isAnalyticsServerAvailable()
-      setSqliteConnected(sqliteUp)
-
-      let gymLogs: Awaited<ReturnType<typeof fetchGymLogs>> = []
-      if (sqliteUp) {
-        try {
-          gymLogs = await fetchGymLogs(user.id)
-        } catch (gymErr) {
-          console.warn('[analytics] gym logs unavailable:', gymErr)
-        }
-      }
+      const gymLogs = fetchLocalGymLogs(user.id)
 
       const payload: AnalyticsSyncPayload = {
         userId: user.id,
@@ -135,11 +124,13 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
             : null,
       }
 
+      setDashboard(buildAnalyticsDashboard(payload, 'local', unit))
+
+      const sqliteUp = await isAnalyticsServerAvailable()
       if (sqliteUp) {
-        const synced = await syncAnalytics(payload)
-        setDashboard(synced)
-      } else {
-        setDashboard(buildAnalyticsDashboard(payload, 'local'))
+        void syncAnalytics(payload).catch(() => {
+          /* optional background cache */
+        })
       }
 
       setError(partialErrors.length === results.length ? 'Failed to load analytics data' : null)
@@ -149,7 +140,7 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [user])
+  }, [user, unit])
 
   useEffect(() => {
     void load(false)
@@ -161,10 +152,9 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       loading,
       refreshing,
       error,
-      sqliteConnected,
       reload: () => load(true),
     }),
-    [dashboard, loading, refreshing, error, sqliteConnected, load],
+    [dashboard, loading, refreshing, error, load],
   )
 
   return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>

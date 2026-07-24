@@ -1,7 +1,8 @@
 import { Badge } from '@components/ui/Badge'
 import { Button } from '@components/ui/Button'
+import { useDistanceUnit } from '@hooks/useDistanceUnit'
 import type { RunLog } from '../types'
-import { formatDuration, formatRunDate, pacePerMile } from '../utils'
+import { formatDuration, formatRunDate } from '../utils'
 
 interface RunLogCardProps {
   run: RunLog
@@ -11,6 +12,8 @@ interface RunLogCardProps {
 }
 
 export function RunLogCard({ run, isPr, onEdit, onDelete }: RunLogCardProps) {
+  const { formatPace } = useDistanceUnit()
+
   return (
     <article className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -19,7 +22,7 @@ export function RunLogCard({ run, isPr, onEdit, onDelete }: RunLogCardProps) {
             {run.distance_label} — {formatDuration(run.duration_sec)}
           </p>
           <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
-            {formatRunDate(run.run_date)} · {pacePerMile(run.duration_sec, run.distance_m)}
+            {formatRunDate(run.run_date)} · {formatPace(run.duration_sec, run.distance_m)}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">

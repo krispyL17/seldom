@@ -54,7 +54,7 @@ export interface GoalFilters {
 
 export const DEFAULT_GOAL_FILTERS: GoalFilters = {
   search: '',
-  status: 'all',
+  status: 'active',
   category: 'all',
 }
 

@@ -1,7 +1,10 @@
+import { useEffect } from 'react'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { IconMenu } from '@components/ui/icons'
 import { Badge } from '@components/ui/Badge'
 import { useAssistantChat } from '../hooks/useAssistantChat'
+import type { AssistantMode } from '@services/assistant/assistantClient'
 import { ConversationSidebar } from './ConversationSidebar'
 import { MessageList } from './MessageList'
 import { ChatComposer } from './ChatComposer'
@@ -30,6 +33,31 @@ export function AssistantPage() {
   } = useAssistantChat()
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [searchParams] = useSearchParams()
+
+  useEffect(() => {
+    const mode = searchParams.get('mode')
+    const valid: AssistantMode[] = [
+      'chat',
+      'daily_plan',
+      'weekly_review',
+      'goal_breakdown',
+      'brainstorm',
+      'essay_ideas',
+      'project_ideas',
+      'coding_ideas',
+      'soccer_drills',
+      'research_topics',
+      'college_planning',
+      'scholarship_ideas',
+      'personal_recommendations',
+      'reflection',
+      'project_management',
+    ]
+    if (mode && valid.includes(mode as AssistantMode)) {
+      setActiveMode(mode as AssistantMode)
+    }
+  }, [searchParams, setActiveMode])
 
   const modeLabel = lastMode ? MODE_LABELS[lastMode] : MODE_LABELS[activeMode]
 
@@ -86,7 +114,7 @@ export function AssistantPage() {
           </button>
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
-              {activeConversation?.title ?? 'Seldom OS'}
+              {activeConversation?.title ?? 'Seldom AI'}
             </h2>
             <p className="text-[11px] text-[var(--color-text-tertiary)]">
               {liveConnected ? `Live · ${modeLabel}` : 'Local preview · sidecars + stub LLM'}

@@ -2,7 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { generateChatReply } from '../ai/chat.js'
 import { loadPromptConfig, type PromptConfig } from '../prompts/loader.js'
 import { retrieveMemories } from '../assistant/memory.js'
-import { assembleSoccerContext, formatSoccerContextBlock } from './context.js'
+import { assembleSoccerContext, formatSoccerContextBlock, resolvePlayerFirstName } from './context.js'
+import { formatCoachWelcome } from './personalize.js'
 import { runCoachingSearch, shouldCoachWebSearch } from './resources.js'
 import type {
   CoachChatRequest,
@@ -75,7 +76,14 @@ export async function handleCoachRequest(
       : undefined
   const searchUsed = Boolean(searchBlock)
 
-  const systemPrompt = buildSystemPrompt(promptConfig, mode)
+  const systemPrompt = [
+    buildSystemPrompt(promptConfig, mode),
+    (await resolvePlayerFirstName(client, userId))
+      ? `Address the player by first name when it feels natural.`
+      : null,
+  ]
+    .filter(Boolean)
+    .join('\n\n')
   const contextBlocks = [contextBlock, memoryBlock, searchBlock].filter(Boolean) as string[]
 
   const history = 'history' in request ? request.history?.slice(-6) : undefined
@@ -109,7 +117,12 @@ export async function getCoachSuggestions(client?: SupabaseClient): Promise<stri
   return config.suggestions
 }
 
-export async function getCoachWelcome(client?: SupabaseClient): Promise<string> {
+export async function getCoachWelcome(
+  client: SupabaseClient,
+  userId: string,
+): Promise<string> {
   const config = await loadPromptConfig(PROMPT_ID, client)
-  return config.welcome ?? config.system.slice(0, 240)
+  const template = config.welcome ?? config.system.slice(0, 240)
+  const firstName = await resolvePlayerFirstName(client, userId)
+  return formatCoachWelcome(template, firstName)
 }

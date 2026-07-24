@@ -43,7 +43,7 @@ export function GoalsPanel() {
           description="Set goals to track long-term progress."
           action={
             <Link
-              to="/goals"
+              to="/goals?new=1"
               className="text-xs font-medium text-[var(--color-accent-muted)] hover:underline"
             >
               Go to Goals

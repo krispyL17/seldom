@@ -1,173 +1,105 @@
-import { Badge } from '@components/ui/Badge'
-import { ProgressBar } from '@components/ui/ProgressBar'
-import { Panel, DataRow, PanelDivider } from '@components/ui/Panel'
-import { MetricTile, MiniBarChart } from '@components/ui/MiniBarChart'
 import { Link } from 'react-router-dom'
+import { Badge } from '@components/ui/Badge'
+import { EmptyState } from '@components/ui/EmptyState'
+import { Panel, PanelDivider } from '@components/ui/Panel'
 import { useTrainingSessions } from '../../training/hooks/useTrainingSessions'
 import { useSoccer } from '../../hooks/useSoccerProfile'
-import {
-  matches,
-  technicalSkills,
-  trainingSessions,
-  weeklyLoad,
-  weeklyWorkload,
-  aiCoachTips,
-} from '../../data/mockData'
-import {
-  avgMatchRating,
-  avgTrainingRating,
-  formatShortDate,
-} from '../../utils'
+import { formatShortDate } from '../../utils'
 
 export function SoccerOverviewPage() {
   const { profile } = useSoccer()
-  const { sessions: dbSessions } = useTrainingSessions()
+  const { sessions, loading } = useTrainingSessions()
 
-  const playerProfile = profile
-    ? {
-        name: profile.name,
-        position: profile.position,
-        preferredFoot: profile.preferredFoot,
-        squadNumber: profile.squadNumber ?? 0,
-        season: profile.season,
-        currentFocus: profile.currentFocus,
-      }
-    : null
+  const latestSession = sessions[0]
 
-  const loadPct = Math.round((weeklyWorkload.totalMinutes / weeklyWorkload.target) * 100)
-  const dbNext = dbSessions[0]
-  const nextSession = dbNext
-    ? {
-        type: `${dbNext.position_played} training`,
-        date: dbNext.session_date,
-        durationMin: dbNext.duration_min,
-        rpe: dbNext.intensity,
-        intensity: `Intensity ${dbNext.intensity}/10`,
-        focus: dbNext.notes ? [dbNext.notes] : ['Log notes in Training tab'],
-      }
-    : trainingSessions[0]
-  const lastMatch = matches[0]
-  const topSkills = [...technicalSkills].sort((a, b) => b.value - a.value).slice(0, 5)
-
-  if (!playerProfile) {
+  if (loading) {
     return (
-      <Panel title="Player Profile" subtitle="Complete setup to see your overview" fullWidth>
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          Your profile will appear here after onboarding.
-        </p>
+      <Panel title="Overview" subtitle="Loading…" fullWidth>
+        <p className="py-8 text-center text-sm text-[var(--color-text-tertiary)]">Loading…</p>
+      </Panel>
+    )
+  }
+
+  const hasProfile = Boolean(profile?.name || profile?.currentFocus)
+  const hasSessions = sessions.length > 0
+
+  if (!hasProfile && !hasSessions) {
+    return (
+      <Panel title="Overview" subtitle="Your performance snapshot" fullWidth>
+        <EmptyState
+          title="Your overview is empty"
+          description="Complete setup and log sessions — this page only shows your data, never sample content."
+          className="py-12"
+          action={
+            <Link
+              to="/soccer/training"
+              className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
+            >
+              Log first session
+            </Link>
+          }
+        />
       </Panel>
     )
   }
 
   return (
     <div className="dashboard-grid grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Panel title="Player Profile" subtitle={playerProfile.season} className="lg:col-span-2">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      {hasProfile && profile && (
+        <Panel title="Profile" subtitle="Your focus" className="lg:col-span-2">
           <div>
-            <p className="text-xl font-semibold text-[var(--color-text-primary)]">
-              {playerProfile.name}
-            </p>
-            <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-              {playerProfile.squadNumber ? `#${playerProfile.squadNumber} · ` : ''}
-              {playerProfile.position} · {playerProfile.preferredFoot} foot
-            </p>
-            <Badge variant="accent" className="mt-2 normal-case tracking-normal">
-              Focus: {playerProfile.currentFocus}
-            </Badge>
+            {profile.name && (
+              <p className="text-xl font-semibold text-[var(--color-text-primary)]">{profile.name}</p>
+            )}
+            {profile.currentFocus && (
+              <Badge variant="accent" className="mt-2 normal-case tracking-normal">
+                Focus: {profile.currentFocus}
+              </Badge>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <MetricTile label="Match avg" value={avgMatchRating(matches)} trend="up" />
-            <MetricTile label="Training avg" value={avgTrainingRating(trainingSessions)} trend="up" />
-            <MetricTile label="Sessions" value={weeklyWorkload.sessions} unit="/wk" />
-            <MetricTile label="Load" value={`${loadPct}%`} trend={loadPct > 95 ? 'down' : 'up'} />
-          </div>
-        </div>
-      </Panel>
+        </Panel>
+      )}
 
-      <Panel title="Next Session" subtitle="Scheduled">
-        {nextSession && (
+      <Panel title="Latest Session" subtitle={hasSessions ? 'From your log' : 'None yet'}>
+        {latestSession ? (
           <>
-            <p className="text-sm font-semibold text-[var(--color-text-primary)]">{nextSession.type}</p>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
-              {formatShortDate(nextSession.date)} · {nextSession.durationMin} min · RPE {nextSession.rpe}
+            <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+              {latestSession.position_played?.trim() || 'Session'} · {latestSession.duration_min} min
             </p>
-            <Badge variant="muted" className="mt-2">{nextSession.intensity}</Badge>
-            <PanelDivider label="Focus" />
-            <div className="flex flex-wrap gap-1.5">
-              {nextSession.focus.map((f) => (
-                <Badge key={f} variant="muted" className="normal-case tracking-normal">{f}</Badge>
-              ))}
-            </div>
-            <Link to="/soccer/training" className="mt-3 inline-block text-xs text-[var(--color-accent-muted)] hover:underline">
+            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+              {formatShortDate(latestSession.session_date)} · Intensity {latestSession.intensity}/10
+            </p>
+            {latestSession.notes && (
+              <>
+                <PanelDivider label="Notes" />
+                <p className="text-xs text-[var(--color-text-secondary)]">{latestSession.notes}</p>
+              </>
+            )}
+            <Link
+              to="/soccer/training"
+              className="mt-3 inline-block text-xs text-[var(--color-accent-muted)] hover:underline"
+            >
               View all sessions →
             </Link>
           </>
+        ) : (
+          <EmptyState title="No sessions yet" description="Log a session to see it here." />
         )}
       </Panel>
 
-      <Panel title="Last Match" subtitle={lastMatch?.competition ?? ''}>
-        {lastMatch && (
-          <>
-            <div className="flex items-center gap-2">
-              <Badge variant={lastMatch.result === 'W' ? 'success' : lastMatch.result === 'D' ? 'warning' : 'danger'}>
-                {lastMatch.result} {lastMatch.score}
-              </Badge>
-              <span className="text-sm font-medium text-[var(--color-text-primary)]">vs {lastMatch.opponent}</span>
-            </div>
-            <div className="mt-3 space-y-1">
-              <DataRow label="Rating" value={`${lastMatch.rating} / 10`} />
-              <DataRow label="G / A" value={`${lastMatch.goals} / ${lastMatch.assists}`} />
-              <DataRow label="Minutes" value={lastMatch.minutes} />
-            </div>
-            <p className="mt-2 text-[11px] text-[var(--color-text-tertiary)]">{lastMatch.highlights}</p>
-            <Link to="/soccer/matches" className="mt-3 inline-block text-xs text-[var(--color-accent-muted)] hover:underline">
-              Match log →
-            </Link>
-          </>
-        )}
-      </Panel>
-
-      <Panel title="Top Attributes" subtitle="Technical — /20">
-        <div className="space-y-2">
-          {topSkills.map((s) => (
-            <ProgressBar key={s.id} label={s.name} value={s.value} max={20} variant="accent" />
-          ))}
-        </div>
-        <Link to="/soccer/technical" className="mt-3 inline-block text-xs text-[var(--color-accent-muted)] hover:underline">
-          Full technical profile →
-        </Link>
-      </Panel>
-
-      <Panel title="Weekly Load" subtitle={weeklyWorkload.loadStatus}>
-        <ProgressBar
-          value={loadPct}
-          label={`${weeklyWorkload.totalMinutes} / ${weeklyWorkload.target} min`}
-          variant={loadPct > 95 ? 'warning' : 'success'}
-          size="md"
-        />
-        <div className="mt-4">
-          <MiniBarChart
-            data={weeklyLoad.map((w) => w.minutes)}
-            labels={weeklyLoad.map((w) => w.week.replace(' ', '\n'))}
-            height={56}
-          />
-        </div>
-      </Panel>
-
-      <Panel title="Coach Notes" subtitle="Preview" fullWidth className="lg:col-span-2">
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {aiCoachTips.map((tip) => (
-            <li
-              key={tip}
-              className="rounded-[var(--radius-sm)] border border-[var(--color-accent)]/15 bg-[var(--color-accent)]/5 px-3 py-2 text-xs text-[var(--color-text-secondary)]"
+      <Panel title="AI Coach" subtitle="Seldom OS" fullWidth>
+        <EmptyState
+          title="Coach insights appear after you log"
+          description="Generate advice and reviews once you have logged sessions."
+          action={
+            <Link
+              to="/soccer/coach"
+              className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
             >
-              {tip}
-            </li>
-          ))}
-        </ul>
-        <Link to="/soccer/coach" className="mt-3 inline-block text-xs text-[var(--color-accent-muted)] hover:underline">
-          Open AI Coach →
-        </Link>
+              Open AI Coach
+            </Link>
+          }
+        />
       </Panel>
     </div>
   )

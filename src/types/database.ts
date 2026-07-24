@@ -26,6 +26,7 @@ export interface Database {
           completed: boolean
           estimated_duration: number | null
           notes: string | null
+          goal_id: string | null
           created_at: string
           updated_at: string
         }
@@ -40,6 +41,7 @@ export interface Database {
           completed?: boolean
           estimated_duration?: number | null
           notes?: string | null
+          goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -54,6 +56,7 @@ export interface Database {
           completed?: boolean
           estimated_duration?: number | null
           notes?: string | null
+          goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -155,6 +158,9 @@ export interface Database {
           energy_level: number
           technical_ratings: Json
           notes: string | null
+          high_points: string | null
+          work_on: string | null
+          goal_id: string | null
           created_at: string
           updated_at: string
         }
@@ -169,6 +175,9 @@ export interface Database {
           energy_level: number
           technical_ratings?: Json
           notes?: string | null
+          high_points?: string | null
+          work_on?: string | null
+          goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -183,6 +192,9 @@ export interface Database {
           energy_level?: number
           technical_ratings?: Json
           notes?: string | null
+          high_points?: string | null
+          work_on?: string | null
+          goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -570,7 +582,8 @@ export interface Database {
           assists?: number
           rating?: number | null
           highlights?: string | null
-          notes?: string | null
+          notes: string | null
+          goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -587,7 +600,8 @@ export interface Database {
           assists?: number
           rating?: number | null
           highlights?: string | null
-          notes?: string | null
+          notes: string | null
+          goal_id?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -680,12 +694,17 @@ export interface Database {
           hobby_tab_label: string
           hobby_passion: string
           theme: 'dark' | 'light' | 'system'
+          theme_palette: 'classic' | 'sunset' | 'ocean'
+          nav_tab_colors: Record<string, string> | null
           animations_enabled: boolean
           app_tutorial_completed_at: string | null
+          tab_intros_completed: Record<string, string> | null
           browser_notifications_enabled: boolean
           email_notifications_enabled: boolean
           reminder_lead_minutes: number
           calendar_sync_prompted_at: string | null
+          distance_unit: 'km' | 'mi'
+          college_enabled: boolean
           updated_at: string
         }
         Insert: {
@@ -693,12 +712,17 @@ export interface Database {
           hobby_tab_label?: string
           hobby_passion?: string
           theme?: 'dark' | 'light' | 'system'
+          theme_palette?: 'classic' | 'sunset' | 'ocean'
+          nav_tab_colors?: Record<string, string> | null
           animations_enabled?: boolean
           app_tutorial_completed_at?: string | null
+          tab_intros_completed?: Record<string, string> | null
           browser_notifications_enabled?: boolean
           email_notifications_enabled?: boolean
           reminder_lead_minutes?: number
           calendar_sync_prompted_at?: string | null
+          distance_unit?: 'km' | 'mi'
+          college_enabled?: boolean
           updated_at?: string
         }
         Update: {
@@ -706,12 +730,17 @@ export interface Database {
           hobby_tab_label?: string
           hobby_passion?: string
           theme?: 'dark' | 'light' | 'system'
+          theme_palette?: 'classic' | 'sunset' | 'ocean'
+          nav_tab_colors?: Record<string, string> | null
           animations_enabled?: boolean
           app_tutorial_completed_at?: string | null
+          tab_intros_completed?: Record<string, string> | null
           browser_notifications_enabled?: boolean
           email_notifications_enabled?: boolean
           reminder_lead_minutes?: number
           calendar_sync_prompted_at?: string | null
+          distance_unit?: 'km' | 'mi'
+          college_enabled?: boolean
           updated_at?: string
         }
         Relationships: []

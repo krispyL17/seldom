@@ -4,12 +4,7 @@ import type { OnboardingAnswers } from '@features/onboarding/types'
 import { useCollege } from '../hooks/useCollege'
 import type { ApplicationPhase, StudentProfile, TestScores } from '../types'
 import { DEFAULT_RESUME_SETTINGS, DEFAULT_TEST_SCORES } from '../types'
-import {
-  buildJuniorFinancialAid,
-  buildSeniorFinancialAid,
-  buildStarterRecommendations,
-  inferApplicationPhase,
-} from '../data/templates'
+import { inferApplicationPhase } from '../data/templates'
 
 function str(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
@@ -21,8 +16,6 @@ export function CollegeOnboardingGate({ onComplete }: { onComplete: () => void }
     completeOnboarding,
     createActivity,
     createCollege,
-    updateFinancialAid,
-    updateAiRecommendations,
   } = useCollege()
 
   async function handleComplete(answers: OnboardingAnswers) {
@@ -68,13 +61,6 @@ export function CollegeOnboardingGate({ onComplete }: { onComplete: () => void }
       },
       testScores,
     })
-
-    const financialAid =
-      phase === 'senior'
-        ? buildSeniorFinancialAid(gradYear)
-        : buildJuniorFinancialAid(gradYear)
-    await updateFinancialAid(financialAid)
-    await updateAiRecommendations(buildStarterRecommendations())
 
     const activityName = str(answers['activity.name'])
     if (activityName) {

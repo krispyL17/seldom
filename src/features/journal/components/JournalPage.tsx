@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
+import { useOpenCreateFromQuery } from '@hooks/useOpenCreateFromQuery'
 import { JournalEntryCard } from './JournalEntryCard'
 import { JournalEntryForm } from './JournalEntryForm'
 import { useJournal } from '../hooks/useJournal'
@@ -14,10 +15,12 @@ export function JournalPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null)
 
-  function openCreate() {
+  const openCreate = useCallback(() => {
     setEditingEntry(null)
     setModalOpen(true)
-  }
+  }, [])
+
+  useOpenCreateFromQuery(openCreate)
 
   function openEdit(entry: JournalEntry) {
     setEditingEntry(entry)

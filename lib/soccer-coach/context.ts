@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { SoccerPlayerContext } from './types.js'
+import { resolveFirstName } from './personalize.js'
 
 const TECHNICAL_LABELS: Record<string, string> = {
   first_touch: 'First Touch',
@@ -56,7 +57,7 @@ export async function assembleSoccerContext(
 ): Promise<SoccerPlayerContext> {
   const since = daysAgo(90)
 
-  const [sessionsRes, matchesRes, insightsRes, goalsRes] = await Promise.all([
+  const [sessionsRes, matchesRes, insightsRes, goalsRes, profileRes] = await Promise.all([
     client
       .from('training_sessions')
       .select('*')
@@ -80,6 +81,7 @@ export async function assembleSoccerContext(
       .or('category.eq.soccer,category.eq.Soccer,category.eq.football,category.eq.Football,category.is.null')
       .order('created_at', { ascending: false })
       .limit(10),
+    client.from('soccer_user_data').select('profile').eq('user_id', userId).maybeSingle(),
   ])
 
   const trainingSessions = (sessionsRes.data ?? []).map((row) => ({
@@ -147,6 +149,7 @@ export async function assembleSoccerContext(
   }))
 
   return {
+    playerProfile: profileRes.data?.profile as SoccerPlayerContext['playerProfile'],
     trainingSessions,
     matches,
     weaknesses,
@@ -159,6 +162,13 @@ export async function assembleSoccerContext(
 
 export function formatSoccerContextBlock(context: SoccerPlayerContext): string {
   const sections: string[] = ['## Player Profile Data']
+
+  if (context.playerProfile?.name || context.playerProfile?.currentFocus) {
+    const p = context.playerProfile
+    sections.push(
+      `### Identity\n- Name: ${p?.name ?? '—'}\n- Focus: ${p?.currentFocus ?? '—'}${p?.position ? `\n- Role/position: ${p.position}` : ''}`,
+    )
+  }
 
   if (context.trainingSessions.length > 0) {
     const lines = context.trainingSessions.slice(0, 8).map((s) => {
@@ -230,4 +240,25 @@ export function formatSoccerContextBlock(context: SoccerPlayerContext): string {
   }
 
   return sections.join('\n\n')
+}
+
+export async function resolvePlayerFirstName(
+  client: SupabaseClient,
+  userId: string,
+): Promise<string | null> {
+  const [userRes, profileRes] = await Promise.all([
+    client.auth.getUser(),
+    client.from('soccer_user_data').select('profile').eq('user_id', userId).maybeSingle(),
+  ])
+
+  const displayName =
+    typeof userRes.data.user?.user_metadata?.display_name === 'string'
+      ? userRes.data.user.user_metadata.display_name
+      : null
+  const profileName =
+    typeof (profileRes.data?.profile as { name?: string } | null)?.name === 'string'
+      ? (profileRes.data?.profile as { name: string }).name
+      : null
+
+  return resolveFirstName(displayName, profileName)
 }

@@ -1,6 +1,9 @@
+import { NavLink, Outlet, Link } from 'react-router-dom'
 import { ErrorPanel } from '@components/ui/ErrorPanel'
+import { Button } from '@components/ui/Button'
+import { Panel } from '@components/ui/Panel'
 import { PageSkeleton } from '@components/ui/PanelSkeleton'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useUserPreferences } from '@features/preferences'
 import { getCollegeNav } from '../types'
 import { cn } from '@lib/utils'
 import { CollegeProvider, useCollege } from '../hooks/useCollege'
@@ -18,7 +21,7 @@ export function CollegeNav() {
   return (
     <nav
       className="flex gap-1 overflow-x-auto border-b border-[var(--color-border)] pb-px"
-      aria-label="College sections"
+      aria-label="Junior Prep sections"
     >
       {nav.map((item) => (
         <NavLink
@@ -43,6 +46,31 @@ export function CollegeNav() {
 
 function CollegeLayoutInner() {
   const { applicationPhase, loading, error, onboardingComplete, reload } = useCollege()
+  const { collegeEnabled, updatePreferences } = useUserPreferences()
+
+  if (!collegeEnabled) {
+    return (
+      <div className="mx-auto max-w-lg animate-fade-in">
+        <Panel title="Junior Prep" subtitle="Optional — off by default">
+          <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+            Junior Prep is hidden from the sidebar until you turn it on. Enable it here if you are a junior
+            or senior exploring schools, or keep it off if college prep is not on your radar yet.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => void updatePreferences({ college_enabled: true }).then(() => reload())}>
+              Enable Junior Prep
+            </Button>
+            <Link
+              to="/settings"
+              className="inline-flex h-8 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] px-3 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
+            >
+              Settings
+            </Link>
+          </div>
+        </Panel>
+      </div>
+    )
+  }
 
   if (loading) {
     return (

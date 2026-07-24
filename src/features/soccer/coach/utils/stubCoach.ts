@@ -1,34 +1,36 @@
 import { coachPrompt } from '@config/coachPrompt'
+import { formatCoachWelcome } from './personalize'
 import type { CoachInsight } from '../types'
 
 export const COACH_WELCOME = coachPrompt.welcome ?? coachPrompt.system.slice(0, 200)
 export const DEFAULT_COACH_SUGGESTIONS = coachPrompt.suggestions
 
+export function buildCoachWelcome(displayName?: string | null): string {
+  return formatCoachWelcome(COACH_WELCOME, displayName)
+}
+
 export function getStubCoachReply(message: string): string {
   const lower = message.toLowerCase()
 
-  if (lower.includes('match')) {
-    return '**Match analysis** needs your logged match data and OpenAI keys configured. Once connected, I\'ll review recent results, ratings, and highlights to suggest tactical adjustments.'
-  }
   if (lower.includes('training') || lower.includes('load') || lower.includes('week')) {
-    return '**Training plan** generation uses your session history and load metrics. Connect the coach API locally with `npm run dev:vercel` and your OpenAI key to get a full weekly periodization plan.'
+    return 'Log a few practice sessions with your focus and “to work on” notes — then use **Generate** in the recommendations panel for a weekly plan tailored to your load.'
   }
-  if (lower.includes('weak foot') || lower.includes('technical')) {
-    return '**Technical work**: I\'ll target your lowest session ratings and logged weaknesses with specific drills. Add training sessions with technical ratings so I can personalize recommendations.'
+  if (lower.includes('technical') || lower.includes('skill')) {
+    return 'Add session focus and “to work on” notes when you log practice. I\'ll prioritize those areas in drill suggestions once connected.'
   }
   if (lower.includes('overtrain') || lower.includes('recovery')) {
-    return '**Load check**: I compare session frequency, intensity, and energy levels over the last 14 days. Log a few sessions and I can flag overtraining risk.'
+    return 'I compare session frequency, intensity, and energy over time. Keep logging sessions and I can flag recovery needs.'
   }
 
-  return 'Soccer coach is in local mode. Run `npm run dev:vercel` with OpenAI + Supabase env vars for live coaching, or deploy to Vercel with those keys set.'
+  return 'Sign in and add your OpenAI key in **Settings** (or deploy with `OPENAI_API_KEY`) so I can answer using your session history.'
 }
 
 export function getStubInsight(mode: CoachInsight['mode']): string {
   const stubs: Record<CoachInsight['mode'], string> = {
-    training_plan: 'Log training sessions to unlock a personalized weekly plan. Sessions drive load calculations and drill selection.',
-    technical: 'Add technical ratings to your training sessions. I\'ll prioritize your lowest-rated skills with drill progressions.',
-    tactical: 'Log match results and position data. Tactical advice will align with your recent performances and role.',
-    development: 'Set active goals and track weaknesses/strengths. I\'ll build a multi-week development roadmap from that profile.',
+    training_plan: 'Log practice sessions, then click **Generate** for a personalized weekly plan.',
+    technical: 'Add session focus and “to work on” notes — insights will target those areas.',
+    tactical: 'Log session notes and goals — guidance will align with your recent work.',
+    development: 'Set active goals and track development areas for a multi-week roadmap.',
   }
   return stubs[mode]
 }

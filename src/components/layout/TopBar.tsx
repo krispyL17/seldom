@@ -7,13 +7,7 @@ import { useAuth } from '@hooks/useAuth'
 import { useUserPreferences } from '@features/preferences'
 import { NotificationCenter, useNotifications } from '@features/notifications'
 import { IconButton } from '@components/ui/IconButton'
-import {
-  IconBell,
-  IconMenu,
-  IconPlus,
-  IconSearch,
-  IconUser,
-} from '@components/ui/icons'
+import { IconBell, IconMenu, IconSearch, IconUser } from '@components/ui/icons'
 
 interface TopBarProps {
   onMenuOpen: () => void
@@ -22,7 +16,7 @@ interface TopBarProps {
 export function TopBar({ onMenuOpen }: TopBarProps) {
   const { pathname } = useLocation()
   const { user } = useAuth()
-  const { hobbyTabLabel } = useUserPreferences()
+  const { hobbyTabLabel, hobbyPassion } = useUserPreferences()
   const { unreadCount, togglePanel } = useNotifications()
 
   const firstName =
@@ -30,7 +24,7 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
     user?.email?.split('@')[0] ??
     'there'
 
-  const pageTitle = getPageTitle(pathname, hobbyTabLabel)
+  const pageTitle = getPageTitle(pathname, hobbyTabLabel, hobbyPassion)
   const greeting = getGreeting()
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -98,29 +92,7 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
             <IconSearch />
           </IconButton>
 
-          <Link
-            to="/tasks"
-            className={cn(
-              'hidden h-8 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] px-3 text-xs font-medium sm:inline-flex',
-              'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]',
-            )}
-          >
-            <IconPlus width={16} height={16} />
-            <span className="hidden lg:inline">Quick Add</span>
-          </Link>
-
-          <Link
-            to="/tasks"
-            aria-label="Quick add task"
-            className={cn(
-              'inline-flex h-9 w-9 items-center justify-center rounded-full sm:hidden',
-              'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]',
-            )}
-          >
-            <IconPlus />
-          </Link>
-
-          <IconButton label={bellLabel} dot={unreadCount > 0} onClick={togglePanel}>
+          <IconButton label={bellLabel} badgeCount={unreadCount} onClick={togglePanel}>
             <IconBell />
           </IconButton>
 
