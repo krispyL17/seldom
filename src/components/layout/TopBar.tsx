@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 import { cn } from '@lib/utils'
 import { getPageTitle } from '@config/navigation'
-import { USER_PROFILE, getGreeting } from '@config/user'
+import { getGreeting, FALLBACK_USER_PROFILE } from '@config/user'
+import { useUserProfile } from '@hooks/useUserProfile'
 import { Button } from '@components/ui/Button'
 import { IconButton } from '@components/ui/IconButton'
 import {
@@ -23,8 +24,10 @@ interface TopBarProps {
  */
 export function TopBar({ onMenuOpen }: TopBarProps) {
   const { pathname } = useLocation()
+  const { profile } = useUserProfile()
   const pageTitle = getPageTitle(pathname)
   const greeting = getGreeting()
+  const firstName = profile?.first_name || FALLBACK_USER_PROFILE.firstName
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'short',
@@ -43,7 +46,7 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
             {pageTitle}
           </h1>
           <p className="truncate text-[10px] text-[var(--color-text-tertiary)]">
-            {greeting}, {USER_PROFILE.firstName}
+            {greeting}, {firstName}
           </p>
         </div>
       </div>
@@ -54,7 +57,7 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
           {today}
         </p>
         <p className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
-          {greeting}, {USER_PROFILE.firstName}
+          {greeting}, {firstName}
         </p>
       </div>
 

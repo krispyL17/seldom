@@ -30,3 +30,24 @@ export type RecoveryStatus = 'Good' | 'Moderate' | 'Poor'
 
 /** Calendar event categories */
 export type CalendarEventType = 'training' | 'recovery' | 'tactical' | 'match'
+
+/** User profile data collected during onboarding */
+export interface UserProfile extends BaseEntity {
+  user_id: string
+  first_name: string
+  last_name?: string
+  sport: string
+  position?: string
+  experience_level: 'beginner' | 'intermediate' | 'advanced' | 'professional'
+  goals: string[]
+  target_training_days_per_week: number
+  target_sleep_hours: number
+  timezone: string
+  completed_onboarding: boolean
+}
+
+/** Onboarding step validation results */
+export interface OnboardingValidation {
+  isValid: boolean
+  errors: Record<string, string>
+}
