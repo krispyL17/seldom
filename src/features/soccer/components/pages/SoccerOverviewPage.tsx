@@ -122,10 +122,11 @@ export function SoccerOverviewPage() {
         <ul className="grid gap-2 sm:grid-cols-2">
           {aiCoachTips.map((tip) => (
             <li
-              key={tip}
+              key={tip.id}
               className="rounded-[var(--radius-sm)] border border-[var(--color-accent)]/15 bg-[var(--color-accent)]/5 px-3 py-2 text-xs text-[var(--color-text-secondary)]"
             >
-              {tip}
+              <div className="font-medium">{tip.title}</div>
+              <div className="mt-1 text-[var(--color-text-tertiary)]">{tip.description}</div>
             </li>
           ))}
         </ul>

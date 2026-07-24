@@ -101,10 +101,11 @@ export function AiCoachPage() {
         <ul className="space-y-2">
           {aiCoachTips.map((tip) => (
             <li
-              key={tip}
+              key={tip.id}
               className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2 text-xs text-[var(--color-text-secondary)]"
             >
-              {tip}
+              <div className="font-medium">{tip.title}</div>
+              <div className="mt-1 text-[var(--color-text-tertiary)]">{tip.description}</div>
             </li>
           ))}
         </ul>
