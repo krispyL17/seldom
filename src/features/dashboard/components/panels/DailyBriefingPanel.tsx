@@ -1,6 +1,8 @@
 import { Badge } from '@components/ui/Badge'
 import { IconCheck } from '@components/ui/icons'
 import { Panel, PanelDivider, DataRow } from '@components/ui/Panel'
+import { useUserProfile } from '@hooks/useUserProfile'
+import { getGreeting } from '@config/user'
 import type { RecoveryStatus } from '@/types'
 import { dailyBriefing } from '../../data/mockData'
 
@@ -11,11 +13,14 @@ const RECOVERY_VARIANTS: Record<RecoveryStatus, 'success' | 'warning' | 'danger'
 }
 
 export function DailyBriefingPanel() {
+  const { profile } = useUserProfile()
   const recoveryVariant = RECOVERY_VARIANTS[dailyBriefing.recovery.status]
+  const greeting = getGreeting()
+  const firstName = profile?.first_name || 'User'
 
   return (
     <Panel
-      title="Daily Briefing"
+      title={`${greeting}, ${firstName}`}
       subtitle="AI-generated overview"
       badge={<Badge variant="accent">AI</Badge>}
       fullWidth

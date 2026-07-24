@@ -3,6 +3,7 @@
  */
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from '@components/auth/ProtectedRoute'
+import { OnboardingGuard } from '@components/auth/OnboardingGuard'
 import { GuestRoute } from '@components/auth/GuestRoute'
 import { MainLayout } from '@components/layout/MainLayout'
 import {
@@ -11,6 +12,7 @@ import {
   ForgotPasswordPage,
   ResetPasswordPage,
 } from '@features/auth'
+import { OnboardingPage } from '@features/onboarding'
 import { HomePage } from '@features/dashboard'
 import { TasksPage } from '@features/tasks'
 import { GoalsPage } from '@features/goals'
@@ -53,10 +55,15 @@ export function AppRouter() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
 
-      {/* App pages — require authentication */}
+      {/* Onboarding — requires authentication but not onboarding completion */}
       <Route element={<ProtectedRoute />}>
-        <Route element={<MainLayout />}>
-          <Route index element={<HomePage />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
+      </Route>
+
+      {/* App pages — require authentication and completed onboarding */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<OnboardingGuard><MainLayout /></OnboardingGuard>}>
+            <Route index element={<HomePage />} />
           <Route path="tasks" element={<TasksPage />} />
           <Route path="goals" element={<GoalsPage />} />
           <Route path="college" element={<CollegeLayout />}>
@@ -82,7 +89,7 @@ export function AppRouter() {
           </Route>
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="assistant" element={<AssistantPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+            <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Route>
     </Routes>
