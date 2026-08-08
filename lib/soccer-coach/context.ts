@@ -2,6 +2,40 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { SoccerPlayerContext } from './types.js'
 import { resolveFirstName } from './personalize.js'
 
+function parseSideBalance(raw: unknown): { dominant_pct: number; weak_pct: number } | null {
+  if (!raw || typeof raw !== 'object') return null
+  const o = raw as { dominant_pct?: number; weak_pct?: number }
+  if (typeof o.dominant_pct !== 'number' || typeof o.weak_pct !== 'number') return null
+  return { dominant_pct: o.dominant_pct, weak_pct: o.weak_pct }
+}
+
+function parseAthleteDev(raw: unknown): SoccerPlayerContext['athleteDevelopment'] {
+  if (!raw || typeof raw !== 'object') return null
+  const o = raw as Record<string, unknown>
+  const streak = (o.streak ?? {}) as Record<string, unknown>
+  const injury = (o.injuryMode ?? {}) as Record<string, unknown>
+  const side = (o.sideProfile ?? {}) as Record<string, unknown>
+  const imports = Array.isArray(o.knowledgeImports) ? o.knowledgeImports : []
+  const customTabs = Array.isArray(o.customTabs)
+    ? (o.customTabs as Array<{ label?: string; focusHint?: string }>)
+    : []
+  return {
+    streakCurrent: typeof streak.current === 'number' ? streak.current : 0,
+    streakLongest: typeof streak.longest === 'number' ? streak.longest : 0,
+    streakFrozen: Boolean(streak.frozen),
+    injuryModeActive: Boolean(injury.active),
+    dominantSide: String(side.dominantSide ?? 'unknown'),
+    weakSide: String(side.weakSide ?? 'unknown'),
+    avgWeakSidePct: null,
+    recoveryScore: null,
+    workloadScore: null,
+    fatigueLevel: null,
+    knowledgeChunkCount: imports.length,
+    customTabs,
+    gymEnabled: Boolean(o.gymEnabled),
+  }
+}
+
 const TECHNICAL_LABELS: Record<string, string> = {
   first_touch: 'First Touch',
   passing: 'Passing',
@@ -57,7 +91,7 @@ export async function assembleSoccerContext(
 ): Promise<SoccerPlayerContext> {
   const since = daysAgo(90)
 
-  const [sessionsRes, matchesRes, insightsRes, goalsRes, profileRes] = await Promise.all([
+  const [sessionsRes, matchesRes, insightsRes, goalsRes, profileRes, prefsRes] = await Promise.all([
     client
       .from('training_sessions')
       .select('*')
@@ -81,7 +115,8 @@ export async function assembleSoccerContext(
       .or('category.eq.soccer,category.eq.Soccer,category.eq.football,category.eq.Football,category.is.null')
       .order('created_at', { ascending: false })
       .limit(10),
-    client.from('soccer_user_data').select('profile').eq('user_id', userId).maybeSingle(),
+    client.from('soccer_user_data').select('profile, athlete_development').eq('user_id', userId).maybeSingle(),
+    client.from('user_preferences').select('hobby_tab_label, hobby_passion').eq('user_id', userId).maybeSingle(),
   ])
 
   const trainingSessions = (sessionsRes.data ?? []).map((row) => ({
@@ -93,7 +128,18 @@ export async function assembleSoccerContext(
     energy: row.energy_level as number,
     notes: row.notes as string | null,
     ratings: parseRatings(row.technical_ratings),
+    sideBalance: parseSideBalance(row.side_balance),
   }))
+
+  const sideBalances = trainingSessions
+    .map((s) => s.sideBalance)
+    .filter((b): b is { dominant_pct: number; weak_pct: number } => b != null)
+  const avgWeakSidePct =
+    sideBalances.length > 0
+      ? Math.round(
+          (sideBalances.reduce((sum, b) => sum + b.weak_pct, 0) / sideBalances.length) * 10,
+        ) / 10
+      : null
 
   const recent14 = trainingSessions.filter((s) => s.date >= daysAgo(14))
   const loadSummary = {
@@ -108,6 +154,18 @@ export async function assembleSoccerContext(
         ? Math.round((recent14.reduce((sum, s) => sum + s.energy, 0) / recent14.length) * 10) / 10
         : 0,
   }
+
+  const recent7 = trainingSessions.filter((s) => s.date >= daysAgo(7))
+  const minutesLast7 = recent7.reduce((sum, s) => sum + s.durationMin, 0)
+  const workloadScore = Math.min(
+    100,
+    Math.round(minutesLast7 * 0.8 + loadSummary.avgIntensityLast14Days * 4),
+  )
+  const recoveryScore = Math.max(0, Math.min(100, 100 - workloadScore + (recent7.length > 0 ? 5 : 15)))
+  let fatigueLevel: string = 'low'
+  if (workloadScore >= 75) fatigueLevel = 'very_high'
+  else if (workloadScore >= 55) fatigueLevel = 'high'
+  else if (workloadScore >= 35) fatigueLevel = 'moderate'
 
   const matches = (matchesRes.data ?? []).map((row) => ({
     date: row.match_date as string,
@@ -148,6 +206,14 @@ export async function assembleSoccerContext(
     status: row.status as string,
   }))
 
+  const athleteDevelopment = parseAthleteDev(profileRes.data?.athlete_development)
+  if (athleteDevelopment) {
+    athleteDevelopment.avgWeakSidePct = avgWeakSidePct
+    athleteDevelopment.workloadScore = workloadScore
+    athleteDevelopment.recoveryScore = recoveryScore
+    athleteDevelopment.fatigueLevel = fatigueLevel
+  }
+
   return {
     playerProfile: profileRes.data?.profile as SoccerPlayerContext['playerProfile'],
     trainingSessions,
@@ -157,6 +223,15 @@ export async function assembleSoccerContext(
     goals,
     derivedSkills: deriveSkills(trainingSessions),
     loadSummary,
+    athleteDevelopment,
+    performanceTab: {
+      label: (prefsRes.data?.hobby_tab_label as string) ?? 'Performance',
+      passion: (prefsRes.data?.hobby_passion as string) ?? '',
+      customTabs: (athleteDevelopment?.customTabs ?? [])
+        .filter((tab) => tab.label)
+        .map((tab) => ({ label: tab.label!, focusHint: tab.focusHint ?? '' })),
+      gymEnabled: Boolean(athleteDevelopment?.gymEnabled),
+    },
   }
 }
 
@@ -238,6 +313,61 @@ export function formatSoccerContextBlock(context: SoccerPlayerContext): string {
           .join('\n'),
     )
   }
+
+  if (context.performanceTab?.passion || (context.performanceTab?.customTabs.length ?? 0) > 0) {
+    const perf = context.performanceTab
+    sections.push(
+      '### Performance tabs (user-customized)\n' +
+        `- Area label: ${perf?.label ?? 'Performance'}\n` +
+        `- Sport / passion: ${perf?.passion || '—'}\n` +
+        `- Gym tab: ${perf?.gymEnabled ? 'enabled' : 'off'}\n` +
+        (perf?.customTabs ?? [])
+          .slice(0, 6)
+          .map((tab) => `- Tab "${tab.label}"${tab.focusHint ? `: ${tab.focusHint}` : ''}`)
+          .join('\n') +
+        '\nTailor coaching to these tabs and focus areas.',
+    )
+  }
+
+  if (context.athleteDevelopment) {
+    const a = context.athleteDevelopment
+    sections.push(
+      '### Athlete Development\n' +
+        `- Training streak: ${a.streakCurrent} days (best ${a.streakLongest})${a.streakFrozen ? ' — FROZEN (Injury Mode)' : ''}\n` +
+        `- Injury Mode: ${a.injuryModeActive ? 'ACTIVE — prioritize recovery, do not push progression' : 'off'}\n` +
+        `- Dominant side: ${a.dominantSide} | Weak side: ${a.weakSide}${a.avgWeakSidePct != null ? ` | Avg weak-side session work: ${a.avgWeakSidePct}%` : ''}\n` +
+        `- Workload score (7d): ${a.workloadScore ?? '—'} | Recovery score: ${a.recoveryScore ?? '—'} | Fatigue: ${a.fatigueLevel ?? '—'}\n` +
+        `- Imported knowledge chunks: ${a.knowledgeChunkCount}`,
+    )
+  }
+
+  const weakFootSessions = context.trainingSessions.filter((s) => s.ratings.weak_foot != null)
+  if (weakFootSessions.length > 0) {
+    const avgWeakFoot =
+      Math.round(
+        (weakFootSessions.reduce((sum, s) => sum + (s.ratings.weak_foot ?? 0), 0) /
+          weakFootSessions.length) *
+          10,
+      ) / 10
+    const avgShooting =
+      Math.round(
+        (weakFootSessions.reduce((sum, s) => sum + (s.ratings.shooting ?? 0), 0) /
+          weakFootSessions.length) *
+          10,
+      ) / 10
+    sections.push(
+      '### Soccer Technical Balance (from session ratings)\n' +
+        `- Avg weak foot rating: ${avgWeakFoot}/10\n` +
+        `- Avg shooting rating: ${avgShooting}/10\n` +
+        'Use side balance and weak foot data to recommend balanced training — not medical advice.',
+    )
+  }
+
+  sections.push(
+    '### Coaching Instructions\n' +
+      'Analyze training sessions, workload, weak-side work, recovery needs, consistency (streak), and skill progression. ' +
+      'Suggest concrete sessions and recovery actions. If the user mentions pain or injury, recommend Injury Mode (streak freeze) — never diagnose.',
+  )
 
   return sections.join('\n\n')
 }

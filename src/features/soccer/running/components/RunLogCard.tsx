@@ -12,14 +12,14 @@ interface RunLogCardProps {
 }
 
 export function RunLogCard({ run, isPr, onEdit, onDelete }: RunLogCardProps) {
-  const { formatPace } = useDistanceUnit()
+  const { formatDistance, formatPace } = useDistanceUnit()
 
   return (
     <article className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-[var(--color-text-primary)]">
-            {run.distance_label} — {formatDuration(run.duration_sec)}
+            {formatDistance(run.distance_m)} — {formatDuration(run.duration_sec)}
           </p>
           <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
             {formatRunDate(run.run_date)} · {formatPace(run.duration_sec, run.distance_m)}

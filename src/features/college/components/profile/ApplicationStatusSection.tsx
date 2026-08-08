@@ -23,6 +23,7 @@ export function ApplicationStatusSection({
 
   return (
     <Panel
+      fillHeight
       title={isSeniorMode ? 'Application Status' : 'Research Status'}
       subtitle={isSeniorMode ? 'Current pipeline stage' : 'Where this school fits right now'}
     >

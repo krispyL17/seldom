@@ -1,38 +1,32 @@
 import type { MemoryServerConfig } from '../../../memory/types.js'
+import {
+  checkOllamaHealth,
+  loadOllamaConfig,
+  ollamaEmbed,
+} from '../../../lib/ollama/service.js'
 
+/** Delegates to the shared lib/ollama service — single AI integration point. */
 export class OllamaClient {
-  constructor(private readonly config: MemoryServerConfig) {}
+  private readonly config: NonNullable<ReturnType<typeof loadOllamaConfig>>
+
+  constructor(serverConfig: MemoryServerConfig) {
+    const loaded = loadOllamaConfig()
+    this.config = loaded ?? {
+      baseUrl: serverConfig.ollamaBaseUrl,
+      chatModel: process.env.OLLAMA_MODEL?.trim() ?? '',
+      embedModel: process.env.OLLAMA_EMBED_MODEL?.trim() || process.env.OLLAMA_MODEL?.trim() || '',
+    }
+  }
 
   async embed(text: string): Promise<number[]> {
-    const url = `${this.config.ollamaBaseUrl}/api/embeddings`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: this.config.embeddingModel,
-        prompt: text,
-      }),
-    })
-
-    if (!response.ok) {
-      const body = await response.text()
-      throw new Error(`Ollama embedding failed (${response.status}): ${body}`)
+    if (!this.config.chatModel) {
+      throw new Error('OLLAMA_MODEL is not configured')
     }
-
-    const data = (await response.json()) as { embedding?: number[] }
-    if (!data.embedding || data.embedding.length === 0) {
-      throw new Error('Ollama returned an empty embedding')
-    }
-
-    return data.embedding
+    return ollamaEmbed(this.config, text)
   }
 
   async healthCheck(): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.config.ollamaBaseUrl}/api/tags`)
-      return response.ok
-    } catch {
-      return false
-    }
+    const health = await checkOllamaHealth(this.config)
+    return health.online
   }
 }

@@ -43,3 +43,36 @@ export function addLocalGymLog(
   writeAll([log, ...readAll()])
   return log
 }
+
+export function updateLocalGymLog(
+  id: string,
+  patch: {
+    session_date?: string
+    duration_min?: number
+    workout_type?: string | null
+    notes?: string | null
+  },
+): GymLog | null {
+  const all = readAll()
+  const index = all.findIndex((log) => log.id === id)
+  if (index === -1) return null
+
+  const current = all[index]!
+  const updated: GymLog = {
+    ...current,
+    ...patch,
+    workout_type:
+      patch.workout_type === undefined
+        ? current.workout_type
+        : patch.workout_type?.trim() || null,
+    notes:
+      patch.notes === undefined ? current.notes : patch.notes?.trim() || null,
+  }
+  all[index] = updated
+  writeAll(all)
+  return updated
+}
+
+export function deleteLocalGymLog(id: string): void {
+  writeAll(readAll().filter((log) => log.id !== id))
+}

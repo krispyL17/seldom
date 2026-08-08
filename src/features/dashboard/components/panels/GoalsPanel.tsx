@@ -23,7 +23,7 @@ function formatEta(targetDate: string | null) {
 
 export function GoalsPanel() {
   const { goals, loading, error, reload } = useGoals()
-  const active = goals.filter((g) => g.status === 'active').slice(0, 3)
+  const active = goals.filter((g) => g.status === 'active')
 
   if (error) {
     return <ErrorPanel message={error} onRetry={() => void reload()} title="Goals" />
@@ -31,6 +31,7 @@ export function GoalsPanel() {
 
   return (
     <Panel
+      scrollCap
       title="Long-Term Goals"
       subtitle={loading ? 'Loading…' : `${active.length} active objective${active.length === 1 ? '' : 's'}`}
       action={<PanelActionLink to="/goals">Manage</PanelActionLink>}

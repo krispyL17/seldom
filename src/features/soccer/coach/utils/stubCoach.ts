@@ -22,7 +22,7 @@ export function getStubCoachReply(message: string): string {
     return 'I compare session frequency, intensity, and energy over time. Keep logging sessions and I can flag recovery needs.'
   }
 
-  return 'Sign in and add your OpenAI key in **Settings** (or deploy with `OPENAI_API_KEY`) so I can answer using your session history.'
+  return 'Sign in and start **Ollama** with `OLLAMA_MODEL` set in `.env.local` so I can answer using your session history.'
 }
 
 export function getStubInsight(mode: CoachInsight['mode']): string {

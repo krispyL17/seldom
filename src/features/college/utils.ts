@@ -14,6 +14,7 @@ import type {
   ScholarshipStatus,
   TimelineEntry,
 } from './types'
+import { isResultMilestoneDeadline, globalDeadlineKey } from './data/admissionDeadlines'
 
 const STATUS_LABELS: Record<ApplicationStatus, string> = {
   researching: 'Researching',
@@ -151,12 +152,23 @@ export function getUpcomingDeadlines(
 }
 
 export function getAllDeadlines(colleges: College[]): (CollegeDeadline & { collegeName: string })[] {
-  return colleges.flatMap((college) =>
-    college.deadlines.map((deadline) => ({
-      ...deadline,
-      collegeName: college.name,
-    })),
-  )
+  const seenGlobal = new Set<string>()
+  const result: (CollegeDeadline & { collegeName: string })[] = []
+
+  for (const college of colleges) {
+    for (const deadline of college.deadlines) {
+      const globalKey = globalDeadlineKey(deadline)
+      if (globalKey) {
+        if (seenGlobal.has(globalKey)) continue
+        seenGlobal.add(globalKey)
+        result.push({ ...deadline, collegeName: 'All colleges' })
+      } else {
+        result.push({ ...deadline, collegeName: college.name })
+      }
+    }
+  }
+
+  return result
 }
 
 export function getCollegeById(colleges: College[], id: string): College | undefined {
@@ -251,16 +263,32 @@ export function buildTimeline(
     })
   }
 
+  const seenGlobal = new Set<string>()
+
   for (const college of colleges) {
     for (const deadline of college.deadlines) {
-      entries.push({
-        id: `deadline-${college.id}-${deadline.id}`,
-        date: deadline.date,
-        title: deadline.label,
-        subtitle: college.name,
-        category: 'deadline',
-        entityId: college.id,
-      })
+      const globalKey = globalDeadlineKey(deadline)
+      if (globalKey) {
+        if (seenGlobal.has(globalKey)) continue
+        seenGlobal.add(globalKey)
+        entries.push({
+          id: `deadline-global-${globalKey}`,
+          date: deadline.date,
+          title: deadline.label,
+          subtitle: 'All colleges',
+          category: isResultMilestoneDeadline(deadline) ? 'milestone' : 'deadline',
+          entityId: college.id,
+        })
+      } else {
+        entries.push({
+          id: `deadline-${college.id}-${deadline.id}`,
+          date: deadline.date,
+          title: deadline.label,
+          subtitle: college.name,
+          category: isResultMilestoneDeadline(deadline) ? 'milestone' : 'deadline',
+          entityId: college.id,
+        })
+      }
     }
   }
 

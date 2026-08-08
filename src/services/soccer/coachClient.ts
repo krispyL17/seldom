@@ -1,8 +1,6 @@
 /**
- * Soccer AI coach client — calls /api/soccer/coach/* routes.
+ * Soccer AI coach client — calls /api/soccer/coach/* routes (Ollama backend).
  */
-
-import { openAiKeyHeaders } from '@lib/userOpenAiKey'
 
 export type CoachMode = 'chat' | 'training_plan' | 'technical' | 'tactical' | 'development'
 
@@ -52,19 +50,22 @@ export async function sendCoachMessage(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
-      ...openAiKeyHeaders(),
     },
     body: JSON.stringify(request),
   })
 
   const body = (await response.json().catch(() => ({}))) as {
     error?: string
+    hint?: string
     reply?: string
     meta?: CoachResponse['meta']
   }
 
   if (!response.ok) {
-    throw new CoachApiError(body.error ?? `Coach API error (${response.status})`, response.status)
+    throw new CoachApiError(
+      [body.error, body.hint].filter(Boolean).join(' — ') || `Coach API error (${response.status})`,
+      response.status,
+    )
   }
 
   if (!body.reply) {
@@ -92,19 +93,22 @@ export async function generateCoachPlan(
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
-      ...openAiKeyHeaders(),
     },
     body: JSON.stringify(request),
   })
 
   const body = (await response.json().catch(() => ({}))) as {
     error?: string
+    hint?: string
     reply?: string
     meta?: CoachResponse['meta']
   }
 
   if (!response.ok) {
-    throw new CoachApiError(body.error ?? `Coach API error (${response.status})`, response.status)
+    throw new CoachApiError(
+      [body.error, body.hint].filter(Boolean).join(' — ') || `Coach API error (${response.status})`,
+      response.status,
+    )
   }
 
   if (!body.reply) {
@@ -118,7 +122,7 @@ export async function fetchCoachSuggestions(
   accessToken: string,
 ): Promise<{ suggestions: string[]; welcome?: string }> {
   const response = await fetch('/api/soccer/coach/chat', {
-    headers: { Authorization: `Bearer ${accessToken}`, ...openAiKeyHeaders() },
+    headers: { Authorization: `Bearer ${accessToken}` },
   })
 
   const body = (await response.json().catch(() => ({}))) as {

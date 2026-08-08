@@ -84,6 +84,7 @@ export const SOCCER_NAV = [
   { id: 'training', label: 'Training', href: '/soccer/training' },
   { id: 'running', label: 'Running', href: '/soccer/running' },
   { id: 'matches', label: 'Matches', href: '/soccer/matches' },
+  { id: 'stats', label: 'Stats', href: '/soccer/stats' },
   { id: 'technical', label: 'Technical', href: '/soccer/technical' },
   { id: 'physical', label: 'Physical', href: '/soccer/physical' },
   { id: 'weaknesses', label: 'Weaknesses', href: '/soccer/weaknesses' },

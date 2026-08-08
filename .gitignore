@@ -40,5 +40,7 @@ pnpm-debug.log*
 # Vercel
 .vercel
 
-.vercel
+# Local binaries (downloaded by scripts/ollama-tunnel.ps1)
+tools/cloudflared.exe
+
 .env*

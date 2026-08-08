@@ -1,10 +1,30 @@
-import type { ThemeAppearance, ThemePalette } from '@/types/userPreferences'
+import type { CustomThemeId, CustomThemes, ThemeAppearance, ThemePalette } from '@/types/userPreferences'
+import { isCustomThemePalette } from '@/types/userPreferences'
 
 /** Gradient stops cycled across sidebar tabs in order. */
-export const PALETTE_GRADIENT_STOPS: Record<ThemePalette, readonly string[]> = {
+export const PALETTE_GRADIENT_STOPS: Record<'classic' | 'sunset' | 'ocean', readonly string[]> = {
   classic: ['#5a8fd4', '#6b6794', '#8b87b8'],
   sunset: ['#d4726a', '#e8956a', '#f2b8c6'],
   ocean: ['#3d7dd4', '#5b6bb5', '#7b5ba8'],
+}
+
+export function getCustomThemeStops(
+  customThemes: CustomThemes,
+  id: CustomThemeId,
+): readonly [string, string, string] | null {
+  const def = customThemes[id]
+  if (!def?.colors?.length) return null
+  return def.colors
+}
+
+export function paletteGradientStops(
+  palette: ThemePalette,
+  customThemes: CustomThemes = {},
+): readonly string[] {
+  if (isCustomThemePalette(palette)) {
+    return getCustomThemeStops(customThemes, palette) ?? PALETTE_GRADIENT_STOPS.classic
+  }
+  return PALETTE_GRADIENT_STOPS[palette]
 }
 
 export const THEME_PALETTE_OPTIONS: {
@@ -90,8 +110,12 @@ export function sampleGradient(stops: readonly string[], t: number): string {
 }
 
 /** Assign gradient colors to nav tabs in sidebar order. */
-export function defaultNavTabColors(palette: ThemePalette, navIds: readonly string[]): Record<string, string> {
-  const stops = PALETTE_GRADIENT_STOPS[palette]
+export function defaultNavTabColors(
+  palette: ThemePalette,
+  navIds: readonly string[],
+  customThemes: CustomThemes = {},
+): Record<string, string> {
+  const stops = paletteGradientStops(palette, customThemes)
   const count = navIds.length
   if (count === 0) return {}
   return Object.fromEntries(
@@ -107,11 +131,13 @@ export function resolveNavTabColor(
   palette: ThemePalette,
   navIds: readonly string[],
   customColors: Record<string, string>,
+  customThemes: CustomThemes = {},
 ): string {
   const custom = customColors[navId]?.trim()
   if (custom && /^#[0-9a-fA-F]{3,8}$/.test(custom)) return custom
-  const defaults = defaultNavTabColors(palette, navIds)
-  return defaults[navId] ?? PALETTE_GRADIENT_STOPS[palette][0]
+  const defaults = defaultNavTabColors(palette, navIds, customThemes)
+  const stops = paletteGradientStops(palette, customThemes)
+  return defaults[navId] ?? stops[0]
 }
 
 function resolveAppearance(appearance: ThemeAppearance): 'dark' | 'light' {
@@ -158,7 +184,55 @@ const CLASSIC_LIGHT: ThemeTokens = {
   '--color-border-strong': 'rgba(0, 0, 0, 0.14)',
 }
 
-function buildPaletteTokens(palette: ThemePalette, mode: 'dark' | 'light'): ThemeTokens {
+function buildTokensFromStops(stops: readonly string[], mode: 'dark' | 'light'): ThemeTokens {
+  const primary = stops[0]
+  const mid = stops[1] ?? stops[0]
+  const accent = stops[stops.length - 1] ?? mid
+
+  if (mode === 'dark') {
+    return {
+      '--color-surface-base': '#0a0e16',
+      '--color-surface-raised': '#101622',
+      '--color-surface-overlay': '#161e2e',
+      '--color-surface-elevated': '#1e2840',
+      '--color-accent': rgbToHex(mix(hexToRgb(primary), hexToRgb(accent), 0.35)),
+      '--color-accent-muted': mid,
+      '--color-accent-hover': rgbToHex(mix(hexToRgb(primary), hexToRgb(mid), 0.5)),
+      '--color-accent-subtle': withAlpha(primary, 0.16),
+      '--color-brand': primary,
+      '--color-brand-muted': mid,
+      '--color-brand-bg': withAlpha(primary, 0.12),
+      '--color-text-primary': '#e8edf8',
+      '--color-text-secondary': '#9aa8c4',
+      '--color-text-tertiary': '#64708a',
+      '--color-border': 'rgba(160, 190, 255, 0.08)',
+      '--color-border-strong': 'rgba(160, 190, 255, 0.14)',
+      '--color-surface-base-gradient': `linear-gradient(165deg, #0a0e16 0%, ${withAlpha(primary, 0.15)} 50%, ${withAlpha(accent, 0.12)} 100%)`,
+    }
+  }
+
+  return {
+    '--color-surface-base': '#f2f6fc',
+    '--color-surface-raised': '#ffffff',
+    '--color-surface-overlay': '#e8eef8',
+    '--color-surface-elevated': '#dce6f4',
+    '--color-accent': rgbToHex(mix(hexToRgb(primary), hexToRgb(accent), 0.4)),
+    '--color-accent-muted': mid,
+    '--color-accent-hover': rgbToHex(mix(hexToRgb(primary), hexToRgb(mid), 0.55)),
+    '--color-accent-subtle': withAlpha(primary, 0.1),
+    '--color-brand': primary,
+    '--color-brand-muted': accent,
+    '--color-brand-bg': withAlpha(primary, 0.08),
+    '--color-text-primary': '#141c2e',
+    '--color-text-secondary': '#4a5878',
+    '--color-text-tertiary': '#7a88a8',
+    '--color-border': 'rgba(40, 70, 140, 0.1)',
+    '--color-border-strong': 'rgba(40, 70, 140, 0.16)',
+    '--color-surface-base-gradient': `linear-gradient(165deg, #f6f9ff 0%, ${withAlpha(primary, 0.08)} 50%, ${withAlpha(accent, 0.06)} 100%)`,
+  }
+}
+
+function buildPaletteTokens(palette: 'sunset' | 'ocean', mode: 'dark' | 'light'): ThemeTokens {
   const stops = PALETTE_GRADIENT_STOPS[palette]
   const primary = stops[0]
   const mid = stops[1] ?? stops[0]
@@ -256,14 +330,46 @@ function buildPaletteTokens(palette: ThemePalette, mode: 'dark' | 'light'): Them
 export function resolveThemeTokens(
   palette: ThemePalette,
   appearance: ThemeAppearance,
+  customThemes: CustomThemes = {},
 ): { mode: 'dark' | 'light'; tokens: ThemeTokens } {
+  if (isCustomThemePalette(palette)) {
+    const stops = getCustomThemeStops(customThemes, palette)
+    const mode = resolveAppearance(appearance)
+    if (stops) {
+      return { mode, tokens: buildTokensFromStops(stops, mode) }
+    }
+    return { mode, tokens: mode === 'dark' ? CLASSIC_DARK : CLASSIC_LIGHT }
+  }
+
   const mode = resolveAppearance(appearance)
   const tokens =
     palette === 'classic' ? (mode === 'dark' ? CLASSIC_DARK : CLASSIC_LIGHT) : buildPaletteTokens(palette, mode)
   return { mode, tokens }
 }
 
-export function gradientPreviewCss(palette: ThemePalette): string {
-  const stops = PALETTE_GRADIENT_STOPS[palette]
+export function gradientPreviewCss(palette: ThemePalette, customThemes: CustomThemes = {}): string {
+  const stops = paletteGradientStops(palette, customThemes)
   return `linear-gradient(90deg, ${stops.join(', ')})`
+}
+
+/** Shift custom bookmark overrides when the palette changes. */
+export function remapNavTabColors(
+  customColors: Record<string, string>,
+  oldPalette: ThemePalette,
+  newPalette: ThemePalette,
+  navIds: readonly string[],
+  oldCustomThemes: CustomThemes = {},
+  newCustomThemes: CustomThemes = {},
+): Record<string, string> {
+  if (Object.keys(customColors).length === 0 || oldPalette === newPalette) return customColors
+  const oldDefaults = defaultNavTabColors(oldPalette, navIds, oldCustomThemes)
+  const newDefaults = defaultNavTabColors(newPalette, navIds, newCustomThemes)
+  const remapped: Record<string, string> = {}
+  for (const id of navIds) {
+    const custom = customColors[id]
+    if (!custom) continue
+    if (custom.toLowerCase() === oldDefaults[id]?.toLowerCase()) continue
+    remapped[id] = newDefaults[id] ?? custom
+  }
+  return remapped
 }

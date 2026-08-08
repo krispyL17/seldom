@@ -10,8 +10,11 @@ interface ChartPanelProps {
   color?: string
   height?: number
   emptyMessage?: string
+  /** Shown when series has slots but every value is zero. */
+  zeroMessage?: string
   fullWidth?: boolean
   action?: ReactNode
+  formatValue?: (value: number) => string
 }
 
 export function ChartPanel({
@@ -21,22 +24,35 @@ export function ChartPanel({
   color = 'var(--color-accent)',
   height = 72,
   emptyMessage = 'No data yet — log activity to see trends.',
+  zeroMessage = 'No activity in this period yet.',
   fullWidth,
   action,
+  formatValue,
 }: ChartPanelProps) {
-  const hasData = series.data.some((v) => v > 0)
+  const hasPoints = series.data.length > 0
+  const hasValues = series.data.some((v) => v > 0)
 
   return (
     <Panel title={title} subtitle={subtitle} fullWidth={fullWidth} action={action}>
-      {hasData ? (
+      {!hasPoints ? (
+        <p className="text-xs text-[var(--color-text-tertiary)]">{emptyMessage}</p>
+      ) : !hasValues ? (
+        <p className="text-xs text-[var(--color-text-tertiary)]">{zeroMessage}</p>
+      ) : (
         <>
-          <MiniBarChart data={series.data} labels={series.labels} height={height} color={color} />
+          <MiniBarChart
+            data={series.data}
+            labels={series.labels}
+            height={height}
+            color={color}
+            formatValue={formatValue}
+            showAxis
+            showValues
+          />
           {series.unit && (
             <p className="mt-2 text-[10px] text-[var(--color-text-tertiary)]">Unit: {series.unit}</p>
           )}
         </>
-      ) : (
-        <p className="text-xs text-[var(--color-text-tertiary)]">{emptyMessage}</p>
       )}
     </Panel>
   )

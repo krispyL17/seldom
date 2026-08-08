@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { buildContextBlock, combinedScore, recencyScore } from '../../memory/vector.js'
 import type { RetrievedMemory } from '../../memory/types.js'
+import { OllamaUnavailableError } from '../ollama/types.js'
 import type { AssistantEnv } from './types.js'
 import { createEmbedding } from './embeddings.js'
 
@@ -20,7 +21,15 @@ export async function retrieveMemories(
   query: string,
   limit = 8,
 ): Promise<{ memories: RetrievedMemory[]; contextBlock: string }> {
-  const embedding = await createEmbedding(env, query)
+  let embedding: number[]
+  try {
+    embedding = await createEmbedding(env, query)
+  } catch (err) {
+    if (err instanceof OllamaUnavailableError) {
+      return { memories: [], contextBlock: '' }
+    }
+    throw err
+  }
 
   const { data, error } = await client.rpc('match_memories', {
     query_embedding: embedding,

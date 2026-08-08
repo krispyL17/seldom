@@ -74,7 +74,18 @@ export interface OSUserContext {
     phase: 'junior' | 'senior' | 'unknown'
     studentName: string | null
     graduationYear: string | null
-    schools: Array<{ name: string; status: string; progress: number }>
+    highSchool: string | null
+    teamQuality: string | null
+    universityLinks: string | null
+    intendedMajor: string | null
+    testScores: { sat: string | null; act: string | null }
+    schools: Array<{ id: string; name: string; location: string; status: string; progress: number; majors: string[] }>
+  }
+  performance: {
+    tabLabel: string
+    passion: string
+    customTabs: Array<{ label: string; focusHint: string }>
+    gymEnabled: boolean
   }
   soccer: {
     weaknesses: string[]
@@ -99,6 +110,8 @@ export interface OSChatResponse {
     model: string
     proactiveInsights: ProactiveInsight[]
     contextSummary: OSContextSummary
+    suggestedTitle?: string
+    actionsExecuted?: Array<{ type: string; success: boolean; summary: string }>
   }
 }
 

@@ -3,6 +3,7 @@ import { useAuth } from '@hooks/useAuth'
 import { runLogService } from '@services/database/runLogs'
 import type { CreateRunLogInput, RunLog, UpdateRunLogInput } from '../types'
 import { sortRunsChronologically } from '../utils'
+import { triggerAthleteSync } from '../../athlete/streakSyncBridge'
 
 export function useRunLogs() {
   const { user } = useAuth()
@@ -38,6 +39,7 @@ export function useRunLogs() {
       if (!user) throw new Error('Not authenticated')
       const created = await runLogService.create(user.id, input)
       setRuns((prev) => sortRunsChronologically([created, ...prev]))
+      triggerAthleteSync()
       return created
     },
     [user],
@@ -46,12 +48,14 @@ export function useRunLogs() {
   const updateRun = useCallback(async (id: string, input: UpdateRunLogInput) => {
     const updated = await runLogService.update(id, input)
     setRuns((prev) => sortRunsChronologically(prev.map((r) => (r.id === id ? updated : r))))
+    triggerAthleteSync()
     return updated
   }, [])
 
   const deleteRun = useCallback(async (id: string) => {
     await runLogService.delete(id)
     setRuns((prev) => prev.filter((r) => r.id !== id))
+    triggerAthleteSync()
   }, [])
 
   return { runs, loading, error, reload: loadRuns, createRun, updateRun, deleteRun }

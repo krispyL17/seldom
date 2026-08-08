@@ -3,7 +3,6 @@ const LOCAL_APP_DATA_KEYS = [
   'seldom-gym-logs',
   'seldom-assistant-conversations',
   'seldom-notified-deadlines',
-  'seldom-user-openai-key',
   'seldom-user-preferences',
 ] as const
 

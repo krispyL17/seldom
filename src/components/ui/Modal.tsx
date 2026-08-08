@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { IconButton } from '@components/ui/IconButton'
 import { IconClose } from '@components/ui/icons'
 import { cn } from '@lib/utils'
@@ -14,7 +15,7 @@ interface ModalProps {
 const FOCUSABLE =
   'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
-/** Accessible modal overlay for forms and dialogs */
+/** Accessible modal overlay — portaled above app chrome (top bar, nav). */
 export function Modal({ open, onClose, title, children, className }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
@@ -64,8 +65,8 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
 
   if (!open) return null
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[200] flex items-end justify-center sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} aria-hidden />
 
       <div
@@ -75,13 +76,13 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         aria-labelledby="modal-title"
         tabIndex={-1}
         className={cn(
-          'relative flex max-h-[90dvh] w-full flex-col overflow-hidden',
+          'relative flex max-h-[min(90dvh,calc(100dvh-5rem))] w-full flex-col overflow-hidden',
           'rounded-t-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface-raised)]',
           'shadow-[var(--shadow-panel)] sm:max-w-lg sm:rounded-[var(--radius-xl)]',
           className,
         )}
       >
-        <header className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
+        <header className="flex shrink-0 items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
           <h2 id="modal-title" className="text-base font-semibold text-[var(--color-text-primary)]">
             {title}
           </h2>
@@ -90,8 +91,9 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
           </IconButton>
         </header>
 
-        <div className="overflow-y-auto p-5">{children}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

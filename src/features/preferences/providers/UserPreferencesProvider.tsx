@@ -19,6 +19,7 @@ import { SIDEBAR_NAV } from '@config/navigation'
 import { applyThemeFromPreferences } from '@lib/theme'
 import { localPreferencesService } from '@services/preferences/localPreferences'
 import type {
+  CustomThemes,
   DistanceUnit,
   NavTabColors,
   ThemeAppearance,
@@ -35,6 +36,7 @@ interface UserPreferencesContextValue {
   hobbyPassion: string
   theme: ThemeAppearance
   themePalette: ThemePalette
+  customThemes: CustomThemes
   navTabColors: NavTabColors
   animationsEnabled: boolean
   tutorialCompleted: boolean
@@ -67,6 +69,29 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
   const userId = user?.id ?? 'local'
 
+  // Apply initial theme on mount to prevent flash of default theme
+  useEffect(() => {
+    if (loading || preferences) return
+    
+    try {
+      // Try to load and apply stored preferences immediately
+      const storedPrefs = localPreferencesService.fetch(userId)
+      if (storedPrefs) {
+        const navIds = SIDEBAR_NAV.map((item) => item.id)
+        applyThemeFromPreferences(
+          storedPrefs.theme_palette,
+          storedPrefs.theme,
+          storedPrefs.animations_enabled,
+          storedPrefs.nav_tab_colors,
+          navIds,
+          storedPrefs.custom_themes,
+        )
+      }
+    } catch {
+      // If we can't load preferences, just continue with defaults
+    }
+  }, [loading, preferences, userId])
+
   const applyLocalTutorialResetIfNeeded = useCallback((id: string) => {
     try {
       const applied = localStorage.getItem(TUTORIAL_RESET_STORAGE_KEY)
@@ -83,12 +108,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
   }, [])
 
   const load = useCallback(async () => {
-    if (!isAuthenticated) {
-      setPreferences(null)
-      setLoading(false)
-      return
-    }
-
+    // Always load preferences, even for unauthenticated users (use local storage)
     setLoading(true)
     setError(null)
 
@@ -96,13 +116,13 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
       const localReset =
         user?.id != null ? applyLocalTutorialResetIfNeeded(user.id) : applyLocalTutorialResetIfNeeded('local')
 
-      if (isSupabaseConfigured() && user?.id) {
+      if (isSupabaseConfigured() && user?.id && isAuthenticated) {
         const data = await userPreferencesService.ensure(user.id)
         setPreferences(data)
-      } else if (user?.id) {
-        setPreferences(localReset ?? localPreferencesService.fetch(user.id))
       } else {
-        setPreferences(localReset ?? localPreferencesService.fetch('local'))
+        // Use local storage for unauthenticated users or when Supabase is not configured
+        const id = user?.id ?? 'local'
+        setPreferences(localReset ?? localPreferencesService.fetch(id))
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load preferences'
@@ -119,22 +139,27 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
   }, [load])
 
   useEffect(() => {
-    if (loading || !preferences || !isAuthenticated) return
+    if (loading || !preferences) return
     if (!preferences.app_tutorial_completed_at) {
       setTutorialOpen(true)
     }
-  }, [loading, preferences, isAuthenticated])
+  }, [loading, preferences])
 
   useEffect(() => {
     if (!preferences) return
     const navIds = SIDEBAR_NAV.map((item) => item.id)
-    applyThemeFromPreferences(
-      preferences.theme_palette,
-      preferences.theme,
-      preferences.animations_enabled,
-      preferences.nav_tab_colors,
-      navIds,
-    )
+    
+    // Apply theme immediately to avoid flash of default theme
+    requestAnimationFrame(() => {
+      applyThemeFromPreferences(
+        preferences.theme_palette,
+        preferences.theme,
+        preferences.animations_enabled,
+        preferences.nav_tab_colors,
+        navIds,
+        preferences.custom_themes,
+      )
+    })
   }, [preferences])
 
   useEffect(() => {
@@ -149,6 +174,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
         preferences.animations_enabled,
         preferences.nav_tab_colors,
         navIds,
+        preferences.custom_themes,
       )
     media.addEventListener('change', handler)
     return () => media.removeEventListener('change', handler)
@@ -156,11 +182,9 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
   const updatePreferences = useCallback(
     async (patch: UserPreferencesPatch) => {
-      if (!user?.id && !isAuthenticated) return
-
       const id = user?.id ?? 'local'
       const next =
-        isSupabaseConfigured() && user?.id
+        isSupabaseConfigured() && user?.id && isAuthenticated
           ? await userPreferencesService.patch(user.id, patch)
           : localPreferencesService.patch(id, patch)
 
@@ -171,11 +195,9 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
   const completeTutorial = useCallback(
     async (patch: UserPreferencesPatch = {}) => {
-      if (!isAuthenticated) return
-
       const id = user?.id ?? 'local'
       const next =
-        isSupabaseConfigured() && user?.id
+        isSupabaseConfigured() && user?.id && isAuthenticated
           ? await userPreferencesService.completeTutorial(user.id, patch)
           : localPreferencesService.completeTutorial(id, patch)
 
@@ -187,11 +209,9 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
 
   const markTabIntroComplete = useCallback(
     async (tabId: string) => {
-      if (!isAuthenticated) return
-
       const id = user?.id ?? 'local'
       const next =
-        isSupabaseConfigured() && user?.id
+        isSupabaseConfigured() && user?.id && isAuthenticated
           ? await userPreferencesService.markTabIntroComplete(user.id, tabId)
           : localPreferencesService.markTabIntroComplete(id, tabId)
 
@@ -209,6 +229,7 @@ export function UserPreferencesProvider({ children }: UserPreferencesProviderPro
       hobbyPassion: preferences?.hobby_passion ?? '',
       theme: preferences?.theme ?? 'dark',
       themePalette: preferences?.theme_palette ?? 'classic',
+      customThemes: preferences?.custom_themes ?? {},
       navTabColors: preferences?.nav_tab_colors ?? {},
       animationsEnabled: preferences?.animations_enabled ?? true,
       tutorialCompleted: Boolean(preferences?.app_tutorial_completed_at),

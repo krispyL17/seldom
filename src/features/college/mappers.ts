@@ -201,6 +201,7 @@ export function collegeToInsert(
     acceptanceRate?: number | null
     tuition?: number | null
     checklist?: ChecklistItem[]
+    deadlines?: CollegeDeadline[]
   },
 ) {
   return {
@@ -213,6 +214,7 @@ export function collegeToInsert(
     acceptance_rate: input.acceptanceRate ?? null,
     tuition: input.tuition ?? null,
     checklist: toJson(input.checklist ?? []),
+    deadlines: toJson(input.deadlines ?? []),
   }
 }
 

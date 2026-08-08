@@ -1,4 +1,5 @@
 import { getSupabaseClient } from '@lib/supabase'
+import { getEmailConfirmRedirectUrl, getPasswordResetRedirectUrl } from '@lib/appUrl'
 import type { SignInCredentials, SignUpCredentials, SignUpResult } from '@/types/auth'
 
 /** Error thrown when Supabase is not configured or the client is unavailable */
@@ -13,11 +14,6 @@ function requireClient() {
   const client = getSupabaseClient()
   if (!client) throw new SupabaseNotConfiguredError()
   return client
-}
-
-/** Redirect URL for password recovery emails */
-function getPasswordResetRedirectUrl(): string {
-  return `${window.location.origin}/reset-password`
 }
 
 /**
@@ -48,7 +44,10 @@ export const authService = {
     const { data, error } = await client.auth.signUp({
       email,
       password,
-      options: displayName ? { data: { display_name: displayName } } : undefined,
+      options: {
+        emailRedirectTo: getEmailConfirmRedirectUrl(),
+        ...(displayName ? { data: { display_name: displayName } } : {}),
+      },
     })
     if (error) throw error
 

@@ -21,7 +21,7 @@ const SENIOR_SUGGESTIONS = [
   'What should I finish this week?',
 ] as const
 
-export function AiAdvisorPanel() {
+export function AiAdvisorPanel({ fullHeight = false }: { fullHeight?: boolean }) {
   const { isSeniorMode } = useCollege()
   const { messages, input, setInput, isTyping, sendMessage } = useCollegeAdvisor(isSeniorMode)
   const listRef = useRef<HTMLUListElement>(null)
@@ -37,14 +37,11 @@ export function AiAdvisorPanel() {
   }
 
   return (
-    <Panel
-      title="AI College Advisor"
-      subtitle="Powered by Seldom AI"
-    >
-      <div className="flex h-72 flex-col">
+    <Panel title="AI College Advisor" subtitle="Powered by Seldom AI" className={cn(fullHeight && 'flex h-full min-h-0 flex-col')}>
+      <div className={cn('flex min-h-0 flex-col', fullHeight ? 'h-full flex-1' : 'h-72')}>
         <ul
           ref={listRef}
-          className="flex-1 space-y-3 overflow-y-auto pr-1"
+          className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1"
           aria-live="polite"
           aria-label="Advisor conversation"
         >

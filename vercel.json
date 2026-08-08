@@ -2,9 +2,28 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/" }],
+  "devCommand": "vite --port $PORT",
+  "rewrites": [
+    {
+      "source": "/((?!api/|assets/|src/|@vite/|@react-refresh|@fs/|node_modules/|favicon\\.svg|.*\\..*).*)",
+      "destination": "/"
+    }
+  ],
   "functions": {
+    "api/assistant/chat.ts": {
+      "maxDuration": 120,
+      "includeFiles": "lib/**,memory/**,search/**,analytics/**,config/prompts/**"
+    },
+    "api/soccer/coach/chat.ts": {
+      "maxDuration": 120,
+      "includeFiles": "lib/**,memory/**,search/**,analytics/**,config/prompts/**"
+    },
+    "api/soccer/coach/generate.ts": {
+      "maxDuration": 120,
+      "includeFiles": "lib/**,memory/**,search/**,analytics/**,config/prompts/**"
+    },
     "api/**/*.ts": {
+      "maxDuration": 30,
       "includeFiles": "lib/**,memory/**,search/**,analytics/**,config/prompts/**"
     }
   }

@@ -1,4 +1,5 @@
 import type { JournalMood } from '@features/journal/types'
+import type { SideBalance } from '../athlete/types'
 
 export type TrainingMood = JournalMood
 
@@ -68,6 +69,7 @@ export interface TrainingSession {
   work_on: string | null
   notes: string | null
   goal_id: string | null
+  side_balance: SideBalance | null
   created_at: string
   updated_at: string
 }
@@ -75,7 +77,10 @@ export interface TrainingSession {
 export interface CreateTrainingSessionInput {
   session_date: string
   duration_min: number
-  focus: string
+  /** Optional tab key: running | progression | recovery | custom:{slug} */
+  tab_category?: string | null
+  /** @deprecated Use tab_category */
+  focus?: string
   intensity: number
   mood: TrainingMood
   energy_level: number
@@ -83,12 +88,15 @@ export interface CreateTrainingSessionInput {
   work_on?: string
   notes?: string
   goal_id?: string | null
+  side_balance?: SideBalance | null
   technical_ratings?: TechnicalRatings
 }
 
 export interface UpdateTrainingSessionInput {
   session_date?: string
   duration_min?: number
+  tab_category?: string | null
+  /** @deprecated Use tab_category */
   focus?: string
   intensity?: number
   mood?: TrainingMood
@@ -97,6 +105,7 @@ export interface UpdateTrainingSessionInput {
   work_on?: string | null
   notes?: string | null
   goal_id?: string | null
+  side_balance?: SideBalance | null
   technical_ratings?: TechnicalRatings
 }
 
@@ -131,4 +140,8 @@ export function defaultTechnicalRatings(): TechnicalRatings {
     agility: 5,
     confidence: 5,
   }
+}
+
+export function defaultSideBalance(): SideBalance {
+  return { dominant_pct: 50, weak_pct: 50 }
 }

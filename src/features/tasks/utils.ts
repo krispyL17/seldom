@@ -16,14 +16,7 @@ export function fromDatetimeLocalValue(value: string): string | null {
   return new Date(value).toISOString()
 }
 
-/** Format minutes as human-readable duration */
-export function formatDuration(minutes: number | null): string {
-  if (minutes == null || minutes <= 0) return '—'
-  if (minutes < 60) return `${minutes}m`
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return m > 0 ? `${h}h ${m}m` : `${h}h`
-}
+export { formatMinutesDuration as formatDuration } from '@lib/formatDuration'
 
 /** Format deadline for display */
 export function formatDeadline(deadline: string | null): string {

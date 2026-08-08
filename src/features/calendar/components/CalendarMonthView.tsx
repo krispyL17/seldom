@@ -1,6 +1,6 @@
 import { cn } from '@lib/utils'
 import type { CalendarEvent } from '../utils/calendarEvents'
-import { eventsOnDay, getMonthGrid } from '../utils/calendarEvents'
+import { eventsOnDay, formatMonthYear, getMonthGrid } from '../utils/calendarEvents'
 
 interface CalendarMonthViewProps {
   anchor: Date
@@ -14,6 +14,9 @@ export function CalendarMonthView({ anchor, events }: CalendarMonthViewProps) {
 
   return (
     <div>
+      <h3 className="mb-3 text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
+        {formatMonthYear(anchor)}
+      </h3>
       <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
           <span key={d}>{d}</span>

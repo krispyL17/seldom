@@ -1,4 +1,4 @@
-import type { AiRecommendation, FinancialAidItem } from '../types'
+import type { AiRecommendation, FinancialAidItem, Scholarship } from '../types'
 
 function parseGradYear(graduationYear?: string | null): number | null {
   const year = Number(graduationYear)
@@ -61,6 +61,54 @@ export function buildSeniorFinancialAid(graduationYear?: string | null): Financi
       label: 'Research merit scholarships',
       completed: false,
       dueDate: dateForGradYear(gradYear, 9, 15, 1),
+    },
+  ]
+}
+
+/** Junior-year summer program / merit scholarship tracking starters. */
+export function buildJuniorSummerPrograms(graduationYear?: string | null): Scholarship[] {
+  const gradYear = parseGradYear(graduationYear)
+  const appYear = gradYear != null ? gradYear - 1 : new Date().getFullYear() + 1
+  return [
+    {
+      id: 'sp-j1',
+      name: 'Summer academic / pre-college program',
+      deadline: `${appYear}-03-01`,
+      amount: 0,
+      status: 'not_started',
+      requirements: ['Research deadlines', 'Note cost & aid'],
+    },
+    {
+      id: 'sp-j2',
+      name: 'Local merit scholarship list',
+      deadline: `${appYear}-09-01`,
+      amount: 0,
+      status: 'not_started',
+      requirements: ['Counselor list', 'Community foundations'],
+    },
+  ]
+}
+
+/** Senior-year external scholarship tracking starters. */
+export function buildSeniorScholarships(graduationYear?: string | null): Scholarship[] {
+  const gradYear = parseGradYear(graduationYear)
+  const applyYear = gradYear != null ? gradYear - 1 : new Date().getFullYear()
+  return [
+    {
+      id: 'sp-s1',
+      name: 'Local / community scholarships',
+      deadline: `${applyYear + 1}-02-15`,
+      amount: 0,
+      status: 'not_started',
+      requirements: [],
+    },
+    {
+      id: 'sp-s2',
+      name: 'Major-specific merit awards',
+      deadline: `${applyYear + 1}-01-15`,
+      amount: 0,
+      status: 'not_started',
+      requirements: [],
     },
   ]
 }

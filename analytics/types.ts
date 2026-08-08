@@ -8,13 +8,6 @@ export interface ChartSeries {
   unit?: string
 }
 
-export interface SkillTrendSeries {
-  skill: string
-  labels: string[]
-  data: number[]
-  latest: number
-}
-
 export interface AnalyticsKpi {
   label: string
   value: string | number
@@ -39,12 +32,13 @@ export interface AnalyticsDashboard {
   taskCompletion: ChartSeries
   goalProgress: ChartSeries
   trainingFrequency: ChartSeries
-  technicalSkills: SkillTrendSeries[]
   running: ChartSeries
   gym: ChartSeries
   collegeProgress: ChartSeries
   journalConsistency: ChartSeries
   source: 'sqlite' | 'local'
+  /** 2 until activity spans older weeks, then 4. */
+  weekCount: number
 }
 
 /** Raw records synced from Supabase (and local gym logs). */

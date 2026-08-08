@@ -30,7 +30,7 @@ export function EssaysProgressPanel() {
     >
       {total === 0 ? (
         <p className="text-xs text-[var(--color-text-tertiary)]">
-          {isSeniorMode ? 'No essays tracked yet.' : 'Start brainstorming themes in Essay Prep.'}
+          {isSeniorMode ? 'No essays tracked yet.' : 'Start brainstorming in Common App → Essays.'}
         </p>
       ) : (
         <ul className="space-y-2">

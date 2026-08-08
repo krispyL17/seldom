@@ -1,3 +1,5 @@
+import { formatUserError } from './userFacingError'
+
 /**
  * Maps Supabase Auth error messages to user-friendly copy.
  */
@@ -24,6 +26,9 @@ export function getAuthErrorMessage(error: unknown): string {
   if (msg.includes('rate limit')) {
     return 'Too many attempts. Please wait a moment and try again.'
   }
+  if (msg.includes('network') || msg.includes('fetch')) {
+    return 'Could not reach the server. Check your connection and try again.'
+  }
 
-  return error.message
+  return formatUserError(error, 'Something went wrong. Please try again.')
 }

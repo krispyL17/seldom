@@ -12,7 +12,7 @@ export function UpcomingDeadlinesPanel() {
     .slice(0, 6)
 
   return (
-    <Panel title="Upcoming Deadlines" subtitle={isSeniorMode ? 'Next 6 across all schools' : 'Tests, visits & prep dates'}>
+    <Panel fillHeight title="Upcoming Deadlines" subtitle={isSeniorMode ? 'Next 6 across all schools' : 'Tests, visits & prep dates'}>
       {deadlines.length === 0 ? (
         <EmptyState
           title="No upcoming deadlines"
@@ -28,7 +28,7 @@ export function UpcomingDeadlinesPanel() {
             const days = daysUntil(d.date)
             return (
               <li
-                key={`${d.collegeName}-${d.id}`}
+                key={d.id}
                 className="flex items-center justify-between gap-2 rounded-[var(--radius-sm)] bg-[var(--color-surface-overlay)] px-3 py-2"
               >
                 <div className="min-w-0">

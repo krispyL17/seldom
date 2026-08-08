@@ -1,12 +1,14 @@
+export type {
+  AssistantMode,
+  AssistantModule,
+  ProactiveInsight,
+  AssistantBootstrap,
+  AssistantChatRequest,
+  AssistantChatResponse,
+} from './assistantClient'
 export {
+  AssistantApiError,
   sendAssistantMessage,
   fetchAssistantBootstrap,
   checkAssistantHealth,
-  AssistantApiError,
-  type AssistantChatRequest,
-  type AssistantChatResponse,
-  type AssistantBootstrap,
-  type AssistantMode,
-  type AssistantModule,
-  type ProactiveInsight,
 } from './assistantClient'

@@ -42,11 +42,8 @@ set
   tab_intros_completed = '{}'::jsonb,
   hobby_tab_label = 'Performance',
   hobby_passion = '',
-  theme = 'dark',
-  animations_enabled = true,
   browser_notifications_enabled = false,
   email_notifications_enabled = false,
   reminder_lead_minutes = 60,
   calendar_sync_prompted_at = null,
-  distance_unit = 'mi',
   college_enabled = false;

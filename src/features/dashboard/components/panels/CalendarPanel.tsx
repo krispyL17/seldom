@@ -8,8 +8,10 @@ import {
   buildCalendarEvents,
   endOfDay,
   eventsInRange,
+  eventsOnDay,
   formatEventTime,
   getWeekDays,
+  isSameDay,
   startOfDay,
 } from '@features/calendar/utils/calendarEvents'
 import { cn } from '@lib/utils'
@@ -18,20 +20,23 @@ export function CalendarPanel() {
   const { tasks, loading: tasksLoading } = useTasks()
   const { goals, loading: goalsLoading } = useGoals()
 
+  const days = useMemo(() => getWeekDays(new Date()), [])
+  const today = useMemo(() => new Date(), [])
+
   const weekEvents = useMemo(() => {
     const all = buildCalendarEvents(tasks, goals)
-    const days = getWeekDays(new Date())
     const start = startOfDay(days[0])
     const end = endOfDay(days[days.length - 1])
     return eventsInRange(all, start, end)
-  }, [tasks, goals])
-
-  const days = getWeekDays(new Date())
-  const todayIso = new Date().toISOString().slice(0, 10)
+  }, [tasks, goals, days])
 
   if (tasksLoading || goalsLoading) {
     return (
-      <Panel title="Calendar" subtitle="This week" action={<PanelActionLink to="/calendar">Full calendar</PanelActionLink>}>
+      <Panel
+        title="Calendar"
+        subtitle="This week"
+        action={<PanelActionLink to="/calendar">Full calendar</PanelActionLink>}
+      >
         <PanelSkeleton lines={3} />
       </Panel>
     )
@@ -53,13 +58,12 @@ export function CalendarPanel() {
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
           {days.map((day) => {
-            const iso = day.toISOString().slice(0, 10)
-            const dayEvents = weekEvents.filter((e) => e.at.slice(0, 10) === iso)
-            const isToday = iso === todayIso
+            const dayEvents = eventsOnDay(weekEvents, day)
+            const isToday = isSameDay(day, today)
 
             return (
               <div
-                key={iso}
+                key={day.toISOString()}
                 className={cn(
                   'rounded-[var(--radius-sm)] border border-[var(--color-border)] border-l-[3px] border-l-[var(--color-accent)] p-2',
                   isToday && 'bg-[var(--color-accent-subtle)] ring-1 ring-[var(--color-accent)]/30',

@@ -161,6 +161,7 @@ export interface Database {
           high_points: string | null
           work_on: string | null
           goal_id: string | null
+          side_balance: Json | null
           created_at: string
           updated_at: string
         }
@@ -178,6 +179,7 @@ export interface Database {
           high_points?: string | null
           work_on?: string | null
           goal_id?: string | null
+          side_balance?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -195,6 +197,7 @@ export interface Database {
           high_points?: string | null
           work_on?: string | null
           goal_id?: string | null
+          side_balance?: Json | null
           created_at?: string
           updated_at?: string
         }
@@ -600,7 +603,7 @@ export interface Database {
           assists?: number
           rating?: number | null
           highlights?: string | null
-          notes: string | null
+          notes?: string | null
           goal_id?: string | null
           created_at?: string
           updated_at?: string
@@ -671,18 +674,21 @@ export interface Database {
         Row: {
           user_id: string
           profile: Json
+          athlete_development: Json
           onboarding_completed_at: string | null
           updated_at: string
         }
         Insert: {
           user_id: string
           profile?: Json
+          athlete_development?: Json
           onboarding_completed_at?: string | null
           updated_at?: string
         }
         Update: {
           user_id?: string
           profile?: Json
+          athlete_development?: Json
           onboarding_completed_at?: string | null
           updated_at?: string
         }
@@ -694,7 +700,8 @@ export interface Database {
           hobby_tab_label: string
           hobby_passion: string
           theme: 'dark' | 'light' | 'system'
-          theme_palette: 'classic' | 'sunset' | 'ocean'
+          theme_palette: 'classic' | 'sunset' | 'ocean' | 'custom-1' | 'custom-2'
+          custom_themes: Record<string, unknown> | null
           nav_tab_colors: Record<string, string> | null
           animations_enabled: boolean
           app_tutorial_completed_at: string | null
@@ -712,7 +719,8 @@ export interface Database {
           hobby_tab_label?: string
           hobby_passion?: string
           theme?: 'dark' | 'light' | 'system'
-          theme_palette?: 'classic' | 'sunset' | 'ocean'
+          theme_palette?: 'classic' | 'sunset' | 'ocean' | 'custom-1' | 'custom-2'
+          custom_themes?: Record<string, unknown> | null
           nav_tab_colors?: Record<string, string> | null
           animations_enabled?: boolean
           app_tutorial_completed_at?: string | null
@@ -730,7 +738,8 @@ export interface Database {
           hobby_tab_label?: string
           hobby_passion?: string
           theme?: 'dark' | 'light' | 'system'
-          theme_palette?: 'classic' | 'sunset' | 'ocean'
+          theme_palette?: 'classic' | 'sunset' | 'ocean' | 'custom-1' | 'custom-2'
+          custom_themes?: Record<string, unknown> | null
           nav_tab_colors?: Record<string, string> | null
           animations_enabled?: boolean
           app_tutorial_completed_at?: string | null

@@ -44,6 +44,29 @@ export interface SoccerPlayerContext {
   goals: GoalSummary[]
   derivedSkills: DerivedSkillSummary[]
   loadSummary: LoadSummary
+  athleteDevelopment?: AthleteDevelopmentSummary | null
+  performanceTab?: {
+    label: string
+    passion: string
+    customTabs: Array<{ label: string; focusHint: string }>
+    gymEnabled: boolean
+  }
+}
+
+export interface AthleteDevelopmentSummary {
+  streakCurrent: number
+  streakLongest: number
+  streakFrozen: boolean
+  injuryModeActive: boolean
+  dominantSide: string
+  weakSide: string
+  avgWeakSidePct: number | null
+  recoveryScore: number | null
+  workloadScore: number | null
+  fatigueLevel: string | null
+  knowledgeChunkCount: number
+  customTabs?: Array<{ label?: string; focusHint?: string }>
+  gymEnabled?: boolean
 }
 
 export interface TrainingSessionSummary {
@@ -55,6 +78,7 @@ export interface TrainingSessionSummary {
   energy: number
   notes: string | null
   ratings: Record<string, number>
+  sideBalance?: { dominant_pct: number; weak_pct: number } | null
 }
 
 export interface MatchSummary {

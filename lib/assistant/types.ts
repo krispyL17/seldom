@@ -3,12 +3,14 @@
  * Delegates to lib/orchestration for modular OS capabilities.
  */
 
+import { ensureDevEnvLoaded } from '../loadDevEnv.js'
+import { getOllamaEnvStatus, loadOllamaConfig } from '../ollama/service.js'
 import type { OSMode } from '../orchestration/types.js'
 
 export interface AssistantEnv {
   supabaseUrl: string
   supabaseAnonKey: string
-  openaiApiKey: string
+  ollamaBaseUrl: string
   chatModel: string
   embedModel: string
 }
@@ -44,22 +46,26 @@ export interface ChatResponse {
       collegesOnList: number
       collegePhase: 'junior' | 'senior' | 'unknown'
     }
+    suggestedTitle?: string
+    actionsExecuted?: Array<{ type: string; success: boolean; summary: string }>
   }
 }
 
-export function loadAssistantEnv(userOpenAiKey?: string | null): AssistantEnv | null {
+export function loadAssistantEnv(): AssistantEnv | null {
+  ensureDevEnvLoaded()
+
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY
-  const openaiApiKey = (userOpenAiKey?.trim() || process.env.OPENAI_API_KEY)?.trim()
+  const ollama = loadOllamaConfig()
 
-  if (!supabaseUrl || !supabaseAnonKey || !openaiApiKey) return null
+  if (!supabaseUrl || !supabaseAnonKey || !ollama) return null
 
   return {
     supabaseUrl,
     supabaseAnonKey,
-    openaiApiKey,
-    chatModel: process.env.OPENAI_CHAT_MODEL ?? 'gpt-4o-mini',
-    embedModel: process.env.OPENAI_EMBED_MODEL ?? 'text-embedding-3-small',
+    ollamaBaseUrl: ollama.baseUrl,
+    chatModel: ollama.chatModel,
+    embedModel: ollama.embedModel,
   }
 }
 
@@ -67,22 +73,17 @@ export function getAssistantEnvStatus(): {
   ready: boolean
   missing: string[]
 } {
+  ensureDevEnvLoaded()
+
   const missing: string[] = []
   const supabaseUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY
-  const openaiApiKey = process.env.OPENAI_API_KEY
 
-  if (!supabaseUrl) missing.push('SUPABASE_URL or VITE_SUPABASE_URL')
-  if (!supabaseAnonKey) missing.push('SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY')
-  if (!openaiApiKey) missing.push('OPENAI_API_KEY (or X-User-OpenAI-Key header)')
+  if (!supabaseUrl) missing.push('SUPABASE_URL or VITE_SUPABASE_URL in .env.local')
+  if (!supabaseAnonKey) missing.push('SUPABASE_ANON_KEY or VITE_SUPABASE_ANON_KEY in .env.local')
+
+  const ollamaStatus = getOllamaEnvStatus()
+  missing.push(...ollamaStatus.missing)
 
   return { ready: missing.length === 0, missing }
-}
-
-export function extractUserOpenAiKey(
-  headers: Record<string, string | string[] | undefined>,
-): string | undefined {
-  const raw = headers['x-user-openai-key']
-  if (typeof raw === 'string' && raw.trim()) return raw.trim()
-  return undefined
 }

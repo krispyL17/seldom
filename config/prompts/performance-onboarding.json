@@ -1,52 +1,35 @@
 {
   "id": "performance-onboarding",
-  "version": 1,
+  "version": 3,
   "title": "Performance Setup",
-  "subtitle": "Personalize your performance tab",
-  "welcome": "Let's set up your **performance tab** for what you actually do.\n\nI'll ask a few quick questions so Seldom OS and your coach know what you're working on. Everything stays editable.",
-  "completeMessage": "Your performance tab is ready. Log sessions, metrics, or notes as you go — the dashboard stays blank until you add data here.",
+  "subtitle": "Quick setup — goals land in your Goals tab automatically",
+  "welcome": "A few quick questions for your **performance** area.\n\nYour answers become **Goals** you can track in the sidebar.",
+  "completeMessage": "You're set. Check **Goals** for what you entered — log sessions when you're ready.",
   "steps": [
     {
-      "id": "focus",
-      "question": "What's your main focus in this area right now?",
-      "type": "text",
-      "field": "profile.currentFocus",
-      "placeholder": "e.g. Consistency, Grade 8 piano piece, 5K under 25 min"
-    },
-    {
-      "id": "track",
-      "question": "How do you usually track progress?",
-      "type": "choice",
-      "field": "trackingStyle",
-      "options": [
-        "Practice / training sessions",
-        "Metrics and benchmarks",
-        "Goals and milestones",
-        "Mostly journaling and notes"
-      ]
-    },
-    {
       "id": "goal",
-      "question": "What's one goal you're chasing in this area?",
+      "question": "What's one goal you're working toward in this area?",
       "type": "text",
       "field": "goal.title",
-      "placeholder": "e.g. Perform at spring recital, Climb V5 consistently"
+      "placeholder": "e.g. Make varsity, Perform at spring recital"
     },
     {
-      "id": "strength",
-      "question": "Name one strength you want to lean on. Optional — type **skip** to leave blank.",
+      "id": "cardioGoal",
+      "question": "Any cardio or running target? Optional — type **skip** if not relevant.",
       "type": "text",
-      "field": "strengths.0.title",
+      "field": "cardioGoal.title",
       "optional": true,
-      "placeholder": "e.g. Strong fundamentals, Good endurance"
+      "placeholder": "e.g. Run a 5K under 25 min, 15 miles per week"
     },
     {
-      "id": "weakness",
-      "question": "Name one area you're actively improving. Optional — type **skip**.",
-      "type": "text",
-      "field": "weaknesses.0.title",
-      "optional": true,
-      "placeholder": "e.g. Speed under fatigue, Stage nerves"
+      "id": "gym",
+      "question": "Do you lift weights or work out in the gym?",
+      "type": "choice",
+      "field": "gym.worksOut",
+      "options": [
+        "Yes, I work out in the gym",
+        "No, not really"
+      ]
     }
   ]
 }

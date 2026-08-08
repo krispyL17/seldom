@@ -54,4 +54,7 @@ export default defineConfig({
       '@analytics': fileURLToPath(new URL('./analytics', import.meta.url)),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 900,
+  },
 })

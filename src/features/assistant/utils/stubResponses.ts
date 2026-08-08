@@ -35,7 +35,7 @@ export function getStubReply(userMessage: string, context: AssistantContext = { 
 **Midday:** Lighter admin + one learning block  
 **Evening:** 10-min reflection + prep tomorrow's top 3
 
-Connect \`OPENAI_API_KEY\` for a personalized plan from your tasks and goals.${modeNote}${contextSections}`
+Start **Ollama** and set \`OLLAMA_MODEL\` in \`.env.local\` for a personalized plan from your tasks and goals.${modeNote}${contextSections}`
   }
 
   if (lower.includes('week') || lower.includes('review') || mode === 'weekly_review') {
@@ -45,7 +45,7 @@ Connect \`OPENAI_API_KEY\` for a personalized plan from your tasks and goals.${m
 2. **Challenges** — what blocked you?  
 3. **Adjust** — one change for next week
 
-Live weekly reviews use your journal, tasks, training, and college data.${modeNote}${contextSections}`
+Live weekly reviews use your journal, tasks, training, and college data via Ollama.${modeNote}${contextSections}`
   }
 
   if (lower.includes('goal') || mode === 'goal_breakdown') {
@@ -53,7 +53,7 @@ Live weekly reviews use your journal, tasks, training, and college data.${modeNo
 
 Pick one goal → define **milestones** → assign **weekly actions** → set a **checkpoint date**.
 
-The OS orchestrator reads your active goals from Supabase when connected.${modeNote}${contextSections}`
+The OS orchestrator reads your active goals from Supabase when Ollama is connected.${modeNote}${contextSections}`
   }
 
   if (lower.includes('college') || mode === 'college_planning' || mode === 'scholarship_ideas') {
@@ -61,13 +61,13 @@ The OS orchestrator reads your active goals from Supabase when connected.${modeN
 
 Rising-junior mode: explore schools, build your list, plan testing — no preset schools.
 
-Ask about list balance, essay themes, or scholarship search strategies once the API is connected.${modeNote}${contextSections}`
+Ask about list balance, essay themes, or scholarship search strategies once Ollama is running.${modeNote}${contextSections}`
   }
 
   if (lower.includes('drill') || lower.includes('soccer') || mode === 'soccer_drills') {
     return `## Soccer Drills (preview)
 
-For full drill plans with your training history, use **Soccer → AI Coach** or connect the OS assistant API.
+For full drill plans with your training history, use **Soccer → AI Coach** or connect Ollama via \`npm run dev:vercel\`.
 
 Stub mode gives generic guidance only.${modeNote}${contextSections}`
   }
@@ -75,12 +75,27 @@ Stub mode gives generic guidance only.${modeNote}${contextSections}`
   if (memories.length > 0 || (search && search.results.length > 0)) {
     return `Seldom OS gathered context from memory and search.${modeNote}${contextSections}
 
-*Connect \`OPENAI_API_KEY\` for full modular orchestration.*`
+*Start Ollama and set \`OLLAMA_MODEL\` in \`.env.local\` for full modular orchestration.*`
+  }
+
+  const onVercelDev =
+    typeof window !== 'undefined' &&
+    window.location.port === '3000' &&
+    window.location.hostname === 'localhost'
+
+  if (onVercelDev) {
+    return `Thanks for your message. The app is running on **dev:vercel**, but **Ollama is offline**.
+
+1. Start Ollama locally  
+2. Set \`OLLAMA_MODEL\` and \`OLLAMA_BASE_URL\` in \`.env.local\`  
+3. Restart \`npm run dev:vercel\` and click **Retry**
+
+Open [\`/api/health\`](/api/health) or [AI Settings](/settings/ai) for diagnostics.${modeNote}${contextSections}`
   }
 
   return `Thanks for your message. **Seldom OS** routes requests through modular capabilities — daily planning, weekly reviews, goals, college, soccer, reflection, and more.
 
-Run \`npm run dev:vercel\` or deploy with \`OPENAI_API_KEY\` for live orchestration.${modeNote}${contextSections}`
+Run \`npm run dev:vercel\` with Ollama running for live orchestration.${modeNote}${contextSections}`
 }
 
 export const WELCOME_MESSAGE = `Hello! I'm **Seldom OS** — your proactive personal operating system.

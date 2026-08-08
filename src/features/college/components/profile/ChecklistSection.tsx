@@ -18,6 +18,7 @@ export function ChecklistSection({ college, onToggle }: ChecklistSectionProps) {
 
   return (
     <Panel
+      fillHeight
       title={applicationPhase === 'senior' ? 'Application Checklist' : 'Prep Checklist'}
       subtitle={`${progress}% complete`}
     >

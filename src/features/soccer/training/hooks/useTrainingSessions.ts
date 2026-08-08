@@ -8,6 +8,7 @@ import type {
   UpdateTrainingSessionInput,
 } from '@features/soccer/training/types'
 import { sortSessionsChronologically } from '@features/soccer/training/utils'
+import { triggerAthleteSync } from '../../athlete/streakSyncBridge'
 
 export function useTrainingSessions() {
   const { user } = useAuth()
@@ -50,6 +51,7 @@ export function useTrainingSessions() {
         }
       }
       setSessions((prev) => sortSessionsChronologically([created, ...prev]))
+      triggerAthleteSync()
       return created
     },
     [user],
@@ -60,12 +62,14 @@ export function useTrainingSessions() {
     setSessions((prev) =>
       sortSessionsChronologically(prev.map((s) => (s.id === id ? updated : s))),
     )
+    triggerAthleteSync()
     return updated
   }, [])
 
   const deleteSession = useCallback(async (id: string) => {
     await trainingSessionService.delete(id)
     setSessions((prev) => prev.filter((s) => s.id !== id))
+    triggerAthleteSync()
   }, [])
 
   return {

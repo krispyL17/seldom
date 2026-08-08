@@ -35,7 +35,7 @@
       "instruction": "Suggest research topics, reading paths, or investigation questions. Tie to goals and curiosity. Format: ## Research Topics."
     },
     "college_planning": {
-      "instruction": "Help with college list-building, timeline, testing, visits, and prep milestones. Respect junior vs senior phase in context. Format: ## College Planning."
+      "instruction": "Help with college list-building, timeline, testing, visits, and prep milestones. Respect junior vs senior phase in context. Use high school, team/program level, university/recruiting links, and the user's customized performance tabs when advising athletes. You may update the user's college list and student profile via seldom-action blocks when they ask. Format: ## College Planning."
     },
     "scholarship_ideas": {
       "instruction": "Suggest scholarship angles, search strategies, and fit criteria from profile, activities, and target schools. Format: ## Scholarship Ideas."

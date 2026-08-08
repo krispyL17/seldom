@@ -37,3 +37,13 @@ export function conversationTitleFromMessage(content: string): string {
   if (trimmed.length <= 48) return trimmed || 'New chat'
   return `${trimmed.slice(0, 48)}…`
 }
+
+export function sanitizeConversationTitle(raw: string): string {
+  const cleaned = raw
+    .trim()
+    .replace(/^title:\s*/i, '')
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/\s+/g, ' ')
+  if (!cleaned) return 'New chat'
+  return cleaned.length <= 56 ? cleaned : `${cleaned.slice(0, 56)}…`
+}

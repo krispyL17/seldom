@@ -15,8 +15,9 @@ export function getTabIntroId(pathname: string): string | null {
 
   if (pathname.startsWith('/college/')) {
     const segment = pathname.split('/')[2]
-    if (segment === 'activities') return 'college-activities'
-    if (segment === 'common-app') return 'college-common-app'
+    if (segment === 'common-app' || segment === 'essays' || segment === 'activities') {
+      return 'college-common-app'
+    }
     if (segment === 'timeline') return 'college-timeline'
     if (segment === 'schools') return 'college'
     return 'college'

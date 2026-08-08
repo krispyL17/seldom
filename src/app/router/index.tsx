@@ -12,18 +12,34 @@ import {
   SignUpPage,
   ForgotPasswordPage,
   ResetPasswordPage,
+  AuthCallbackPage,
 } from '@features/auth'
 import { HomePage } from '@features/dashboard'
 import { TasksPage } from '@features/tasks'
 import { GoalsPage } from '@features/goals'
 import { JournalPage } from '@features/journal'
-import { SettingsPage } from '@features/settings'
+import { SettingsPage, AiSettingsPage } from '@features/settings'
 
 const CollegeLayout = lazy(() =>
   import('@features/college').then((m) => ({ default: m.CollegeLayout })),
 )
-const CollegeDashboardPage = lazy(() =>
-  import('@features/college').then((m) => ({ default: m.CollegeDashboardPage })),
+const CollegeOverviewPage = lazy(() =>
+  import('@features/college').then((m) => ({ default: m.CollegeOverviewPage })),
+)
+const CollegeSchoolsPage = lazy(() =>
+  import('@features/college').then((m) => ({ default: m.CollegeSchoolsPage })),
+)
+const CollegeDeadlinesPage = lazy(() =>
+  import('@features/college').then((m) => ({ default: m.CollegeDeadlinesPage })),
+)
+const CollegeEssaysPage = lazy(() =>
+  import('@features/college').then((m) => ({ default: m.CollegeEssaysPage })),
+)
+const CollegePlanningPage = lazy(() =>
+  import('@features/college').then((m) => ({ default: m.CollegePlanningPage })),
+)
+const CollegeAdvisorPage = lazy(() =>
+  import('@features/college').then((m) => ({ default: m.CollegeAdvisorPage })),
 )
 const CollegeProfilePage = lazy(() =>
   import('@features/college').then((m) => ({ default: m.CollegeProfilePage })),
@@ -41,14 +57,8 @@ const TimelinePage = lazy(() =>
 const SoccerLayout = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.SoccerLayout })),
 )
-const TrainingSessionsPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.TrainingSessionsPage })),
-)
-const MatchesPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.MatchesPage })),
-)
-const TechnicalSkillsPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.TechnicalSkillsPage })),
+const GymPage = lazy(() =>
+  import('@features/soccer').then((m) => ({ default: m.GymPage })),
 )
 const PhysicalMetricsPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.PhysicalMetricsPage })),
@@ -61,6 +71,26 @@ const StrengthsPage = lazy(() =>
 )
 const RunningPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.RunningPage })),
+)
+const SoccerOverviewPage = lazy(() =>
+  import('@features/soccer').then((m) => ({ default: m.SoccerOverviewPage })),
+)
+const RecoveryPage = lazy(() =>
+  import('@features/soccer').then((m) => ({ default: m.RecoveryPage })),
+)
+const PerformancePreferencesPage = lazy(() =>
+  import('@features/soccer/components/pages/PerformancePreferencesPage').then((m) => ({
+    default: m.PerformancePreferencesPage,
+  })),
+)
+const ProgressionPage = lazy(() =>
+  import('@features/soccer').then((m) => ({ default: m.ProgressionPage })),
+)
+const CustomSportTabPage = lazy(() =>
+  import('@features/soccer').then((m) => ({ default: m.CustomSportTabPage })),
+)
+const KnowledgeImportPage = lazy(() =>
+  import('@features/soccer').then((m) => ({ default: m.KnowledgeImportPage })),
 )
 
 const CalendarPage = lazy(() =>
@@ -87,6 +117,7 @@ export function AppRouter() {
       <Routes>
         {/* Password reset — outside guest guard (recovery session is authenticated) */}
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
         {/* Auth pages — redirect to home if already signed in */}
         <Route element={<GuestRoute />}>
@@ -102,30 +133,43 @@ export function AppRouter() {
             <Route path="tasks" element={<TasksPage />} />
             <Route path="goals" element={<GoalsPage />} />
             <Route path="college" element={<CollegeLayout />}>
-              <Route index element={<CollegeDashboardPage />} />
-              <Route path="activities" element={<ActivitiesResumePage />} />
-              <Route path="common-app" element={<CommonAppPage />} />
-              <Route path="timeline" element={<TimelinePage />} />
+              <Route index element={<CollegeOverviewPage />} />
+              <Route path="schools" element={<CollegeSchoolsPage />} />
               <Route path="schools/:collegeId" element={<CollegeProfilePage />} />
+              <Route path="deadlines" element={<CollegeDeadlinesPage />} />
+              <Route path="essays" element={<CollegeEssaysPage />} />
+              <Route path="common-app" element={<CommonAppPage />} />
+              <Route path="planning" element={<CollegePlanningPage />} />
+              <Route path="activities" element={<ActivitiesResumePage />} />
+              <Route path="advisor" element={<CollegeAdvisorPage />} />
+              <Route path="timeline" element={<TimelinePage />} />
             </Route>
             <Route path="journal" element={<JournalPage />} />
             <Route path="calendar" element={<CalendarPage />} />
               <Route path="soccer" element={<SoccerLayout />}>
-              <Route index element={<Navigate to="training" replace />} />
-              <Route path="overview" element={<Navigate to="/soccer/training" replace />} />
-              <Route path="training" element={<TrainingSessionsPage />} />
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<SoccerOverviewPage />} />
+              <Route path="training" element={<Navigate to="/soccer/overview" replace />} />
               <Route path="running" element={<RunningPage />} />
-              <Route path="matches" element={<MatchesPage />} />
-              <Route path="technical" element={<TechnicalSkillsPage />} />
+              <Route path="gym" element={<GymPage />} />
+              <Route path="matches" element={<Navigate to="/soccer/overview" replace />} />
+              <Route path="technical" element={<Navigate to="/soccer/progression" replace />} />
               <Route path="physical" element={<PhysicalMetricsPage />} />
               <Route path="weaknesses" element={<WeaknessesPage />} />
               <Route path="strengths" element={<StrengthsPage />} />
               <Route path="coach" element={<Navigate to="/assistant?mode=soccer_drills" replace />} />
-              <Route path="progress" element={<Navigate to="/analytics" replace />} />
+              <Route path="progress" element={<Navigate to="/soccer/progression" replace />} />
+              <Route path="progression" element={<ProgressionPage />} />
+              <Route path="recovery" element={<RecoveryPage />} />
+              <Route path="preferences" element={<PerformancePreferencesPage />} />
+              <Route path="knowledge" element={<KnowledgeImportPage />} />
+              <Route path="tab/:tabSlug" element={<CustomSportTabPage />} />
+              <Route path="stats" element={<Navigate to="/soccer/progression" replace />} />
             </Route>
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="assistant" element={<AssistantPage />} />
             <Route path="settings" element={<SettingsPage />} />
+            <Route path="settings/ai" element={<AiSettingsPage />} />
           </Route>
         </Route>
       </Routes>

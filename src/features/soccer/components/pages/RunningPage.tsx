@@ -9,14 +9,16 @@ import { RunGoalCard } from '../../running/components/RunGoalCard'
 import { RunGoalForm } from '../../running/components/RunGoalForm'
 import { RunningCharts } from '../../running/components/RunningCharts'
 import { TrainingPlanPanel } from '../../running/components/TrainingPlanPanel'
-import { useRunLogs } from '../../running/hooks/useRunLogs'
+import { useDistanceUnit } from '@hooks/useDistanceUnit'
 import { useRunGoals } from '../../running/hooks/useRunGoals'
+import { useRunLogs } from '../../running/hooks/useRunLogs'
 import { useTrainingSessions } from '../../training/hooks/useTrainingSessions'
 import type { RunLog, RunGoal } from '../../running/types'
 import type { CreateRunLogInput, CreateRunGoalInput } from '../../running/types'
 import { bestRunForDistance } from '../../running/utils'
 
 export function RunningPage() {
+  const { unit, setUnit, longLabel } = useDistanceUnit()
   const { runs, loading, error, createRun, updateRun, deleteRun, reload } = useRunLogs()
   const {
     goals,
@@ -135,11 +137,26 @@ export function RunningPage() {
   const isLoading = loading || goalsLoading
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-xs text-[var(--color-text-tertiary)]">
-          Track mile times, custom distances, and pace goals
-        </p>
+    <div className="perf-page-fit flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-[var(--color-text-tertiary)]">Distance:</span>
+          {(['mi', 'km'] as const).map((u) => (
+            <button
+              key={u}
+              type="button"
+              onClick={() => void setUnit(u)}
+              className={`rounded-[var(--radius-sm)] border px-2 py-0.5 text-[10px] uppercase ${
+                unit === u
+                  ? 'border-[var(--color-accent)] bg-[var(--color-accent-subtle)]'
+                  : 'border-[var(--color-border)]'
+              }`}
+            >
+              {u}
+            </button>
+          ))}
+          <span className="text-[10px] text-[var(--color-text-tertiary)]">({longLabel})</span>
+        </div>
         <div className="flex gap-2">
           <Button onClick={openCreateGoal} variant="secondary" size="sm">
             Set goal
@@ -159,7 +176,7 @@ export function RunningPage() {
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 p-4">
           <p className="text-sm text-[var(--color-danger)]">{error}</p>
           <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            Run <code>npm run supabase:push</code> to apply the run_logs migration.
+            Could not load runs. Check your connection or database sync, then retry.
           </p>
           <Button variant="secondary" size="sm" className="mt-3" onClick={() => { reload(); reloadGoals() }}>
             Retry
@@ -168,34 +185,41 @@ export function RunningPage() {
       )}
 
       {!isLoading && !error && (
-        <>
-          <RunningCharts runs={runs} />
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 lg:grid-cols-2">
+          <Panel fillHeight title="Cardio overview" subtitle="PRs, plans, and goals" className="min-h-0">
+            <div className="space-y-3">
+              <RunningCharts runs={runs} />
 
-          <TrainingPlanPanel
-            runs={runs}
-            sessionCount={sessions.length}
-            avgIntensity={avgIntensity}
-          />
+              <TrainingPlanPanel
+                runs={runs}
+                sessionCount={sessions.length}
+                avgIntensity={avgIntensity}
+              />
 
-          {goals.length > 0 && (
-            <Panel title="Pace goals" subtitle={`${goals.length} active`} fullWidth>
-              <ul className="space-y-3">
-                {goals.map((goal) => (
-                  <li key={goal.id}>
-                    <RunGoalCard
-                      goal={goal}
-                      runs={runs}
-                      onEdit={openEditGoal}
-                      onDelete={handleDeleteGoal}
-                      onMarkAchieved={handleMarkAchieved}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </Panel>
-          )}
+              {goals.length > 0 && (
+                <div>
+                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                    Pace goals · {goals.length} active
+                  </p>
+                  <ul className="space-y-3">
+                    {goals.map((goal) => (
+                      <li key={goal.id}>
+                        <RunGoalCard
+                          goal={goal}
+                          runs={runs}
+                          onEdit={openEditGoal}
+                          onDelete={handleDeleteGoal}
+                          onMarkAchieved={handleMarkAchieved}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </Panel>
 
-          <Panel title="Run log" subtitle={`${runs.length} logged`} fullWidth>
+          <Panel fillHeight title="Run log" subtitle={`${runs.length} logged`} className="min-h-0">
             {runs.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-sm text-[var(--color-text-secondary)]">No runs logged yet.</p>
@@ -216,7 +240,7 @@ export function RunningPage() {
               </ul>
             )}
           </Panel>
-        </>
+        </div>
       )}
 
       <Modal

@@ -1,5 +1,11 @@
 export type OnboardingStepType = 'text' | 'choice'
 
+export interface OnboardingStepShowWhen {
+  field: string
+  equals?: string | string[]
+  notEquals?: string | string[]
+}
+
 export interface OnboardingStep {
   id: string
   question: string
@@ -10,6 +16,7 @@ export interface OnboardingStep {
   placeholder?: string
   optional?: boolean
   defaultValue?: string
+  showWhen?: OnboardingStepShowWhen
 }
 
 export interface OnboardingConfig {

@@ -6,8 +6,10 @@ import type {
   TrainingSession,
   UpdateTrainingSessionInput,
 } from '@features/soccer/training/types'
+import type { SideBalance } from '@features/soccer/athlete/types'
 import { defaultTechnicalRatings } from '@features/soccer/training/types'
 import { parseTechnicalRatings } from '@features/soccer/training/utils'
+import { positionPlayedFromSessionInput } from '@features/soccer/utils/sessionTabCategory'
 
 type TrainingSessionRow = Omit<TrainingSession, 'technical_ratings'> & { technical_ratings: Json }
 
@@ -21,6 +23,18 @@ function ratingsToJson(ratings: TechnicalRatings): Json {
   return ratings as unknown as Json
 }
 
+function sideBalanceToJson(balance: SideBalance | null | undefined): Json | null {
+  if (!balance) return null
+  return balance as unknown as Json
+}
+
+function parseSideBalance(raw: unknown): SideBalance | null {
+  if (!raw || typeof raw !== 'object') return null
+  const o = raw as Partial<SideBalance>
+  if (typeof o.dominant_pct !== 'number' || typeof o.weak_pct !== 'number') return null
+  return { dominant_pct: o.dominant_pct, weak_pct: o.weak_pct }
+}
+
 function normalizeSession(row: TrainingSessionRow): TrainingSession {
   const ratings = parseTechnicalRatings(row.technical_ratings)
   if (!ratings) throw new Error('Invalid technical ratings in database row')
@@ -29,13 +43,13 @@ function normalizeSession(row: TrainingSessionRow): TrainingSession {
     high_points: row.high_points ?? null,
     work_on: row.work_on ?? null,
     goal_id: row.goal_id ?? null,
+    side_balance: parseSideBalance(row.side_balance),
     technical_ratings: ratings,
   }
 }
 
-function focusLabel(focus: string): string {
-  const trimmed = focus.trim()
-  return trimmed || 'Session'
+function categoryFromInput(input: { tab_category?: string | null; focus?: string }): string {
+  return positionPlayedFromSessionInput(input)
 }
 
 export const trainingSessionService = {
@@ -59,7 +73,7 @@ export const trainingSessionService = {
         user_id: userId,
         session_date: input.session_date,
         duration_min: input.duration_min,
-        position_played: focusLabel(input.focus),
+        position_played: categoryFromInput(input),
         intensity: input.intensity,
         mood: input.mood,
         energy_level: input.energy_level,
@@ -68,6 +82,7 @@ export const trainingSessionService = {
         work_on: input.work_on?.trim() || null,
         notes: input.notes?.trim() || null,
         goal_id: input.goal_id ?? null,
+        side_balance: sideBalanceToJson(input.side_balance),
       })
       .select()
       .single()
@@ -82,7 +97,9 @@ export const trainingSessionService = {
 
     if (input.session_date !== undefined) payload.session_date = input.session_date
     if (input.duration_min !== undefined) payload.duration_min = input.duration_min
-    if (input.focus !== undefined) payload.position_played = focusLabel(input.focus)
+    if (input.tab_category !== undefined || input.focus !== undefined) {
+      payload.position_played = categoryFromInput(input)
+    }
     if (input.intensity !== undefined) payload.intensity = input.intensity
     if (input.mood !== undefined) payload.mood = input.mood
     if (input.energy_level !== undefined) payload.energy_level = input.energy_level
@@ -90,6 +107,7 @@ export const trainingSessionService = {
     if (input.work_on !== undefined) payload.work_on = input.work_on?.trim() || null
     if (input.notes !== undefined) payload.notes = input.notes?.trim() || null
     if (input.goal_id !== undefined) payload.goal_id = input.goal_id
+    if (input.side_balance !== undefined) payload.side_balance = sideBalanceToJson(input.side_balance)
     if (input.technical_ratings !== undefined) {
       payload.technical_ratings = ratingsToJson(input.technical_ratings)
     }

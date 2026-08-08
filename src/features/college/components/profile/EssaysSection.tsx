@@ -13,7 +13,7 @@ interface EssaysSectionProps {
 export function EssaysSection({ college }: EssaysSectionProps) {
   if (college.essays.length === 0) {
     return (
-      <Panel title="Essays" subtitle="No essays assigned yet">
+      <Panel fillHeight title="Essays" subtitle="No essays assigned yet">
         <p className="text-xs text-[var(--color-text-tertiary)]">
           Essay prompts will appear here once added for this school.
         </p>
@@ -22,7 +22,7 @@ export function EssaysSection({ college }: EssaysSectionProps) {
   }
 
   return (
-    <Panel title="Essays" subtitle={`${college.essays.length} prompt(s)`}>
+    <Panel fillHeight title="Essays" subtitle={`${college.essays.length} prompt(s)`}>
       <ul className="space-y-4">
         {college.essays.map((essay) => {
           const pct = essay.maxWords > 0 ? Math.round((essay.wordCount / essay.maxWords) * 100) : 0

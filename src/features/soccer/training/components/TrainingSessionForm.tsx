@@ -3,8 +3,13 @@ import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
 import { GoalLinkSelect } from '@components/goals/GoalLinkSelect'
+import { useUserPreferences } from '@features/preferences'
+import { sportUsesSideTracking } from '../../athlete/sideTracking'
+import { SideBalanceFields } from '../../athlete/components/AthleteSideProfileCard'
+import { SessionTabSelect } from './SessionTabSelect'
+import { decodeSessionTabCategory } from '../../utils/sessionTabCategory'
 import type { CreateTrainingSessionInput, TrainingMood, TrainingSession } from '../types'
-import { ENERGY_LABELS, TRAINING_MOODS, TRAINING_MOOD_LABELS } from '../types'
+import { defaultSideBalance, ENERGY_LABELS, TRAINING_MOODS, TRAINING_MOOD_LABELS } from '../types'
 import { todayIsoDate } from '../utils'
 import { cn } from '@lib/utils'
 
@@ -16,10 +21,12 @@ interface TrainingSessionFormProps {
 
 export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSessionFormProps) {
   const isEdit = Boolean(session)
+  const { hobbyPassion } = useUserPreferences()
+  const trackSides = sportUsesSideTracking(hobbyPassion)
 
   const [sessionDate, setSessionDate] = useState(todayIsoDate())
   const [durationMin, setDurationMin] = useState(60)
-  const [focus, setFocus] = useState('')
+  const [tabCategory, setTabCategory] = useState<string | null>(null)
   const [highPoints, setHighPoints] = useState('')
   const [workOn, setWorkOn] = useState('')
   const [intensity, setIntensity] = useState(6)
@@ -27,6 +34,9 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
   const [energyLevel, setEnergyLevel] = useState(3)
   const [notes, setNotes] = useState('')
   const [goalId, setGoalId] = useState<string | null>(null)
+  const [dominantPct, setDominantPct] = useState(50)
+  const [weakPct, setWeakPct] = useState(50)
+  const [trackSideBalance, setTrackSideBalance] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -34,7 +44,7 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
     if (!session) return
     setSessionDate(session.session_date)
     setDurationMin(session.duration_min)
-    setFocus(session.position_played === 'Session' ? '' : session.position_played)
+    setTabCategory(decodeSessionTabCategory(session.position_played).tabKey)
     setHighPoints(session.high_points ?? '')
     setWorkOn(session.work_on ?? '')
     setIntensity(session.intensity)
@@ -42,6 +52,11 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
     setEnergyLevel(session.energy_level)
     setNotes(session.notes ?? '')
     setGoalId(session.goal_id)
+    if (session.side_balance) {
+      setTrackSideBalance(true)
+      setDominantPct(session.side_balance.dominant_pct)
+      setWeakPct(session.side_balance.weak_pct)
+    }
   }, [session])
 
   async function handleSubmit(e: FormEvent) {
@@ -52,17 +67,13 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
       setError('Duration must be greater than 0.')
       return
     }
-    if (!focus.trim()) {
-      setError('What was your session focus?')
-      return
-    }
 
     setSubmitting(true)
     try {
       await onSubmit({
         session_date: sessionDate,
         duration_min: durationMin,
-        focus: focus.trim(),
+        tab_category: tabCategory,
         intensity,
         mood,
         energy_level: energyLevel,
@@ -70,6 +81,7 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
         work_on: workOn.trim() || undefined,
         notes: notes.trim() || undefined,
         goal_id: goalId,
+        side_balance: trackSides && trackSideBalance ? { dominant_pct: dominantPct, weak_pct: weakPct } : null,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save session')
@@ -99,13 +111,7 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
         />
       </div>
 
-      <Input
-        label="Session focus"
-        value={focus}
-        onChange={(e) => setFocus(e.target.value)}
-        placeholder="e.g. Endurance, Technique drills, Repertoire work, Scrimmage"
-        required
-      />
+      <SessionTabSelect value={tabCategory} onChange={setTabCategory} />
 
       <Textarea
         label="High points"
@@ -173,6 +179,36 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
       </div>
 
       <GoalLinkSelect value={goalId} onChange={setGoalId} />
+
+      {trackSides && (
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-xs text-[var(--color-text-secondary)]">
+            <input
+              type="checkbox"
+              checked={trackSideBalance}
+              onChange={(e) => {
+                setTrackSideBalance(e.target.checked)
+                if (e.target.checked && !session?.side_balance) {
+                  const defaults = defaultSideBalance()
+                  setDominantPct(defaults.dominant_pct)
+                  setWeakPct(defaults.weak_pct)
+                }
+              }}
+            />
+            Log dominant / weak side balance
+          </label>
+          {trackSideBalance && (
+            <SideBalanceFields
+              dominantPct={dominantPct}
+              weakPct={weakPct}
+              onChange={(d, w) => {
+                setDominantPct(d)
+                setWeakPct(w)
+              }}
+            />
+          )}
+        </div>
+      )}
 
       <Textarea
         label="Notes"

@@ -1,5 +1,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { generateChatReply } from '../ai/chat.js'
+import { generateConversationTitle } from '../ai/conversationTitle.js'
+import {
+  COLLEGE_ACTION_INSTRUCTIONS,
+  executeCollegeActions,
+  parseActionsFromReply,
+} from '../assistant/actions.js'
 import { retrieveMemories } from '../assistant/memory.js'
 import { runWebSearch, shouldWebSearch } from '../assistant/search.js'
 import type { AssistantEnv } from '../assistant/types.js'
@@ -15,7 +21,8 @@ const PROMPT_ID = 'assistant'
 function buildSystemPrompt(config: PromptConfig, mode: OSMode): string {
   const modeConfig = config.modes[mode] ?? config.modes.chat
   if (!modeConfig) return config.system
-  return `${config.system}\n\n---\n\nActive capability mode: **${mode}**\n${modeConfig.instruction}`
+  const actionBlock = mode === 'college_planning' ? `\n\n---\n\n${COLLEGE_ACTION_INSTRUCTIONS}` : ''
+  return `${config.system}\n\n---\n\nActive capability mode: **${mode}**\n${modeConfig.instruction}${actionBlock}`
 }
 
 export async function handleOSChat(
@@ -54,11 +61,45 @@ export async function handleOSChat(
   const systemPrompt = buildSystemPrompt(promptConfig, mode)
   const contextBlocks = [contextBlock, patternsBlock, memoryBlock, searchBlock].filter(Boolean) as string[]
 
-  const reply = await generateChatReply(env, systemPrompt, message, {
+  const userTurns = request.history?.filter((m) => m.role === 'user').length ?? 0
+  const isNewConversation = userTurns === 0
+
+  const maxTokens =
+    mode === 'weekly_review' || mode === 'goal_breakdown'
+      ? 2200
+      : mode === 'chat'
+        ? 1200
+        : 1600
+
+  const replyPromise = generateChatReply(env, systemPrompt, message, {
     contextBlocks,
-    history: request.history?.slice(-6),
-    maxTokens: mode === 'weekly_review' || mode === 'goal_breakdown' ? 2200 : 1800,
+    history: request.history?.slice(-4),
+    maxTokens,
+    skipHealthCheck: true,
   })
+
+  const titlePromise = isNewConversation
+    ? generateConversationTitle(env, message).catch(() => null)
+    : Promise.resolve(null)
+
+  const [replyRaw, suggestedTitle] = await Promise.all([replyPromise, titlePromise])
+
+  let reply = replyRaw
+  let actionsExecuted: Array<{ type: string; success: boolean; summary: string }> | undefined
+
+  if (mode === 'college_planning') {
+    const { cleanReply, actions } = parseActionsFromReply(replyRaw)
+    if (actions.length > 0) {
+      actionsExecuted = await executeCollegeActions(client, userId, actions)
+      const summaries = actionsExecuted.filter((a) => a.success).map((a) => a.summary)
+      reply = cleanReply
+      if (summaries.length > 0) {
+        reply += `\n\n---\n**Updated your workspace:** ${summaries.join(' · ')}`
+      }
+    } else {
+      reply = cleanReply
+    }
+  }
 
   const module = getModuleByMode(mode)
 
@@ -72,6 +113,8 @@ export async function handleOSChat(
       model: env.chatModel,
       proactiveInsights,
       contextSummary: userContext.summary,
+      suggestedTitle: suggestedTitle ?? undefined,
+      actionsExecuted,
     },
   }
 }

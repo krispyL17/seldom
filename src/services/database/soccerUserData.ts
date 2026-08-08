@@ -1,3 +1,5 @@
+import { parseAthleteDevelopment } from '@features/soccer/athlete/defaults'
+import type { AthleteDevelopmentState } from '@features/soccer/athlete/types'
 import { getSupabaseClient } from '@lib/supabase'
 import type { TableUpdate } from '@/types/database'
 import type { Json } from '@/types/database'
@@ -14,6 +16,7 @@ export interface SoccerPlayerProfile {
 export interface SoccerUserData {
   user_id: string
   profile: SoccerPlayerProfile | null
+  athlete_development: unknown
   onboarding_completed_at: string | null
   updated_at: string
 }
@@ -36,6 +39,7 @@ function requireClient() {
 function mapRow(row: {
   user_id: string
   profile: Json
+  athlete_development?: Json
   onboarding_completed_at: string | null
   updated_at: string
 }): SoccerUserData {
@@ -55,6 +59,7 @@ function mapRow(row: {
   return {
     user_id: row.user_id,
     profile,
+    athlete_development: row.athlete_development ?? {},
     onboarding_completed_at: row.onboarding_completed_at,
     updated_at: row.updated_at,
   }
@@ -113,5 +118,18 @@ export const soccerUserDataService = {
 
     if (error) throw error
     return mapRow(data)
+  },
+
+  async updateAthleteDevelopment(
+    userId: string,
+    state: AthleteDevelopmentState,
+  ): Promise<SoccerUserData> {
+    return soccerUserDataService.patch(userId, {
+      athlete_development: state as unknown as Json,
+    })
+  },
+
+  getAthleteDevelopment(raw: unknown): AthleteDevelopmentState {
+    return parseAthleteDevelopment(raw)
   },
 }

@@ -19,6 +19,7 @@ interface DocumentsSectionProps {
 export function DocumentsSection({ college }: DocumentsSectionProps) {
   return (
     <Panel
+      fillHeight
       title="Documents"
       subtitle="PDFs, transcripts, resumes, notes"
       action={

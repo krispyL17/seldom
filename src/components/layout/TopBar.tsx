@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@lib/utils'
 import { getPageTitle } from '@config/navigation'
@@ -6,6 +6,7 @@ import { getGreeting } from '@config/user'
 import { useAuth } from '@hooks/useAuth'
 import { useUserPreferences } from '@features/preferences'
 import { NotificationCenter, useNotifications } from '@features/notifications'
+import { GlobalSearch } from '@components/layout/GlobalSearch'
 import { IconButton } from '@components/ui/IconButton'
 import { IconBell, IconMenu, IconSearch, IconUser } from '@components/ui/icons'
 
@@ -18,6 +19,7 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
   const { user } = useAuth()
   const { hobbyTabLabel, hobbyPassion } = useUserPreferences()
   const { unreadCount, togglePanel } = useNotifications()
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
   const firstName =
     user?.user_metadata?.display_name?.split(' ')[0] ??
@@ -39,7 +41,7 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-base)]/90 px-4 backdrop-blur-xl md:gap-4 md:px-6">
+      <header className="relative z-50 flex h-16 shrink-0 items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-surface-base)]/90 px-4 backdrop-blur-xl md:gap-4 md:px-6">
         <div className="flex items-center gap-3 md:hidden">
           <IconButton label="Open menu" onClick={onMenuOpen}>
             <IconMenu />
@@ -63,32 +65,18 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
           </p>
         </div>
 
-        <div className="hidden flex-1 md:block md:max-w-sm lg:max-w-md">
-          <label className="relative block">
-            <span className="sr-only">Search</span>
-            <IconSearch
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-              aria-hidden
-            />
-            <input
-              type="search"
-              placeholder="Search tasks, sessions, journal…"
-              className={cn(
-                'h-9 w-full rounded-[var(--radius-md)] border border-[var(--color-border)]',
-                'bg-[var(--color-surface-overlay)] pl-9 pr-4 text-sm text-[var(--color-text-primary)]',
-                'placeholder:text-[var(--color-text-tertiary)]',
-                'transition-colors duration-200',
-                'hover:border-[var(--color-border-strong)]',
-                'focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]',
-              )}
-            />
-          </label>
+        <div className="hidden min-w-0 flex-1 md:block md:max-w-md lg:max-w-lg">
+          <GlobalSearch className="w-full" />
         </div>
 
         <div className="flex-1 md:hidden" />
 
         <div className="flex items-center gap-1">
-          <IconButton label="Search" className="md:hidden">
+          <IconButton
+            label="Search"
+            className="md:hidden"
+            onClick={() => setMobileSearchOpen((open) => !open)}
+          >
             <IconSearch />
           </IconButton>
 
@@ -112,6 +100,12 @@ export function TopBar({ onMenuOpen }: TopBarProps) {
           </Link>
         </div>
       </header>
+
+      {mobileSearchOpen && (
+        <div className="border-b border-[var(--color-border)] bg-[var(--color-surface-base)] px-4 py-3 md:hidden">
+          <GlobalSearch autoFocus onNavigate={() => setMobileSearchOpen(false)} />
+        </div>
+      )}
 
       <NotificationCenter />
     </>

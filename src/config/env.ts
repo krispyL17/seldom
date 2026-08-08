@@ -12,6 +12,9 @@ export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 /** Supabase anonymous (public) API key — safe for browser use with RLS enabled */
 export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+/** Public site URL for auth email links (production). Falls back to current origin in browser. */
+export const APP_URL = import.meta.env.VITE_APP_URL as string | undefined
+
 const PLACEHOLDER_MARKERS = ['your-project-id', 'your-anon-key-here']
 
 function isValidEnvValue(value: string | undefined): value is string {
@@ -28,5 +31,5 @@ export function isSupabaseConfigured(): boolean {
 export const APP_CONFIG = {
   name: 'Seldom',
   tagline: 'Your personal control center',
-  version: '0.1.0',
+  version: '0.2.1',
 } as const

@@ -2,7 +2,7 @@
  * Shared search types — used by the Node search server and React client.
  */
 
-export type SearchProviderName = 'trusted-apis' | 'duckduckgo' | 'tavily'
+export type SearchProviderName = 'trusted-apis' | 'duckduckgo' | 'tavily' | 'coaching-resources'
 
 export interface SearchResultItem {
   title: string

@@ -21,10 +21,10 @@ export interface NavItemConfig {
 }
 
 /**
- * Primary sidebar navigation — athlete command center modules.
+ * Primary sidebar navigation.
  */
 export const SIDEBAR_NAV: NavItemConfig[] = [
-  { id: 'home', label: 'Home', href: '/', icon: IconHome },
+  { id: 'home', label: 'Dashboard', href: '/', icon: IconHome },
   { id: 'tasks', label: 'Tasks', href: '/tasks', icon: IconTasks },
   { id: 'goals', label: 'Goals', href: '/goals', icon: IconGoals },
   { id: 'college', label: 'Junior Prep', href: '/college', icon: IconCollege },
@@ -37,6 +37,7 @@ export const SIDEBAR_NAV: NavItemConfig[] = [
 ]
 
 import { getSoccerPageTitle } from '@features/soccer/utils'
+import { getCollegePageTitle } from '@features/college/collegeNav'
 
 /** Lookup page title from pathname for the mobile header */
 export function getPageTitle(
@@ -44,6 +45,10 @@ export function getPageTitle(
   hobbyTabLabel = 'Performance',
   hobbyPassion = '',
 ): string {
+  if (pathname === '/college' || pathname.startsWith('/college/')) {
+    return getCollegePageTitle(pathname)
+  }
+
   if (pathname === '/soccer' || pathname.startsWith('/soccer/')) {
     if (pathname === '/soccer' || pathname === '/soccer/overview') {
       return hobbyTabLabel

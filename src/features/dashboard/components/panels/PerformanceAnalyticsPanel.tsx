@@ -1,119 +1,125 @@
-import { Link } from 'react-router-dom'
-import { PanelSkeleton } from '@components/ui/PanelSkeleton'
-import { Panel, PanelDivider } from '@components/ui/Panel'
-import { MiniBarChart, MetricTile } from '@components/ui/MiniBarChart'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Button } from '@components/ui/Button'
+import { Modal } from '@components/ui/Modal'
+import { Panel, PanelActionLink } from '@components/ui/Panel'
+import { MetricTile } from '@components/ui/MiniBarChart'
+import { ProgressBar } from '@components/ui/ProgressBar'
 import { useAnalytics } from '@features/analytics'
-import { analyticsHasEnoughData } from '@features/analytics/utils/unlock'
+import { analyticsHasEnoughData, analyticsUnlockProgress } from '@features/analytics/utils/unlock'
+import { analyticsWeekRangeLabel } from '@features/analytics/utils/rangeLabel'
 import { useAuth } from '@hooks/useAuth'
 
+/**
+ * Analytics = cross-app trends (tasks, goals, training, journal, runs, gym).
+ * Starts at 2 weeks and expands to 4 once older activity exists.
+ */
 export function PerformanceAnalyticsPanel() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { dashboard, loading } = useAnalytics()
+  const progress = analyticsUnlockProgress(dashboard)
   const unlocked = analyticsHasEnoughData(dashboard)
+  const [warnOpen, setWarnOpen] = useState(false)
+
+  function openAnalyticsUnlocked() {
+    navigate('/analytics')
+  }
+
+  const lockedOpenAction = (
+    <PanelActionLink onClick={() => setWarnOpen(true)}>Open →</PanelActionLink>
+  )
+
+  const unlockWarningModal = (
+    <Modal open={warnOpen} onClose={() => setWarnOpen(false)} title="Analytics not unlocked yet">
+      <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+        Analytics unlocks when you log tasks, sessions, journal entries, or runs. If you open it now,
+        the tab will be mostly empty until you add activity.
+      </p>
+      <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
+        Next step: {progress.nextHint}
+      </p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button type="button" variant="secondary" size="sm" onClick={() => setWarnOpen(false)}>
+          Go back
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => {
+            setWarnOpen(false)
+            openAnalyticsUnlocked()
+          }}
+        >
+          Continue anyway
+        </Button>
+      </div>
+    </Modal>
+  )
 
   if (!user) {
     return (
-      <Panel title="Activity summary" subtitle="Sign in for live metrics" fullWidth>
-        <p className="text-xs text-[var(--color-text-tertiary)]">
-          Log in to see trends from your tasks, training, and goals.
-        </p>
+      <Panel title="Analytics" subtitle="Sign in to track trends" fullWidth>
+        <p className="text-[11px] text-[var(--color-text-tertiary)]">Log in to unlock cross-app charts.</p>
       </Panel>
     )
   }
 
   if (loading || !dashboard) {
     return (
-      <Panel title="Activity summary" subtitle="Loading metrics…" fullWidth>
-        <PanelSkeleton lines={4} />
+      <Panel title="Analytics" subtitle="Loading…" fullWidth>
+        <p className="text-[11px] text-[var(--color-text-tertiary)]">Loading…</p>
       </Panel>
     )
   }
 
   if (!unlocked) {
     return (
-      <Panel title="Activity summary" subtitle="Analytics unlocks as you log" fullWidth>
-        <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
-          The <strong>Analytics</strong> tab appears in the sidebar once you log tasks, practice sessions,
-          journal entries, or runs. Keep using Seldom — charts will show up automatically.
-        </p>
-        <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
-          Tip: add a task with a deadline or log a practice session to get started.
-        </p>
-      </Panel>
+      <>
+        <Panel
+          title="Analytics"
+          subtitle={`${progress.completed}/${progress.total} activity types logged`}
+          fullWidth
+          action={lockedOpenAction}
+        >
+          <p className="text-[11px] text-[var(--color-text-secondary)]">
+            Unlocks when you log tasks, sessions, journal entries, or runs — trends start at 2 weeks
+            and expand to 4 as you build history.
+          </p>
+          <ProgressBar
+            value={(progress.completed / progress.total) * 100}
+            showValue={false}
+            size="sm"
+            className="mt-2"
+          />
+          <p className="mt-1.5 text-[10px] text-[var(--color-text-tertiary)]">Next: {progress.nextHint}</p>
+        </Panel>
+        {unlockWarningModal}
+      </>
     )
   }
 
   const taskKpi = dashboard.kpis.find((k) => k.label === 'Task completion')
-  const goalKpi = dashboard.kpis.find((k) => k.label === 'Goal progress')
   const trainingKpi = dashboard.kpis.find((k) => k.label === 'Training / wk')
-  const journalKpi = dashboard.kpis.find((k) => k.label === 'Journal streak')
+
+  const weekRange = analyticsWeekRangeLabel(dashboard.weekCount)
 
   return (
     <Panel
-      title="Activity summary"
-      subtitle="Live from your data"
+      title="Analytics"
+      subtitle={`${weekRange} cross-app trends`}
       fullWidth
       action={
-        <Link
-          to="/analytics"
-          className="rounded-sm text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline"
-        >
-          Full analytics →
+        <Link to="/analytics" className="text-[10px] text-[var(--color-accent-muted)] hover:underline">
+          Open →
         </Link>
       }
     >
-      <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <MetricTile
-          label="Tasks Done"
-          value={taskKpi?.value ?? 0}
-          unit={taskKpi?.unit}
-          trend={taskKpi?.trend}
-        />
-        <MetricTile
-          label="Goal Progress"
-          value={goalKpi?.value ?? 0}
-          unit={goalKpi?.unit}
-          trend={goalKpi?.trend}
-        />
-        <MetricTile
-          label="Training"
-          value={trainingKpi?.value ?? 0}
-          unit={trainingKpi?.unit}
-          trend={trainingKpi?.trend}
-        />
-        <MetricTile
-          label="Journal Streak"
-          value={journalKpi?.value ?? 0}
-          unit={journalKpi?.unit}
-          trend={journalKpi?.trend}
-        />
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div>
-          <PanelDivider label="Training Frequency" />
-          <MiniBarChart
-            data={dashboard.trainingFrequency.data}
-            labels={dashboard.trainingFrequency.labels}
-            color="var(--color-accent)"
-          />
-        </div>
-        <div>
-          <PanelDivider label="Task Completion" />
-          <MiniBarChart
-            data={dashboard.taskCompletion.data}
-            labels={dashboard.taskCompletion.labels}
-            color="var(--color-success)"
-          />
-        </div>
-        <div>
-          <PanelDivider label="Goal Progress" />
-          <MiniBarChart
-            data={dashboard.goalProgress.data}
-            labels={dashboard.goalProgress.labels}
-            color="var(--color-warning)"
-          />
-        </div>
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <MetricTile label="Tasks" value={taskKpi?.value ?? 0} unit={taskKpi?.unit} />
+        <MetricTile label="Training/wk" value={trainingKpi?.value ?? 0} unit={trainingKpi?.unit} />
+        <MetricTile label="Goals" value={dashboard.kpis.find((k) => k.label === 'Goal progress')?.value ?? 0} unit="%" />
+        <MetricTile label="Journal" value={dashboard.kpis.find((k) => k.label === 'Journal streak')?.value ?? 0} unit="d" />
       </div>
     </Panel>
   )

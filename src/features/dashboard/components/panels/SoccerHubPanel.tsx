@@ -2,8 +2,11 @@ import { Link } from 'react-router-dom'
 import { EmptyState } from '@components/ui/EmptyState'
 import { Panel, PanelActionLink } from '@components/ui/Panel'
 import { useUserPreferences } from '@features/preferences'
+import { MileRunSnapshotList } from '@features/soccer/running/components/MileRunSnapshotList'
+import { filterMileRuns } from '@features/soccer/running/utils'
 import { useRunLogs } from '@features/soccer/running/hooks/useRunLogs'
 import { useTrainingSessions } from '@features/soccer/training/hooks/useTrainingSessions'
+import { formatMinutesDuration } from '@lib/formatDuration'
 
 export function SoccerHubPanel() {
   const { hobbyTabLabel } = useUserPreferences()
@@ -11,6 +14,7 @@ export function SoccerHubPanel() {
   const { runs, loading: runsLoading } = useRunLogs()
 
   const loading = sessionsLoading || runsLoading
+  const mileRuns = filterMileRuns(runs)
   const hasLoggedData = sessions.length > 0 || runs.length > 0
   const latestSession = sessions[0]
 
@@ -51,21 +55,21 @@ export function SoccerHubPanel() {
                 Latest session
               </p>
               <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
-                {latestSession.position_played} · {latestSession.duration_min} min
+                {latestSession.position_played} · {formatMinutesDuration(latestSession.duration_min)}
               </p>
               <p className="text-xs text-[var(--color-text-secondary)]">
                 Intensity {latestSession.intensity}/10
               </p>
             </div>
           )}
-          {runs[0] && (
-            <div className="mt-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3">
+          {(mileRuns.length > 0 || runs.length > 0) && (
+            <div className={`${latestSession ? 'mt-3' : ''} rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3`}>
               <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Latest run
+                Mile runs
               </p>
-              <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
-                {(runs[0].distance_m / 1000).toFixed(2)} km
-              </p>
+              <div className="mt-2">
+                <MileRunSnapshotList runs={runs} />
+              </div>
             </div>
           )}
         </>

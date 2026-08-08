@@ -6,11 +6,26 @@ interface MiniBarChartProps {
   height?: number
   color?: string
   className?: string
+  /** Show only the most recent N bars (keeps charts readable). */
+  maxBars?: number
+  /** Optional formatter for values in labels and axis (e.g. minutes → hours). */
+  formatValue?: (value: number) => string
+  /** Y-axis tick labels (default on when height ≥ 40px). */
+  showAxis?: boolean
+  /** Value label above each non-zero bar. */
+  showValues?: boolean
+}
+
+function buildAxisTicks(max: number): number[] {
+  if (max <= 0) return [0]
+  if (max <= 4) return [max, 0]
+  const mid = Math.round(max / 2)
+  return [...new Set([max, mid, 0])]
 }
 
 /**
- * Lightweight inline bar chart — no external chart library.
- * Used for performance analytics sparkline-style visuals.
+ * Lightweight inline bar chart with optional y-axis ticks and bar value labels.
+ * Returns null when there is no non-zero data — parent should show an empty state.
  */
 export function MiniBarChart({
   data,
@@ -18,50 +33,95 @@ export function MiniBarChart({
   height = 48,
   color = 'var(--color-accent)',
   className,
+  maxBars = 10,
+  formatValue,
+  showAxis,
+  showValues = true,
 }: MiniBarChartProps) {
-  const max = Math.max(...data, 1)
+  const start = Math.max(0, data.length - maxBars)
+  const chartData = data.slice(start)
+  const chartLabels = labels?.slice(start)
+
+  if (chartData.length === 0 || chartData.every((value) => value <= 0)) {
+    return null
+  }
+
+  const max = Math.max(...chartData)
+  const format = formatValue ?? ((value: number) => String(value))
+  const ticks = buildAxisTicks(max)
+  const useAxis = showAxis ?? height >= 40
   const chartLabel =
-    labels && labels.length === data.length
-      ? labels.map((label, i) => `${label}: ${data[i]}`).join(', ')
-      : data.join(', ')
+    chartLabels && chartLabels.length === chartData.length
+      ? chartLabels.map((label, i) => `${label}: ${format(chartData[i]!)}`).join(', ')
+      : chartData.map(format).join(', ')
 
   return (
-    <div className={cn('space-y-2', className)}>
-      <div
-        className="flex items-end gap-1"
-        style={{ height }}
-        role="img"
-        aria-label={`Bar chart showing ${chartLabel}`}
-      >
-        {data.map((value, i) => (
-          <div
-            key={i}
-            className="flex flex-1 items-end rounded-sm bg-[var(--color-surface-elevated)] transition-all duration-300 hover:opacity-80"
-            style={{ height: '100%' }}
-          >
-            <div
-              className="w-full rounded-sm transition-all duration-500"
-              style={{
-                height: `${(value / max) * 100}%`,
-                backgroundColor: color,
-                opacity: 0.85,
-              }}
-            />
-          </div>
-        ))}
-      </div>
-      {labels && (
-        <div className="flex gap-1">
-          {labels.map((label, i) => (
-            <span
-              key={`${label}-${i}`}
-              className="flex-1 text-center text-[9px] text-[var(--color-text-tertiary)]"
-            >
-              {label}
-            </span>
+    <div className={cn('flex gap-1.5', className)}>
+      {useAxis && (
+        <div
+          className="flex w-9 shrink-0 flex-col justify-between py-0.5 text-right text-[9px] tabular-nums leading-none text-[var(--color-text-tertiary)]"
+          style={{ height }}
+          aria-hidden
+        >
+          {ticks.map((tick) => (
+            <span key={tick}>{format(tick)}</span>
           ))}
         </div>
       )}
+
+      <div className="min-w-0 flex-1 space-y-1">
+        <div
+          className="flex items-end gap-0.5"
+          style={{ height }}
+          role="img"
+          aria-label={`Bar chart showing ${chartLabel}`}
+        >
+          {chartData.map((value, i) => (
+            <div
+              key={i}
+              className="flex min-w-0 flex-1 flex-col items-center justify-end"
+              style={{ height: '100%' }}
+            >
+              {showValues && value > 0 && (
+                <span
+                  className="mb-0.5 max-w-full truncate px-0.5 text-[8px] font-medium tabular-nums text-[var(--color-text-secondary)]"
+                  title={format(value)}
+                >
+                  {format(value)}
+                </span>
+              )}
+              <div className="flex w-full flex-1 items-end">
+                {value > 0 ? (
+                  <div
+                    className="w-full rounded-sm transition-all duration-500"
+                    style={{
+                      height: `${Math.max(8, (value / max) * 100)}%`,
+                      backgroundColor: color,
+                      opacity: 0.85,
+                    }}
+                  />
+                ) : (
+                  <div className="h-0 w-full" aria-hidden />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {chartLabels && (
+          <div className="flex gap-0.5">
+            {chartLabels.map((label, i) => (
+              <span
+                key={`${label}-${i}`}
+                className="min-w-0 flex-1 truncate text-center text-[9px] text-[var(--color-text-tertiary)]"
+                title={label}
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

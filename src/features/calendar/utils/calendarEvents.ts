@@ -97,6 +97,10 @@ export function formatEventDate(at: string): string {
   })
 }
 
+export function formatMonthYear(date: Date): string {
+  return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+}
+
 export function getWeekDays(anchor: Date): Date[] {
   const start = startOfDay(anchor)
   const day = start.getDay()

@@ -286,10 +286,17 @@ export interface CommonAppData {
 
 export interface StudentProfile {
   name: string
+  /** Region preference from onboarding, or general school area */
   school: string
   graduationYear: string
   gpa?: string | null
   intendedMajor?: string | null
+  /** High school name */
+  highSchool?: string | null
+  /** e.g. state-ranked, competitive club, rebuilding program */
+  teamQuality?: string | null
+  /** Coach connections, recruiting pipelines, linked universities */
+  universityLinks?: string | null
 }
 
 export interface ResumeSettings {
@@ -343,6 +350,7 @@ export interface CreateCollegeInput {
   status?: ApplicationStatus
   acceptanceRate?: number | null
   tuition?: number | null
+  deadlines?: CollegeDeadline[]
 }
 
 export interface UpdateCollegeInput {
@@ -402,17 +410,21 @@ export interface CreateProjectInput {
 export interface UpdateProjectInput extends Partial<CreateProjectInput> {}
 
 export const COLLEGE_NAV_JUNIOR = [
-  { id: 'dashboard', label: 'Prep Dashboard', href: '/college' },
-  { id: 'activities', label: 'Activities & Resume', href: '/college/activities' },
-  { id: 'common-app', label: 'Essay Prep', href: '/college/common-app' },
-  { id: 'timeline', label: 'Timeline', href: '/college/timeline' },
+  { id: 'overview', label: 'Overview', href: '/college' },
+  { id: 'schools', label: 'Schools', href: '/college/schools' },
+  { id: 'deadlines', label: 'Deadlines', href: '/college/deadlines' },
+  { id: 'common-app', label: 'Common App', href: '/college/common-app' },
+  { id: 'planning', label: 'Plan', href: '/college/planning' },
+  { id: 'advisor', label: 'AI Coach', href: '/college/advisor' },
 ] as const
 
 export const COLLEGE_NAV_SENIOR = [
-  { id: 'dashboard', label: 'Applications', href: '/college' },
-  { id: 'activities', label: 'Activities & Resume', href: '/college/activities' },
+  { id: 'overview', label: 'Overview', href: '/college' },
+  { id: 'schools', label: 'Schools', href: '/college/schools' },
+  { id: 'deadlines', label: 'Deadlines', href: '/college/deadlines' },
   { id: 'common-app', label: 'Common App', href: '/college/common-app' },
-  { id: 'timeline', label: 'Timeline', href: '/college/timeline' },
+  { id: 'planning', label: 'Plan', href: '/college/planning' },
+  { id: 'advisor', label: 'AI Coach', href: '/college/advisor' },
 ] as const
 
 /** @deprecated use getCollegeNav(phase) */

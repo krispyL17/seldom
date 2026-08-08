@@ -18,7 +18,7 @@ export function CollegeAnalyticsPanel() {
   )
 
   return (
-    <Panel title="Application Analytics" subtitle="List composition" fullWidth>
+    <Panel fillHeight title="Application Analytics" subtitle="List composition">
       {colleges.length === 0 ? (
         <EmptyState
           title="No schools on your list"
@@ -52,7 +52,9 @@ export function CollegeAnalyticsPanel() {
             <p className="text-[10px] text-[var(--color-text-tertiary)]">Checklist progress</p>
           </div>
         </div>
-        {chartData.length > 0 && <MiniBarChart data={chartData} labels={chartLabels} />}
+        {chartData.length > 0 && (
+          <MiniBarChart data={chartData} labels={chartLabels} height={48} showAxis showValues />
+        )}
         </div>
       )}
     </Panel>

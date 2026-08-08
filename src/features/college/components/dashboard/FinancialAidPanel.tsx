@@ -1,13 +1,28 @@
+import { useEffect, useRef } from 'react'
 import { Panel } from '@components/ui/Panel'
 import { EmptyState } from '@components/ui/EmptyState'
 import { ChecklistItemRow } from '../shared/ChecklistItemRow'
 import { useCollege } from '../../hooks/useCollege'
-import { generateId } from '../../utils'
+import { buildJuniorFinancialAid, buildSeniorFinancialAid } from '../../data/templates'
+import { formatShortDate, generateId } from '../../utils'
 
 export function FinancialAidPanel() {
-  const { userData, updateFinancialAid, isSeniorMode } = useCollege()
+  const { userData, updateFinancialAid, isSeniorMode, onboardingComplete } = useCollege()
   const items = userData?.financialAid ?? []
   const completed = items.filter((i) => i.completed).length
+  const seedingRef = useRef(false)
+
+  useEffect(() => {
+    if (!userData || !onboardingComplete || items.length > 0 || seedingRef.current) return
+    seedingRef.current = true
+    const gradYear = userData.resumeSettings.studentProfile?.graduationYear
+    const template = isSeniorMode
+      ? buildSeniorFinancialAid(gradYear)
+      : buildJuniorFinancialAid(gradYear)
+    void updateFinancialAid(template).catch(() => {
+      seedingRef.current = false
+    })
+  }, [userData, onboardingComplete, isSeniorMode, items.length, updateFinancialAid])
 
   async function toggle(id: string) {
     if (!userData) return
@@ -25,14 +40,24 @@ export function FinancialAidPanel() {
     ])
   }
 
+  async function loadTemplate() {
+    if (!userData) return
+    const gradYear = userData.resumeSettings.studentProfile?.graduationYear
+    const template = isSeniorMode
+      ? buildSeniorFinancialAid(gradYear)
+      : buildJuniorFinancialAid(gradYear)
+    await updateFinancialAid(template)
+  }
+
   return (
     <Panel
-      title={isSeniorMode ? 'Financial Aid Checklist' : 'Financial Planning'}
+      fillHeight
+      title={isSeniorMode ? 'Financial aid checklist' : 'Financial planning'}
       subtitle={`${completed} of ${items.length} complete`}
       action={
         <button
           type="button"
-          onClick={addItem}
+          onClick={() => void addItem()}
           className="text-[10px] text-[var(--color-accent-muted)] hover:underline"
         >
           + Add
@@ -45,16 +70,16 @@ export function FinancialAidPanel() {
             title="No checklist items yet"
             description={
               isSeniorMode
-                ? 'Add FAFSA, CSS Profile, and scholarship deadlines as you go.'
-                : 'Track savings goals and scholarship research for junior year.'
+                ? 'Load FAFSA, CSS Profile, and scholarship deadlines for senior year.'
+                : 'Load junior-year savings and scholarship research steps.'
             }
             action={
               <button
                 type="button"
-                onClick={addItem}
+                onClick={() => void loadTemplate()}
                 className="text-[11px] text-[var(--color-accent-muted)] hover:underline"
               >
-                Add first item
+                Load planning checklist
               </button>
             }
           />
@@ -62,9 +87,13 @@ export function FinancialAidPanel() {
           items.map((item) => (
             <li key={item.id}>
               <ChecklistItemRow
-                label={item.label}
+                label={
+                  item.dueDate
+                    ? `${item.label} · due ${formatShortDate(item.dueDate)}`
+                    : item.label
+                }
                 completed={item.completed}
-                onToggle={() => toggle(item.id)}
+                onToggle={() => void toggle(item.id)}
               />
             </li>
           ))

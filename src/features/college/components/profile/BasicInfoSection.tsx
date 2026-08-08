@@ -9,7 +9,7 @@ interface BasicInfoSectionProps {
 
 export function BasicInfoSection({ college }: BasicInfoSectionProps) {
   return (
-    <Panel title="Basic Information" subtitle={college.location}>
+    <Panel fillHeight title="Basic Information" subtitle={college.location}>
       <div className="space-y-1">
         <DataRow label="Name" value={college.name} />
         <DataRow label="Location" value={college.location} />

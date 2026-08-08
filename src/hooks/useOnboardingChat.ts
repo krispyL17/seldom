@@ -1,6 +1,11 @@
 import { useCallback, useMemo, useState } from 'react'
 import type { OnboardingAnswers, OnboardingConfig, OnboardingMessage } from '@features/onboarding/types'
 import { parseStepValue } from '@features/onboarding/utils'
+import {
+  countVisibleSteps,
+  findNextVisibleStepIndex,
+  stepIsVisible,
+} from '@features/onboarding/stepVisibility'
 
 function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
@@ -44,23 +49,41 @@ export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptio
 
   const currentStep = config.steps[stepIndex] ?? null
 
-  const totalPhases = hasQuestionSteps ? config.steps.length + 1 : 0
+  const visibleStepCount = useMemo(
+    () => countVisibleSteps(config.steps, answers),
+    [config.steps, answers],
+  )
+
+  const totalPhases = hasQuestionSteps ? visibleStepCount + 1 : 0
+
+  const completedVisibleSteps = useMemo(() => {
+    if (!welcomeAcknowledged) return 0
+    return config.steps.slice(0, stepIndex).filter((s) => stepIsVisible(s, answers)).length
+  }, [answers, config.steps, stepIndex, welcomeAcknowledged])
 
   const progress = useMemo(() => {
     if (!hasQuestionSteps) return isComplete ? 100 : 0
     if (isComplete) return 100
     if (!welcomeAcknowledged) return 0
-    const completedPhases = 1 + stepIndex
-    return Math.round((completedPhases / totalPhases) * 100)
-  }, [hasQuestionSteps, isComplete, welcomeAcknowledged, stepIndex, totalPhases])
+    const completedPhases = 1 + completedVisibleSteps
+    return totalPhases > 0 ? Math.round((completedPhases / totalPhases) * 100) : 0
+  }, [hasQuestionSteps, isComplete, welcomeAcknowledged, completedVisibleSteps, totalPhases])
 
   const progressCaption = useMemo(() => {
     if (!hasQuestionSteps) return isComplete ? 'Done' : null
     if (isComplete) return 'Complete'
     if (!welcomeAcknowledged) return `Step 1 of ${totalPhases}`
-    const current = 1 + stepIndex
-    return `Step ${current} of ${totalPhases}`
-  }, [hasQuestionSteps, isComplete, welcomeAcknowledged, stepIndex, totalPhases])
+    const current = 1 + completedVisibleSteps + (currentStep && stepIsVisible(currentStep, answers) ? 1 : 0)
+    return `Step ${Math.min(current, totalPhases)} of ${totalPhases}`
+  }, [
+    hasQuestionSteps,
+    isComplete,
+    welcomeAcknowledged,
+    completedVisibleSteps,
+    currentStep,
+    answers,
+    totalPhases,
+  ])
 
   const choiceOptions = useMemo(() => {
     if (currentStep?.type !== 'choice') return []
@@ -70,11 +93,15 @@ export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptio
   const continueFromWelcome = useCallback(() => {
     if (welcomeAcknowledged || !hasQuestionSteps) return
     setWelcomeAcknowledged(true)
-    const firstQuestion = config.steps[0]?.question
-    if (firstQuestion) {
-      setMessages((prev) => [...prev, createAssistantMessage(firstQuestion)])
+    const firstIndex = findNextVisibleStepIndex(0, config.steps, answers)
+    if (firstIndex < config.steps.length) {
+      setStepIndex(firstIndex)
+      const firstQuestion = config.steps[firstIndex]?.question
+      if (firstQuestion) {
+        setMessages((prev) => [...prev, createAssistantMessage(firstQuestion)])
+      }
     }
-  }, [config.steps, hasQuestionSteps, welcomeAcknowledged])
+  }, [answers, config.steps, hasQuestionSteps, welcomeAcknowledged])
 
   const submitAnswer = useCallback(
     async (raw: string) => {
@@ -102,7 +129,7 @@ export function useOnboardingChat({ config, onComplete }: UseOnboardingChatOptio
       }
       setAnswers(nextAnswers)
 
-      const nextIndex = stepIndex + 1
+      const nextIndex = findNextVisibleStepIndex(stepIndex + 1, config.steps, nextAnswers)
       if (nextIndex >= config.steps.length) {
         setIsSubmitting(true)
         try {

@@ -1,5 +1,3 @@
-import { openAiKeyHeaders } from '@lib/userOpenAiKey'
-
 export type AssistantMode =
   | 'chat'
   | 'daily_plan'
@@ -65,6 +63,8 @@ export interface AssistantChatResponse {
       collegesOnList: number
       collegePhase: 'junior' | 'senior' | 'unknown'
     }
+    suggestedTitle?: string
+    actionsExecuted?: Array<{ type: string; success: boolean; summary: string }>
   }
 }
 
@@ -78,13 +78,18 @@ export class AssistantApiError extends Error {
   }
 }
 
+type AssistantApiErrorBody = {
+  error?: string
+  hint?: string
+  missing?: string[]
+}
+
 async function authFetch(accessToken: string, init?: RequestInit): Promise<Response> {
   return fetch('/api/assistant/chat', {
     ...init,
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
-      ...openAiKeyHeaders(),
       ...init?.headers,
     },
   })
@@ -92,10 +97,13 @@ async function authFetch(accessToken: string, init?: RequestInit): Promise<Respo
 
 export async function fetchAssistantBootstrap(accessToken: string): Promise<AssistantBootstrap> {
   const response = await authFetch(accessToken, { method: 'GET' })
-  const body = (await response.json().catch(() => ({}))) as AssistantBootstrap & { error?: string }
+  const body = (await response.json().catch(() => ({}))) as AssistantBootstrap & AssistantApiErrorBody
 
   if (!response.ok) {
-    throw new AssistantApiError(body.error ?? `Assistant API error (${response.status})`, response.status)
+    const hint = typeof body.hint === 'string' ? body.hint : undefined
+    const missing = Array.isArray(body.missing) ? body.missing.join('; ') : undefined
+    const detail = [body.error, hint, missing].filter(Boolean).join(' — ')
+    throw new AssistantApiError(detail || `Assistant API error (${response.status})`, response.status)
   }
 
   return body
@@ -110,10 +118,13 @@ export async function sendAssistantMessage(
     body: JSON.stringify(request),
   })
 
-  const body = (await response.json().catch(() => ({}))) as AssistantChatResponse & { error?: string }
+  const body = (await response.json().catch(() => ({}))) as AssistantChatResponse & AssistantApiErrorBody
 
   if (!response.ok) {
-    throw new AssistantApiError(body.error ?? `Assistant API error (${response.status})`, response.status)
+    const hint = typeof body.hint === 'string' ? body.hint : undefined
+    const missing = Array.isArray(body.missing) ? body.missing.join('; ') : undefined
+    const detail = [body.error, hint, missing].filter(Boolean).join(' — ')
+    throw new AssistantApiError(detail || `Assistant API error (${response.status})`, response.status)
   }
 
   if (!body.reply) {

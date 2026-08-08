@@ -2,7 +2,8 @@ import {
   defaultNavTabColors,
   resolveThemeTokens,
 } from '@config/themePalettes'
-import type { NavTabColors, ThemeAppearance, ThemePalette } from '@/types/userPreferences'
+import type { CustomThemes, CustomThemeId, NavTabColors, ThemeAppearance, ThemePalette } from '@/types/userPreferences'
+import { isCustomThemePalette } from '@/types/userPreferences'
 
 export interface ApplyThemeOptions {
   palette: ThemePalette
@@ -10,6 +11,7 @@ export interface ApplyThemeOptions {
   animationsEnabled: boolean
   navTabColors?: NavTabColors
   navIds?: readonly string[]
+  customThemes?: CustomThemes
 }
 
 /** @deprecated Use ApplyThemeOptions — kept for gradual migration */
@@ -31,7 +33,11 @@ export function applyThemeToDocument(
         }
 
   const root = document.documentElement
-  const { mode, tokens } = resolveThemeTokens(options.palette, options.appearance)
+  const { mode, tokens } = resolveThemeTokens(
+    options.palette,
+    options.appearance,
+    options.customThemes ?? {},
+  )
 
   root.dataset.theme = mode
   root.dataset.palette = options.palette
@@ -47,10 +53,17 @@ export function applyThemeToDocument(
   }
 
   const navIds = options.navIds ?? []
+  const customThemes = options.customThemes ?? {}
+  const slotBookmarks =
+    isCustomThemePalette(options.palette) && options.palette in customThemes
+      ? customThemes[options.palette as CustomThemeId]?.navTabColors
+      : undefined
+  const bookmarkOverrides =
+    slotBookmarks && Object.keys(slotBookmarks).length > 0 ? slotBookmarks : (options.navTabColors ?? {})
   const resolvedColors =
-    Object.keys(options.navTabColors ?? {}).length > 0
-      ? { ...defaultNavTabColors(options.palette, navIds), ...options.navTabColors }
-      : defaultNavTabColors(options.palette, navIds)
+    Object.keys(bookmarkOverrides).length > 0 || isCustomThemePalette(options.palette)
+      ? { ...defaultNavTabColors(options.palette, navIds, customThemes), ...bookmarkOverrides }
+      : defaultNavTabColors(options.palette, navIds, customThemes)
 
   for (const id of navIds) {
     root.style.setProperty(`--nav-tab-${id}`, resolvedColors[id] ?? '')
@@ -63,6 +76,7 @@ export function applyThemeFromPreferences(
   animationsEnabled: boolean,
   navTabColors: NavTabColors,
   navIds: readonly string[],
+  customThemes: CustomThemes = {},
 ): void {
   applyThemeToDocument({
     palette,
@@ -70,5 +84,6 @@ export function applyThemeFromPreferences(
     animationsEnabled,
     navTabColors,
     navIds,
+    customThemes,
   })
 }

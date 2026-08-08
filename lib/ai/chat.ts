@@ -1,10 +1,21 @@
 /**
- * Shared OpenAI chat completion — system prompt injected by caller.
+ * Shared chat completion — delegates to Ollama (sole AI engine).
  */
 
+import { loadOllamaConfig, ollamaChat, type OllamaConfig } from '../ollama/service.js'
+
 export interface ChatModelEnv {
-  openaiApiKey: string
+  ollamaBaseUrl: string
   chatModel: string
+  embedModel: string
+}
+
+export function chatEnvFromOllama(config: OllamaConfig): ChatModelEnv {
+  return {
+    ollamaBaseUrl: config.baseUrl,
+    chatModel: config.chatModel,
+    embedModel: config.embedModel,
+  }
 }
 
 export async function generateChatReply(
@@ -16,8 +27,17 @@ export async function generateChatReply(
     history?: Array<{ role: 'user' | 'assistant'; content: string }>
     temperature?: number
     maxTokens?: number
+    skipHealthCheck?: boolean
   } = {},
 ): Promise<string> {
+  const config =
+    loadOllamaConfig() ??
+    ({
+      baseUrl: env.ollamaBaseUrl,
+      chatModel: env.chatModel,
+      embedModel: env.embedModel,
+    } satisfies OllamaConfig)
+
   const contextParts = options.contextBlocks?.filter(Boolean) ?? []
   const systemContent =
     contextParts.length > 0
@@ -34,30 +54,9 @@ export async function generateChatReply(
 
   messages.push({ role: 'user', content: userMessage })
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.openaiApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: env.chatModel,
-      messages,
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 1800,
-    }),
+  return ollamaChat(config, messages, {
+    temperature: options.temperature,
+    maxTokens: options.maxTokens,
+    skipHealthCheck: options.skipHealthCheck,
   })
-
-  if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`OpenAI chat failed (${response.status}): ${body}`)
-  }
-
-  const data = (await response.json()) as {
-    choices?: Array<{ message?: { content?: string } }>
-  }
-
-  const reply = data.choices?.[0]?.message?.content?.trim()
-  if (!reply) throw new Error('OpenAI returned an empty response')
-  return reply
 }

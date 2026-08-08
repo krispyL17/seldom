@@ -29,6 +29,8 @@ interface SoccerContextValue {
     strengthTitle: string
     strengthDescription: string
     goalTitle: string
+    cardioGoalTitle?: string
+    goalCategory?: string
   }) => Promise<void>
 }
 
@@ -107,6 +109,8 @@ export function SoccerProvider({ children }: { children: ReactNode }) {
         strengthTitle: string
         strengthDescription: string
         goalTitle: string
+        cardioGoalTitle?: string
+        goalCategory?: string
       },
     ) => {
       if (!user) throw new Error('Not authenticated')
@@ -133,10 +137,21 @@ export function SoccerProvider({ children }: { children: ReactNode }) {
         })
       }
 
+      const performanceCategory = extras.goalCategory?.trim() || 'Skills'
+
       if (extras.goalTitle) {
         await goalService.create(user.id, {
           title: extras.goalTitle,
-          category: 'performance',
+          category: performanceCategory,
+          progress: 0,
+          status: 'active',
+        })
+      }
+
+      if (extras.cardioGoalTitle) {
+        await goalService.create(user.id, {
+          title: extras.cardioGoalTitle,
+          category: 'Fitness',
           progress: 0,
           status: 'active',
         })

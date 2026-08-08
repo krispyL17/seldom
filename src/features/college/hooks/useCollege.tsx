@@ -33,9 +33,13 @@ import type {
   UpdateCollegeInput,
   UpdateProjectInput,
 } from '../types'
+import {
+  buildStandardAdmissionDeadlinesForCollege,
+  inferGraduationYear,
+} from '../data/admissionDeadlines'
 import { buildTimeline, computeDashboardStats } from '../utils'
 import { migrateChecklistToSenior } from '../phaseUtils'
-import { buildSeniorFinancialAid } from '../data/templates'
+import { buildJuniorFinancialAid, buildSeniorFinancialAid } from '../data/templates'
 
 interface CollegeContextValue {
   colleges: College[]
@@ -112,7 +116,19 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
         collegeProjectService.fetchAll(),
         collegeUserDataService.ensure(user.id),
       ])
-      setColleges(c)
+
+      const phase = ud?.resumeSettings.applicationPhase ?? 'junior'
+      const gradYear = inferGraduationYear(phase)
+      const collegesWithTimelines = await Promise.all(
+        c.map(async (college) => {
+          if (college.deadlines.length > 0) return college
+          return collegeService.update(college.id, {
+            deadlines: buildStandardAdmissionDeadlinesForCollege(gradYear),
+          })
+        }),
+      )
+
+      setColleges(collegesWithTimelines)
       setActivities(a)
       setAwards(aw)
       setProjects(p)
@@ -127,6 +143,14 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     reload()
+  }, [reload])
+
+  useEffect(() => {
+    function handleCollegeDataChanged() {
+      void reload()
+    }
+    window.addEventListener('seldom:college-data-changed', handleCollegeDataChanged)
+    return () => window.removeEventListener('seldom:college-data-changed', handleCollegeDataChanged)
   }, [reload])
 
   const stats = useMemo(
@@ -150,11 +174,14 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
   const createCollege = useCallback(
     async (input: CreateCollegeInput) => {
       if (!user) throw new Error('Not authenticated')
-      const created = await collegeService.create(user.id, input)
+      const phase = userData?.resumeSettings.applicationPhase ?? 'junior'
+      const gradYear = inferGraduationYear(phase)
+      const deadlines = input.deadlines ?? buildStandardAdmissionDeadlinesForCollege(gradYear)
+      const created = await collegeService.create(user.id, { ...input, deadlines })
       setColleges((prev) => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)))
       return created
     },
-    [user],
+    [user, userData],
   )
 
   const updateCollege = useCallback(async (id: string, input: UpdateCollegeInput) => {
@@ -344,7 +371,16 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
   const completeOnboarding = useCallback(
     async (payload: { resumeSettings: ResumeSettings; testScores: TestScores }) => {
       if (!user) throw new Error('Not authenticated')
-      const updated = await collegeUserDataService.completeOnboarding(user.id, payload)
+      let updated = await collegeUserDataService.completeOnboarding(user.id, payload)
+      if (updated.financialAid.length === 0) {
+        const gradYear = payload.resumeSettings.studentProfile?.graduationYear
+        const phase = payload.resumeSettings.applicationPhase ?? 'junior'
+        const items =
+          phase === 'senior'
+            ? buildSeniorFinancialAid(gradYear)
+            : buildJuniorFinancialAid(gradYear)
+        updated = await collegeUserDataService.updateFinancialAid(user.id, items)
+      }
       setUserData(updated)
     },
     [user],

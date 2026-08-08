@@ -1,10 +1,23 @@
 import type { VercelResponse } from '@vercel/node'
 
-const DEFAULT_ORIGINS = ['http://localhost:5173', 'http://127.0.0.1:5173']
+const DEFAULT_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+]
+
+function vercelPreviewOrigins(): string[] {
+  const origins: string[] = []
+  if (process.env.VERCEL_URL) origins.push(`https://${process.env.VERCEL_URL}`)
+  if (process.env.VERCEL_BRANCH_URL) origins.push(`https://${process.env.VERCEL_BRANCH_URL}`)
+  return origins
+}
 
 function allowedOrigins(): string[] {
   const fromEnv = process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim()).filter(Boolean)
-  return fromEnv?.length ? fromEnv : DEFAULT_ORIGINS
+  if (fromEnv?.length) return fromEnv
+  return [...DEFAULT_ORIGINS, ...vercelPreviewOrigins()]
 }
 
 export function setApiCors(res: VercelResponse, requestOrigin?: string) {

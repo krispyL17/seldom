@@ -3,38 +3,34 @@ import type {
   AnalyticsKpi,
   AnalyticsSyncPayload,
   ChartSeries,
-  SkillTrendSeries,
 } from './types.js'
+import {
+  ANALYTICS_WEEK_COUNT_FULL,
+  ANALYTICS_WEEK_COUNT_INITIAL,
+} from './constants.js'
 import { dateInDay, dayLabel, isoInWeek, lastNDays, lastNWeeks } from './timeBuckets.js'
 
-const TECHNICAL_KEYS = [
-  'first_touch',
-  'passing',
-  'dribbling',
-  'crossing',
-  'shooting',
-  'decision_making',
-  'weak_foot',
-  'acceleration',
-  'agility',
-  'confidence',
-] as const
-
-const TECHNICAL_LABELS: Record<string, string> = {
-  first_touch: 'First Touch',
-  passing: 'Passing',
-  dribbling: 'Dribbling',
-  crossing: 'Crossing',
-  shooting: 'Shooting',
-  decision_making: 'Decision Making',
-  weak_foot: 'Weak Foot',
-  acceleration: 'Acceleration',
-  agility: 'Agility',
-  confidence: 'Confidence',
+function collectActivityDates(payload: AnalyticsSyncPayload): string[] {
+  return [
+    ...payload.tasks.map((t) => t.updated_at.slice(0, 10)),
+    ...payload.trainingSessions.map((s) => s.session_date),
+    ...payload.runLogs.map((r) => r.run_date),
+    ...payload.gymLogs.map((g) => g.session_date),
+    ...payload.journalEntries.map((e) => e.entry_date),
+  ]
 }
 
-function computeTaskCompletion(payload: AnalyticsSyncPayload): ChartSeries {
-  const days = lastNDays(7)
+/** Start at 2 weeks; expand to 4 once activity exists before the 2-week window. */
+export function resolveAnalyticsWeekCount(payload: AnalyticsSyncPayload): number {
+  const twoWeekStart = lastNWeeks(ANALYTICS_WEEK_COUNT_INITIAL)[0]?.start
+  if (!twoWeekStart) return ANALYTICS_WEEK_COUNT_INITIAL
+
+  const hasOlderActivity = collectActivityDates(payload).some((date) => date < twoWeekStart)
+  return hasOlderActivity ? ANALYTICS_WEEK_COUNT_FULL : ANALYTICS_WEEK_COUNT_INITIAL
+}
+
+function computeTaskCompletion(payload: AnalyticsSyncPayload, dayCount: number): ChartSeries {
+  const days = lastNDays(dayCount)
   const labels = days.map(dayLabel)
   const data = days.map((day) => {
     const completedToday = payload.tasks.filter(
@@ -48,8 +44,8 @@ function computeTaskCompletion(payload: AnalyticsSyncPayload): ChartSeries {
   return { labels, data, unit: '%' }
 }
 
-function computeGoalProgress(payload: AnalyticsSyncPayload): ChartSeries {
-  const weeks = lastNWeeks(8)
+function computeGoalProgress(payload: AnalyticsSyncPayload, weekCount: number): ChartSeries {
+  const weeks = lastNWeeks(weekCount)
   const active = payload.goals.filter((g) => g.status === 'active')
 
   const data = weeks.map(({ start }) => {
@@ -66,8 +62,8 @@ function computeGoalProgress(payload: AnalyticsSyncPayload): ChartSeries {
   return { labels: weeks.map((w) => w.label), data, unit: '%' }
 }
 
-function computeTrainingFrequency(payload: AnalyticsSyncPayload): ChartSeries {
-  const weeks = lastNWeeks(8)
+function computeTrainingFrequency(payload: AnalyticsSyncPayload, weekCount: number): ChartSeries {
+  const weeks = lastNWeeks(weekCount)
   const data = weeks.map(
     ({ start }) =>
       payload.trainingSessions.filter((s) => isoInWeek(s.session_date, start)).length,
@@ -75,30 +71,12 @@ function computeTrainingFrequency(payload: AnalyticsSyncPayload): ChartSeries {
   return { labels: weeks.map((w) => w.label), data, unit: 'sessions' }
 }
 
-function computeTechnicalSkills(payload: AnalyticsSyncPayload): SkillTrendSeries[] {
-  const sessions = [...payload.trainingSessions].sort((a, b) =>
-    a.session_date.localeCompare(b.session_date),
-  )
-  const labels = sessions.map((s) =>
-    new Date(`${s.session_date}T12:00:00`).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }),
-  )
-
-  return TECHNICAL_KEYS.map((key) => {
-    const data = sessions.map((s) => s.technical_ratings[key] ?? 0)
-    return {
-      skill: TECHNICAL_LABELS[key] ?? key,
-      labels,
-      data,
-      latest: data.at(-1) ?? 0,
-    }
-  }).filter((s) => s.data.some((v) => v > 0))
-}
-
-function computeRunning(payload: AnalyticsSyncPayload, distanceUnit: 'km' | 'mi' = 'mi'): ChartSeries {
-  const weeks = lastNWeeks(8)
+function computeRunning(
+  payload: AnalyticsSyncPayload,
+  weekCount: number,
+  distanceUnit: 'km' | 'mi' = 'mi',
+): ChartSeries {
+  const weeks = lastNWeeks(weekCount)
   const data = weeks.map(({ start }) => {
     const runs = payload.runLogs.filter((r) => isoInWeek(r.run_date, start))
     if (distanceUnit === 'mi') {
@@ -111,8 +89,8 @@ function computeRunning(payload: AnalyticsSyncPayload, distanceUnit: 'km' | 'mi'
   return { labels: weeks.map((w) => w.label), data, unit: distanceUnit }
 }
 
-function computeGym(payload: AnalyticsSyncPayload): ChartSeries {
-  const weeks = lastNWeeks(8)
+function computeGym(payload: AnalyticsSyncPayload, weekCount: number): ChartSeries {
+  const weeks = lastNWeeks(weekCount)
   const data = weeks.map(({ start }) => {
     const sessions = payload.gymLogs.filter((g) => isoInWeek(g.session_date, start))
     return sessions.reduce((s, g) => s + g.duration_min, 0)
@@ -131,8 +109,8 @@ function computeCollegeProgress(payload: AnalyticsSyncPayload): ChartSeries {
   }
 }
 
-function computeJournalConsistency(payload: AnalyticsSyncPayload): ChartSeries {
-  const days = lastNDays(14)
+function computeJournalConsistency(payload: AnalyticsSyncPayload, dayCount: number): ChartSeries {
+  const days = lastNDays(dayCount)
   const labels = days.map((d) =>
     new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
   )
@@ -193,17 +171,21 @@ export function buildAnalyticsDashboard(
   source: 'sqlite' | 'local',
   distanceUnit: 'km' | 'mi' = 'mi',
 ): AnalyticsDashboard {
+  const weekCount = resolveAnalyticsWeekCount(payload)
+  const taskDayCount = weekCount >= ANALYTICS_WEEK_COUNT_FULL ? 14 : 7
+  const journalDayCount = weekCount >= ANALYTICS_WEEK_COUNT_FULL ? 28 : 14
+
   const partial = {
     userId: payload.userId,
     computedAt: new Date().toISOString(),
-    taskCompletion: computeTaskCompletion(payload),
-    goalProgress: computeGoalProgress(payload),
-    trainingFrequency: computeTrainingFrequency(payload),
-    technicalSkills: computeTechnicalSkills(payload),
-    running: computeRunning(payload, distanceUnit),
-    gym: computeGym(payload),
+    weekCount,
+    taskCompletion: computeTaskCompletion(payload, taskDayCount),
+    goalProgress: computeGoalProgress(payload, weekCount),
+    trainingFrequency: computeTrainingFrequency(payload, weekCount),
+    running: computeRunning(payload, weekCount, distanceUnit),
+    gym: computeGym(payload, weekCount),
     collegeProgress: computeCollegeProgress(payload),
-    journalConsistency: computeJournalConsistency(payload),
+    journalConsistency: computeJournalConsistency(payload, journalDayCount),
     source,
   }
 

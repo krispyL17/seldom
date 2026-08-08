@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { IconMenu } from '@components/ui/icons'
 import { Badge } from '@components/ui/Badge'
+import { Button } from '@components/ui/Button'
 import { useAssistantChat } from '../hooks/useAssistantChat'
 import type { AssistantMode } from '@services/assistant/assistantClient'
 import { ConversationSidebar } from './ConversationSidebar'
@@ -12,6 +13,7 @@ import { CapabilitiesPanel } from './CapabilitiesPanel'
 import { ProactiveInsightsPanel } from './ProactiveInsightsPanel'
 import { MODE_LABELS } from '../data/capabilities'
 import { cn } from '@lib/utils'
+import { InjuryModeAiSuggestion } from '@features/soccer/athlete/components/InjuryModeAiSuggestion'
 
 export function AssistantPage() {
   const {
@@ -25,15 +27,25 @@ export function AssistantPage() {
     suggestions,
     proactiveInsights,
     liveConnected,
+    connectionHint,
     lastMode,
     sendMessage,
     newConversation,
     selectConversation,
     deleteConversation,
+    retryConnection,
   } = useAssistantChat()
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [injuryPrompt, setInjuryPrompt] = useState<string | null>(null)
   const [searchParams] = useSearchParams()
+
+  function handleSend(content: string, modeOverride?: AssistantMode) {
+    if (activeMode === 'soccer_drills' || modeOverride === 'soccer_drills') {
+      setInjuryPrompt(content.trim())
+    }
+    sendMessage(content, modeOverride)
+  }
 
   useEffect(() => {
     const mode = searchParams.get('mode')
@@ -117,9 +129,16 @@ export function AssistantPage() {
               {activeConversation?.title ?? 'Seldom AI'}
             </h2>
             <p className="text-[11px] text-[var(--color-text-tertiary)]">
-              {liveConnected ? `Live · ${modeLabel}` : 'Local preview · sidecars + stub LLM'}
+              {liveConnected
+                ? `Live · ${modeLabel}`
+                : connectionHint ?? 'Ollama offline — start Ollama and retry'}
             </p>
           </div>
+          {!liveConnected && (
+            <Button size="sm" variant="secondary" onClick={() => void retryConnection()}>
+              Retry
+            </Button>
+          )}
           <Badge variant={liveConnected ? 'success' : 'muted'}>
             {liveConnected ? 'Connected' : 'Offline'}
           </Badge>
@@ -128,8 +147,13 @@ export function AssistantPage() {
         {activeConversation ? (
           <>
             <MessageList messages={activeConversation.messages} isTyping={isTyping} />
+            <InjuryModeAiSuggestion
+              message={injuryPrompt ?? ''}
+              visible={activeMode === 'soccer_drills' && Boolean(injuryPrompt)}
+              onDismiss={() => setInjuryPrompt(null)}
+            />
             <ChatComposer
-              onSend={sendMessage}
+              onSend={handleSend}
               disabled={isTyping}
               suggestions={suggestions}
               activeMode={activeMode}
@@ -143,7 +167,7 @@ export function AssistantPage() {
       </div>
 
       <aside className="hidden w-80 shrink-0 flex-col gap-4 overflow-y-auto border-l border-[var(--color-border)] bg-[var(--color-surface-base)] p-4 xl:flex">
-        <ProactiveInsightsPanel insights={proactiveInsights} onAct={(prompt) => sendMessage(prompt)} />
+        <ProactiveInsightsPanel insights={proactiveInsights} onAct={(prompt) => handleSend(prompt)} />
         <CapabilitiesPanel
           modules={modules}
           activeMode={activeMode}

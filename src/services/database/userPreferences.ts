@@ -2,9 +2,28 @@ import { getSupabaseClient } from '@lib/supabase'
 import type { TableUpdate } from '@/types/database'
 import {
   DEFAULT_USER_PREFERENCES,
+  type CustomThemes,
+  type ThemePalette,
   type UserPreferences,
   type UserPreferencesPatch,
 } from '@/types/userPreferences'
+
+function parseThemePalette(value?: string | null): ThemePalette {
+  if (
+    value === 'sunset' ||
+    value === 'ocean' ||
+    value === 'custom-1' ||
+    value === 'custom-2'
+  ) {
+    return value
+  }
+  return 'classic'
+}
+
+function parseCustomThemes(value: unknown): CustomThemes {
+  if (!value || typeof value !== 'object') return {}
+  return value as CustomThemes
+}
 
 function requireClient() {
   const client = getSupabaseClient()
@@ -18,6 +37,7 @@ function mapRow(row: {
   hobby_passion: string
   theme: string
   theme_palette?: string
+  custom_themes?: CustomThemes | null
   nav_tab_colors?: Record<string, string> | null
   animations_enabled: boolean
   app_tutorial_completed_at: string | null
@@ -35,10 +55,8 @@ function mapRow(row: {
     hobby_tab_label: row.hobby_tab_label,
     hobby_passion: row.hobby_passion,
     theme: row.theme as UserPreferences['theme'],
-    theme_palette:
-      row.theme_palette === 'sunset' || row.theme_palette === 'ocean'
-        ? row.theme_palette
-        : 'classic',
+    theme_palette: parseThemePalette(row.theme_palette),
+    custom_themes: parseCustomThemes(row.custom_themes),
     nav_tab_colors: (row.nav_tab_colors as Record<string, string> | null) ?? {},
     animations_enabled: row.animations_enabled,
     app_tutorial_completed_at: row.app_tutorial_completed_at,

@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { setApiCors } from '../../../lib/cors.js'
 import { extractBearerToken, verifyAccessToken } from '../../../lib/assistant/auth.js'
-import { loadAssistantEnv, extractUserOpenAiKey } from '../../../lib/assistant/types.js'
+import { loadAssistantEnv } from '../../../lib/assistant/types.js'
+import { OllamaUnavailableError, checkOllamaHealth, loadOllamaConfig } from '../../../lib/ollama/service.js'
 import { getCoachSuggestions, getCoachWelcome, handleCoachRequest } from '../../../lib/soccer-coach/orchestrator.js'
 import type { CoachChatRequest, CoachMode } from '../../../lib/soccer-coach/types.js'
 
@@ -12,11 +13,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(204).end()
   }
 
-  const env = loadAssistantEnv(extractUserOpenAiKey(req.headers))
+  const env = loadAssistantEnv()
   if (!env) {
     return res.status(503).json({
       error: 'Soccer coach not configured',
-      hint: 'Set OPENAI_API_KEY, SUPABASE_URL, and SUPABASE_ANON_KEY.',
+      hint: 'Set SUPABASE_URL, SUPABASE_ANON_KEY, and OLLAMA_MODEL in .env.local.',
+    })
+  }
+
+  const ollamaHealth = await checkOllamaHealth(loadOllamaConfig())
+  if (!ollamaHealth.online) {
+    return res.status(503).json({
+      error: 'Ollama unavailable',
+      hint: 'Start Ollama locally and retry.',
+      ollama: ollamaHealth,
     })
   }
 
@@ -58,6 +68,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
     return res.status(200).json(result)
   } catch (err) {
+    if (err instanceof OllamaUnavailableError) {
+      return res.status(503).json({ error: err.message, hint: 'Start Ollama and retry.' })
+    }
     const message = err instanceof Error ? err.message : 'Coach error'
     console.error('[soccer/coach/chat]', message)
     return res.status(500).json({ error: message })

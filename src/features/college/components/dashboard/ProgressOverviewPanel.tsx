@@ -11,7 +11,6 @@ export function ProgressOverviewPanel() {
     <Panel
       title={isSeniorMode ? 'Application Progress' : 'Prep Progress'}
       subtitle={isSeniorMode ? 'Overall admissions readiness' : 'Junior year readiness'}
-      fullWidth
     >
       <div className="space-y-4">
         <ProgressBar

@@ -1,6 +1,6 @@
 import { cn } from '@lib/utils'
 import type { CalendarEvent } from '../utils/calendarEvents'
-import { eventsOnDay, formatEventTime, getWeekDays } from '../utils/calendarEvents'
+import { eventsOnDay, formatEventTime, formatMonthYear, getWeekDays } from '../utils/calendarEvents'
 
 interface CalendarWeekViewProps {
   anchor: Date
@@ -12,7 +12,11 @@ export function CalendarWeekView({ anchor, events }: CalendarWeekViewProps) {
   const today = new Date()
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
+    <div>
+      <h3 className="mb-3 text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
+        {formatMonthYear(anchor)}
+      </h3>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-7">
       {days.map((day) => {
         const dayEvents = eventsOnDay(events, day)
         const isToday =
@@ -56,6 +60,7 @@ export function CalendarWeekView({ anchor, events }: CalendarWeekViewProps) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }

@@ -62,8 +62,8 @@ export function avgMatchRating(matches: MatchRecord[]): number {
   return Math.round((sum / matches.length) * 10) / 10
 }
 
-export function getSoccerPageTitle(pathname: string, hobbyPassion = ''): string {
-  return getPerformancePageTitle(pathname, hobbyPassion)
+export function getSoccerPageTitle(pathname: string, _hobbyPassion = ''): string {
+  return getPerformancePageTitle(pathname, [])
 }
 
 export { getPerformanceNav, getPerformancePageTitle } from './utils/performanceNav'

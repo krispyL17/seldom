@@ -10,6 +10,10 @@ interface PanelProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
   /** Span full width in dashboard grid */
   fullWidth?: boolean
+  /** Fill grid cell and scroll body content (consistent empty vs loaded layout) */
+  fillHeight?: boolean
+  /** Cap body height and scroll — for long dashboard panels without stretching the grid cell */
+  scrollCap?: boolean
   noPadding?: boolean
 }
 
@@ -24,6 +28,8 @@ export function Panel({
   action,
   children,
   fullWidth = false,
+  fillHeight = false,
+  scrollCap = false,
   noPadding = false,
   className,
   ...props
@@ -35,6 +41,8 @@ export function Panel({
         'border border-[var(--color-border)] bg-[var(--color-surface-raised)]',
         'shadow-[var(--shadow-panel)] transition-shadow duration-200 hover:shadow-[var(--shadow-panel-hover)]',
         fullWidth && 'lg:col-span-2',
+        fillHeight && 'panel--fill-height min-h-0',
+        scrollCap && 'panel--scroll-cap',
         className,
       )}
       {...props}
@@ -49,7 +57,7 @@ export function Panel({
             {badge}
           </div>
           {subtitle && (
-            <p className="mt-0.5 truncate text-[11px] text-[var(--color-text-tertiary)]">
+            <p className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-[var(--color-text-tertiary)]">
               {subtitle}
             </p>
           )}
@@ -58,7 +66,14 @@ export function Panel({
       </header>
 
       {/* Body */}
-      <div className={cn('flex-1', noPadding ? '' : 'p-4')}>{children}</div>
+      <div
+        className={cn(
+          fillHeight ? 'panel-body-fill min-h-0 flex-1' : 'shrink-0',
+          noPadding ? '' : 'p-4',
+        )}
+      >
+        {children}
+      </div>
     </section>
   )
 }

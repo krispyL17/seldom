@@ -35,22 +35,13 @@
     "completeMessage": "Your prep workspace is ready when you are.",
     "steps": []
   },
-  "college-activities": {
-    "id": "tab-intro-college-activities",
-    "version": 1,
-    "title": "Activities & resume",
-    "subtitle": "What you've done outside class",
-    "welcome": "Track **activities, roles, and hours** for your resume and Common App.\n\nNothing is pre-filled — add what you're actually involved in.",
-    "completeMessage": "Add activities as you go.",
-    "steps": []
-  },
   "college-common-app": {
     "id": "tab-intro-college-common-app",
     "version": 1,
     "title": "Common App",
-    "subtitle": "Essays and application sections",
-    "welcome": "Draft **personal statements, activities, and supplements** here. Senior mode unlocks full submission tracking.",
-    "completeMessage": "Open a section above to start.",
+    "subtitle": "Activities, essays, and résumé",
+    "welcome": "Manage **activities, awards, projects, essay themes, drafts, and your résumé** in one workspace.\n\nJunior mode focuses on prep; senior mode adds personal statement and supplemental tracking.",
+    "completeMessage": "Pick a sub-tab above to start.",
     "steps": []
   },
   "college-timeline": {
@@ -92,10 +83,10 @@
   "analytics": {
     "id": "tab-intro-analytics",
     "version": 1,
-    "title": "Analytics",
-    "subtitle": "Trends from your logs",
-    "welcome": "**Analytics** shows cross-domain trends once you've logged tasks, sessions, journal entries, or runs.\n\nThe tab stays hidden in the sidebar until there's data to chart — Home will tell you when it unlocks.",
-    "completeMessage": "Keep logging — charts will build themselves over time.",
+    "title": "Mission Analytics",
+    "subtitle": "Advanced telemetry for your command center",
+    "welcome": "**Mission Analytics** is the deep-read layer of your command center — cross-domain trends once you've logged tasks, sessions, journal entries, or runs.\n\nThe tab stays hidden in the sidebar until there's data to chart — Home will tell you when it unlocks.",
+    "completeMessage": "Keep logging — your telemetry board will fill in over time.",
     "steps": []
   },
   "assistant": {
@@ -132,6 +123,15 @@
     "subtitle": "Runs and pace goals",
     "welcome": "Track **runs** with distance, time, and notes. Set pace goals if you want targets to work toward.\n\nEverything is relative to your own goals — nothing is pre-seeded.",
     "completeMessage": "Log a run or set a goal to begin.",
+    "steps": []
+  },
+  "soccer-gym": {
+    "id": "tab-intro-soccer-gym",
+    "version": 1,
+    "title": "Gym",
+    "subtitle": "Strength and lifting sessions",
+    "welcome": "Log **gym workouts** here — duration, type, and notes. Weekly volume charts build from what you log.\n\nThis tab only appears if you said you work out during performance setup.",
+    "completeMessage": "Hit **Log workout** when you're ready.",
     "steps": []
   },
   "soccer-matches": {

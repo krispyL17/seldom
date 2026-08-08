@@ -1,45 +1,54 @@
 import { collegeOnboarding } from '@config/onboardingPrompts'
 import { OnboardingChatPanel } from '@features/onboarding/OnboardingChatPanel'
 import type { OnboardingAnswers } from '@features/onboarding/types'
+import { useAuth } from '@hooks/useAuth'
+import { useUserPreferences } from '@features/preferences'
+import { suggestSchools } from '../data/schoolSuggestions'
 import { useCollege } from '../hooks/useCollege'
-import type { ApplicationPhase, StudentProfile, TestScores } from '../types'
+import type { StudentProfile, TestScores } from '../types'
 import { DEFAULT_RESUME_SETTINGS, DEFAULT_TEST_SCORES } from '../types'
-import { inferApplicationPhase } from '../data/templates'
 
 function str(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function displayNameFromUser(user: ReturnType<typeof useAuth>['user']): string {
+  const fromMeta = user?.user_metadata?.display_name
+  if (typeof fromMeta === 'string' && fromMeta.trim()) return fromMeta.trim()
+  const email = user?.email?.split('@')[0]
+  return email?.trim() || 'Student'
+}
+
 export function CollegeOnboardingGate({ onComplete }: { onComplete: () => void }) {
-  const {
-    userData,
-    completeOnboarding,
-    createActivity,
-    createCollege,
-  } = useCollege()
+  const { user } = useAuth()
+  const { hobbyPassion } = useUserPreferences()
+  const { userData, completeOnboarding, createCollege } = useCollege()
 
   async function handleComplete(answers: OnboardingAnswers) {
-    const gradYear = str(answers['studentProfile.graduationYear'])
-    const explicitPhase = answers.applicationPhase as ApplicationPhase | undefined
-    const phase =
-      explicitPhase === 'senior' || explicitPhase === 'junior'
-        ? explicitPhase
-        : inferApplicationPhase(gradYear || null)
+    const phase = userData?.resumeSettings.applicationPhase ?? 'junior'
+    const schoolAreaRaw = str(answers['studentProfile.school'])
+    const schoolArea =
+      schoolAreaRaw.toLowerCase() === 'skip' || schoolAreaRaw.toLowerCase() === 'skipped'
+        ? ''
+        : schoolAreaRaw
 
     const studentProfile: StudentProfile = {
-      name: str(answers['studentProfile.name']),
-      school: str(answers['studentProfile.school']),
-      graduationYear: gradYear,
-      gpa: str(answers['studentProfile.gpa']) || null,
+      name: displayNameFromUser(user),
+      school: schoolArea,
+      graduationYear: '',
+      gpa: null,
       intendedMajor: str(answers['studentProfile.intendedMajor']) || null,
     }
 
     const satStatus = (answers['testScores.sat.status'] as TestScores['sat']['status']) ?? 'not_taken'
     const satScoreRaw = answers['testScores.sat.score']
     const satScore =
-      typeof satScoreRaw === 'number'
+      satStatus === 'completed' && typeof satScoreRaw === 'number'
         ? satScoreRaw
-        : typeof satScoreRaw === 'string' && satScoreRaw.trim()
+        : satStatus === 'completed' &&
+            typeof satScoreRaw === 'string' &&
+            satScoreRaw.trim() &&
+            satScoreRaw.toLowerCase() !== 'skip'
           ? Number(satScoreRaw)
           : null
 
@@ -48,7 +57,10 @@ export function CollegeOnboardingGate({ onComplete }: { onComplete: () => void }
       sat: {
         score: Number.isFinite(satScore as number) ? (satScore as number) : null,
         status: satStatus,
-        date: satStatus === 'completed' ? new Date().toISOString().slice(0, 10) : null,
+        date:
+          satStatus === 'completed' && Number.isFinite(satScore as number)
+            ? new Date().toISOString().slice(0, 10)
+            : null,
       },
     }
 
@@ -62,20 +74,20 @@ export function CollegeOnboardingGate({ onComplete }: { onComplete: () => void }
       testScores,
     })
 
-    const activityName = str(answers['activity.name'])
-    if (activityName) {
-      await createActivity({
-        name: activityName,
-        category: 'Athletics',
-        role: str(answers['activity.role']) || undefined,
-        organization: studentProfile.school || undefined,
-      })
-    }
+    const wantsSuggestions = answers['schoolList.mode'] === 'suggest'
+    if (!wantsSuggestions) return
 
-    const collegeName = str(answers['college.name'])
-    if (collegeName) {
+    const suggestions = suggestSchools({
+      intendedMajor: studentProfile.intendedMajor ?? '',
+      schoolArea: studentProfile.school,
+      hobbyPassion,
+      limit: 5,
+    })
+
+    for (const school of suggestions) {
       await createCollege({
-        name: collegeName,
+        name: school.name,
+        location: school.regions[0] ?? '',
         status: phase === 'senior' ? 'planning' : 'researching',
         majors: studentProfile.intendedMajor ? [studentProfile.intendedMajor] : [],
       })
