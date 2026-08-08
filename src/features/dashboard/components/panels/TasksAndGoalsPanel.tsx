@@ -42,9 +42,9 @@ export function TasksAndGoalsPanel() {
   const completionRate =
     tasks.length > 0 ? Math.round((tasks.filter((t) => t.completed).length / tasks.length) * 100) : 0
   const overdueCount = openTasks.filter((t) => formatDue(t.deadline).overdue).length
-  const taskPreview = openTasks.slice(0, 3)
+  const taskPreview = openTasks.slice(0, 2)
 
-  const activeGoals = goals.filter((g) => g.status === 'active').slice(0, 2)
+  const activeGoals = goals.filter((g) => g.status === 'active').slice(0, 1)
 
   const loading = tasksLoading || goalsLoading
   const hasError = tasksError || goalsError
@@ -64,6 +64,7 @@ export function TasksAndGoalsPanel() {
 
   return (
     <Panel
+      scrollCap
       title="Tasks & Goals"
       subtitle={
         loading 
@@ -136,13 +137,13 @@ export function TasksAndGoalsPanel() {
                 })}
               </ul>
             )}
-            {openTasks.length > 3 && (
-              <div className="mt-2">
+            {openTasks.length > 2 && (
+              <div className="mt-1">
                 <Link
                   to="/tasks"
-                  className="text-xs text-[var(--color-accent-muted)] hover:underline"
+                  className="text-[10px] text-[var(--color-accent-muted)] hover:underline"
                 >
-                  +{openTasks.length - 3} more tasks
+                  +{openTasks.length - 2} more
                 </Link>
               </div>
             )}
@@ -186,13 +187,13 @@ export function TasksAndGoalsPanel() {
                 ))}
               </div>
             )}
-            {goals.filter((g) => g.status === 'active').length > 2 && (
-              <div className="mt-2">
+            {goals.filter((g) => g.status === 'active').length > 1 && (
+              <div className="mt-1">
                 <Link
                   to="/goals"
-                  className="text-xs text-[var(--color-accent-muted)] hover:underline"
+                  className="text-[10px] text-[var(--color-accent-muted)] hover:underline"
                 >
-                  +{goals.filter((g) => g.status === 'active').length - 2} more goals
+                  +{goals.filter((g) => g.status === 'active').length - 1} more
                 </Link>
               </div>
             )}

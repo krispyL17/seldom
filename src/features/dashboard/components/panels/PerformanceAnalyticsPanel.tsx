@@ -78,21 +78,16 @@ export function PerformanceAnalyticsPanel() {
       <>
         <Panel
           title="Analytics"
-          subtitle={`${progress.completed}/${progress.total} activity types logged`}
+          subtitle={`${progress.completed}/${progress.total} types · unlocks with activity`}
           fullWidth
           action={lockedOpenAction}
         >
-          <p className="text-[11px] text-[var(--color-text-secondary)]">
-            Unlocks when you log tasks, sessions, journal entries, or runs — trends start at 2 weeks
-            and expand to 4 as you build history.
-          </p>
           <ProgressBar
             value={(progress.completed / progress.total) * 100}
             showValue={false}
             size="sm"
-            className="mt-2"
           />
-          <p className="mt-1.5 text-[10px] text-[var(--color-text-tertiary)]">Next: {progress.nextHint}</p>
+          <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">{progress.nextHint}</p>
         </Panel>
         {unlockWarningModal}
       </>

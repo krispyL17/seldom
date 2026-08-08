@@ -56,7 +56,7 @@
   /* Minimum readable panel size before internal scroll kicks in */
   --panel-min-height: 12rem;
   --panel-body-min-height: 8rem;
-  --dashboard-panel-scroll-max: min(22rem, 38vh);
+  --dashboard-panel-scroll-max: min(16rem, 28vh);
 }
 
 /* ─── Light theme ───────────────────────────────────────────────────────── */
@@ -167,6 +167,14 @@ body {
 
 .home-dashboard-grid > * {
   min-width: 0;
+}
+
+.home-dashboard-grid .panel header {
+  padding: 0.5rem 0.75rem;
+}
+
+.home-dashboard-grid .panel > div:last-child {
+  padding: 0.625rem 0.75rem;
 }
 
 .home-dashboard-grid .panel {

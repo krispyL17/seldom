@@ -20,7 +20,7 @@ export function CalendarPanel() {
   const { tasks, loading: tasksLoading } = useTasks()
   const { goals, loading: goalsLoading } = useGoals()
 
-  const days = useMemo(() => getWeekDays(new Date()), [])
+  const days = useMemo(() => getWeekDays(new Date()).slice(0, 4), [])
   const today = useMemo(() => new Date(), [])
 
   const weekEvents = useMemo(() => {
@@ -34,7 +34,7 @@ export function CalendarPanel() {
     return (
       <Panel
         title="Calendar"
-        subtitle="This week"
+        subtitle="Next 4 days"
         action={<PanelActionLink to="/calendar">Full calendar</PanelActionLink>}
       >
         <PanelSkeleton lines={3} />
@@ -45,7 +45,7 @@ export function CalendarPanel() {
   return (
     <Panel
       title="Calendar"
-      subtitle="This week"
+      subtitle="Next 4 days"
       action={<PanelActionLink to="/calendar">Full calendar</PanelActionLink>}
     >
       {weekEvents.length === 0 ? (
@@ -56,7 +56,7 @@ export function CalendarPanel() {
           </Link>
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
           {days.map((day) => {
             const dayEvents = eventsOnDay(weekEvents, day)
             const isToday = isSameDay(day, today)
@@ -75,7 +75,7 @@ export function CalendarPanel() {
                 {dayEvents.length === 0 ? (
                   <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">—</p>
                 ) : (
-                  dayEvents.slice(0, 2).map((e) => (
+                  dayEvents.slice(0, 1).map((e) => (
                     <div key={e.id} className="mt-1">
                       <p className="truncate text-[11px] font-medium text-[var(--color-text-primary)]">
                         {e.title}

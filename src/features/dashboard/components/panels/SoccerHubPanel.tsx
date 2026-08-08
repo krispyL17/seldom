@@ -2,77 +2,68 @@ import { Link } from 'react-router-dom'
 import { EmptyState } from '@components/ui/EmptyState'
 import { Panel, PanelActionLink } from '@components/ui/Panel'
 import { useUserPreferences } from '@features/preferences'
-import { MileRunSnapshotList } from '@features/soccer/running/components/MileRunSnapshotList'
-import { filterMileRuns } from '@features/soccer/running/utils'
+import { useAthleteDevelopment } from '@features/soccer/hooks/useAthleteDevelopment'
 import { useRunLogs } from '@features/soccer/running/hooks/useRunLogs'
 import { useTrainingSessions } from '@features/soccer/training/hooks/useTrainingSessions'
-import { formatMinutesDuration } from '@lib/formatDuration'
+import { sessionHeadline, sessionTagline } from '@features/soccer/utils/sessionSummary'
+import { useDistanceUnit } from '@hooks/useDistanceUnit'
 
 export function SoccerHubPanel() {
   const { hobbyTabLabel } = useUserPreferences()
+  const { development } = useAthleteDevelopment()
   const { sessions, loading: sessionsLoading } = useTrainingSessions()
   const { runs, loading: runsLoading } = useRunLogs()
+  const { formatDistance } = useDistanceUnit()
 
   const loading = sessionsLoading || runsLoading
-  const mileRuns = filterMileRuns(runs)
   const hasLoggedData = sessions.length > 0 || runs.length > 0
   const latestSession = sessions[0]
+  const runDistanceM = runs.reduce((s, r) => s + r.distance_m, 0)
 
   if (loading) {
     return (
-      <Panel title={`${hobbyTabLabel} Hub`} subtitle="Loading…">
-        <p className="py-6 text-center text-xs text-[var(--color-text-tertiary)]">Loading…</p>
+      <Panel title={hobbyTabLabel} subtitle="Loading…">
+        <p className="py-2 text-center text-[11px] text-[var(--color-text-tertiary)]">Loading…</p>
       </Panel>
     )
   }
 
   return (
     <Panel
-      title={`${hobbyTabLabel} Hub`}
-      subtitle="Your performance snapshot"
-      action={
-        <PanelActionLink to="/soccer/overview">{`Open ${hobbyTabLabel}`}</PanelActionLink>
-      }
+      title={hobbyTabLabel}
+      subtitle={latestSession ? sessionTagline(latestSession) : 'No sessions yet'}
+      action={<PanelActionLink to="/soccer/overview">Log</PanelActionLink>}
     >
       {!hasLoggedData ? (
         <EmptyState
-          title="Nothing logged yet"
-          description={`This panel stays blank until you add data in your ${hobbyTabLabel} tab — sessions, runs, or other logs.`}
+          title="Nothing logged"
+          description={`Log in ${hobbyTabLabel} → Overview.`}
           action={
             <Link
               to="/soccer/overview"
-              className="inline-flex h-8 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-3 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
+              className="text-xs font-medium text-[var(--color-accent-muted)] hover:underline"
             >
-              {`Open ${hobbyTabLabel}`}
+              Open overview
             </Link>
           }
         />
       ) : (
-        <>
+        <div className="space-y-2 text-[11px]">
           {latestSession && (
-            <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Latest session
-              </p>
-              <p className="mt-1 text-sm font-semibold text-[var(--color-text-primary)]">
-                {latestSession.position_played} · {formatMinutesDuration(latestSession.duration_min)}
-              </p>
-              <p className="text-xs text-[var(--color-text-secondary)]">
-                Intensity {latestSession.intensity}/10
-              </p>
-            </div>
+            <p className="font-medium text-[var(--color-text-primary)]">
+              {sessionHeadline(latestSession, development.customTabs)}
+              <span className="font-normal text-[var(--color-text-tertiary)]">
+                {' '}
+                · RPE {latestSession.intensity}/10
+              </span>
+            </p>
           )}
-          {(mileRuns.length > 0 || runs.length > 0) && (
-            <div className={`${latestSession ? 'mt-3' : ''} rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3`}>
-              <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                Mile runs
-              </p>
-              <div className="mt-2">
-                <MileRunSnapshotList runs={runs} />
-              </div>
-            </div>
+          {runs.length > 0 && (
+            <p className="text-[var(--color-text-secondary)]">
+              {runs.length} run{runs.length === 1 ? '' : 's'} · {formatDistance(runDistanceM)} total
+            </p>
           )}
-        </>
+        </div>
       )}
     </Panel>
   )
