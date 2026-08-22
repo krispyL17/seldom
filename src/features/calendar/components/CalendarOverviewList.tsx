@@ -33,13 +33,13 @@ export function CalendarOverviewList({ events }: CalendarOverviewListProps) {
             <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">
               {e.title}
             </p>
-            <p className="text-[11px] capitalize text-[var(--color-text-tertiary)]">{e.source}</p>
+            <p className="text-xs capitalize text-[var(--color-text-tertiary)]">{e.source}</p>
           </div>
           <div className="shrink-0 text-right">
             <p className="text-xs font-medium text-[var(--color-text-secondary)]">
               {formatEventDate(e.at)}
             </p>
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">
+            <p className="text-xs text-[var(--color-text-tertiary)]">
               {formatEventTime(e.at, e.allDay)}
             </p>
           </div>

@@ -36,7 +36,7 @@ export function ChatComposer({ onSend, disabled, suggestions, activeMode }: Chat
     <div className="border-t border-[var(--color-border)] bg-[var(--color-surface-base)] px-4 py-4">
       <div className="mx-auto max-w-3xl">
         {activeMode !== 'chat' && (
-          <p className="mb-2 text-center text-[10px] text-[var(--color-accent-muted)]">
+          <p className="mb-2 text-center text-xs text-[var(--color-accent-muted)]">
             Mode: {MODE_LABELS[activeMode]}
           </p>
         )}
@@ -60,7 +60,7 @@ export function ChatComposer({ onSend, disabled, suggestions, activeMode }: Chat
             Send
           </Button>
         </form>
-        <p className="mt-2 text-center text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="mt-2 text-center text-xs text-[var(--color-text-tertiary)]">
           Enter to send · Shift+Enter for new line · Memory + pattern detection when connected
         </p>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -71,7 +71,7 @@ export function ChatComposer({ onSend, disabled, suggestions, activeMode }: Chat
               disabled={disabled}
               onClick={() => setInput(s)}
               aria-label={`Use suggestion: ${s}`}
-              className="rounded-full border border-[var(--color-border)] px-3 py-1 text-[11px] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
+              className="rounded-full border border-[var(--color-border)] px-3 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
             >
               {s}
             </button>

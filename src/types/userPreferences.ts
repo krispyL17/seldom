@@ -34,6 +34,8 @@ export type TabIntrosCompleted = Record<string, string>
 /** Custom sidebar bookmark colors keyed by nav item id (empty = palette gradient defaults). */
 export type NavTabColors = Record<string, string>
 
+export type OverviewInsightMode = 'analytics' | 'college'
+
 export interface UserPreferences {
   user_id: string
   hobby_tab_label: string
@@ -52,6 +54,9 @@ export interface UserPreferences {
   calendar_sync_prompted_at: string | null
   distance_unit: DistanceUnit
   college_enabled: boolean
+  /** Home bottom-left insight panel when college prep is off */
+  overview_insight_mode: OverviewInsightMode
+  overview_college_prompt_dismissed_at: string | null
   updated_at: string
 }
 
@@ -71,6 +76,8 @@ export const DEFAULT_USER_PREFERENCES: Omit<UserPreferences, 'user_id' | 'update
   calendar_sync_prompted_at: null,
   distance_unit: 'mi',
   college_enabled: false,
+  overview_insight_mode: 'analytics',
+  overview_college_prompt_dismissed_at: null,
 }
 
 export type UserPreferencesPatch = Partial<
@@ -91,5 +98,7 @@ export type UserPreferencesPatch = Partial<
     | 'calendar_sync_prompted_at'
     | 'distance_unit'
     | 'college_enabled'
+    | 'overview_insight_mode'
+    | 'overview_college_prompt_dismissed_at'
   >
 >

@@ -27,10 +27,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ref={ref}
         id={inputId}
         className={cn(
-          'h-10 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface-overlay)] px-3 text-sm',
+          'h-10 w-full rounded-[var(--radius-md)] border bg-[var(--color-surface-raised)] px-3 text-sm',
           'text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)]',
-          'transition-colors duration-150',
-          'focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]',
+          'transition-[border-color,box-shadow] duration-150',
+          'focus:border-[var(--color-accent-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent-subtle)]',
           error
             ? 'border-[var(--color-danger)]'
             : 'border-[var(--color-border)] hover:border-[var(--color-border-strong)]',

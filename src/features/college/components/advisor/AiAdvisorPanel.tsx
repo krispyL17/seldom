@@ -102,7 +102,7 @@ export function AiAdvisorPanel({ fullHeight = false }: { fullHeight?: boolean })
             type="button"
             disabled={isTyping}
             onClick={() => sendMessage(suggestion)}
-            className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2.5 py-1 text-[10px] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
+            className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
           >
             {suggestion}
           </button>

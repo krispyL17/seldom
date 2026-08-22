@@ -12,11 +12,22 @@ import { useAuth } from '@hooks/useAuth'
 import { useUserPreferences } from '@features/preferences'
 import { useGoals } from '@features/goals/hooks/useGoals'
 import { useTasks } from '@features/tasks/hooks/useTasks'
+import { getUnifiedPlanningDeadlines } from '@features/college/utils'
+import { collegeService } from '@services/database/colleges'
+import { collegeUserDataService } from '@services/database/collegeUserData'
+import type { PlanningDeadline } from '@features/college/types'
 import { showBrowserNotification } from '@lib/notifications/browserNotifications'
+import {
+  collectDateApproachReminders,
+  collectTaskReminders,
+  type ReminderDispatch,
+} from '@lib/notifications/deadlineReminders'
 import type { AppNotification } from '../types'
 import { NotificationToastStack } from '../components/NotificationToastStack'
 
 const SENT_KEY = 'seldom-notified-deadlines'
+const CHECK_INTERVAL_MS = 60_000
+const COLLEGE_REFRESH_MS = 5 * 60_000
 
 interface NotificationContextValue {
   notifications: AppNotification[]
@@ -53,7 +64,7 @@ interface NotificationProviderProps {
 
 export function NotificationProvider({ children }: NotificationProviderProps) {
   const { user, session } = useAuth()
-  const { browserNotificationsEnabled, emailNotificationsEnabled, reminderLeadMinutes } =
+  const { browserNotificationsEnabled, emailNotificationsEnabled, reminderLeadMinutes, collegeEnabled } =
     useUserPreferences()
   const { tasks } = useTasks()
   const { goals } = useGoals()
@@ -61,6 +72,7 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const [notifications, setNotifications] = useState<AppNotification[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
   const [toasts, setToasts] = useState<AppNotification[]>([])
+  const [planningDeadlines, setPlanningDeadlines] = useState<PlanningDeadline[]>([])
   const sentRef = useRef(loadSentIds())
 
   const pushNotification = useCallback((n: Omit<AppNotification, 'id' | 'read'>) => {
@@ -81,66 +93,28 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
     [pushNotification],
   )
 
-  const checkReminders = useCallback(async () => {
-    if (!user) return
-
-    const now = Date.now()
-    const leadMs = reminderLeadMinutes * 60 * 1000
-
-    for (const task of tasks) {
-      if (!task.deadline || task.completed) continue
-      const deadlineMs = new Date(task.deadline).getTime()
-      if (Number.isNaN(deadlineMs)) continue
-
-      const diff = deadlineMs - now
-      const timeLabel = new Date(task.deadline).toLocaleString(undefined, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      })
-
-      if (diff < 0) {
-        const key = `overdue:${task.id}:${task.deadline}`
-        if (sentRef.current.has(key)) continue
-        sentRef.current.add(key)
-        saveSentIds(sentRef.current)
-
-        pushNotification({
-          title: 'Overdue task',
-          body: `${task.title} was due ${timeLabel}`,
-          kind: 'deadline',
-          at: new Date().toISOString(),
-          href: '/tasks',
-        })
-        continue
-      }
-
-      if (diff > leadMs) continue
-
-      const key = `reminder:${task.id}:${task.deadline}`
-      if (sentRef.current.has(key)) continue
-
-      sentRef.current.add(key)
+  const dispatchReminder = useCallback(
+    async (dispatch: ReminderDispatch, emailPayload?: { taskId: string; title: string; deadline: string }) => {
+      if (sentRef.current.has(dispatch.key)) return
+      sentRef.current.add(dispatch.key)
       saveSentIds(sentRef.current)
 
       pushNotification({
-        title: 'Task reminder',
-        body: `${task.title} — due ${timeLabel}`,
-        kind: 'reminder',
+        title: dispatch.title,
+        body: dispatch.body,
+        kind: dispatch.kind,
         at: new Date().toISOString(),
-        href: '/tasks',
+        href: dispatch.href,
       })
 
-      if (browserNotificationsEnabled) {
+      if (browserNotificationsEnabled && dispatch.browserTag) {
         showBrowserNotification('Seldom reminder', {
-          body: `${task.title} — due ${timeLabel}`,
-          tag: key,
+          body: dispatch.body,
+          tag: dispatch.browserTag,
         })
       }
 
-      if (emailNotificationsEnabled && session?.access_token) {
+      if (emailPayload && emailNotificationsEnabled && session?.access_token) {
         try {
           await fetch('/api/notifications/email-reminder', {
             method: 'POST',
@@ -148,63 +122,123 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${session.access_token}`,
             },
-            body: JSON.stringify({
-              taskId: task.id,
-              title: task.title,
-              deadline: task.deadline,
-            }),
+            body: JSON.stringify(emailPayload),
           })
         } catch {
           /* email optional */
         }
       }
+    },
+    [browserNotificationsEnabled, emailNotificationsEnabled, pushNotification, session?.access_token],
+  )
+
+  useEffect(() => {
+    if (!user || !collegeEnabled) {
+      setPlanningDeadlines([])
+      return
     }
 
-    const weekMs = 7 * 24 * 60 * 60 * 1000
+    let cancelled = false
+
+    const userId = user.id
+
+    async function loadCollegeDeadlines() {
+      try {
+        const [colleges, userData] = await Promise.all([
+          collegeService.fetchAll(),
+          collegeUserDataService.fetch(userId),
+        ])
+        if (cancelled) return
+        setPlanningDeadlines(
+          getUnifiedPlanningDeadlines(colleges, userData.financialAid, userData.scholarships, 50),
+        )
+      } catch {
+        if (!cancelled) setPlanningDeadlines([])
+      }
+    }
+
+    void loadCollegeDeadlines()
+    const interval = window.setInterval(() => void loadCollegeDeadlines(), COLLEGE_REFRESH_MS)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+    }
+  }, [user, collegeEnabled])
+
+  const checkReminders = useCallback(async () => {
+    if (!user) return
+
+    const leadMs = reminderLeadMinutes * 60 * 1000
+    const sentIds = sentRef.current
+
+    for (const task of tasks) {
+      if (!task.deadline || task.completed) continue
+      const deadline = task.deadline
+
+      for (const dispatch of collectTaskReminders(
+        { id: task.id, title: task.title, deadline },
+        leadMs,
+        sentIds,
+      )) {
+        const isLead = dispatch.key.startsWith('task:lead:')
+        await dispatchReminder(
+          dispatch,
+          isLead ? { taskId: task.id, title: task.title, deadline } : undefined,
+        )
+      }
+    }
+
     for (const goal of goals) {
       if (goal.status !== 'active' || !goal.target_date) continue
-      const targetMs = new Date(`${goal.target_date}T12:00:00`).getTime()
-      if (Number.isNaN(targetMs)) continue
-
-      const diff = targetMs - now
-      if (diff < 0 || diff > weekMs) continue
-
-      const key = `goal:${goal.id}:${goal.target_date}`
-      if (sentRef.current.has(key)) continue
-
-      sentRef.current.add(key)
-      saveSentIds(sentRef.current)
-
-      const dateLabel = new Date(`${goal.target_date}T12:00:00`).toLocaleDateString(undefined, {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-      })
-
-      pushNotification({
-        title: 'Goal deadline approaching',
-        body: `${goal.title} — target ${dateLabel}`,
-        kind: 'deadline',
-        at: new Date().toISOString(),
-        href: '/goals',
-      })
+      for (const dispatch of collectDateApproachReminders(
+        {
+          id: goal.id,
+          title: goal.title,
+          date: goal.target_date,
+          href: '/goals',
+          prefix: 'goal',
+        },
+        sentIds,
+      )) {
+        await dispatchReminder(dispatch)
+      }
     }
-  }, [
-    browserNotificationsEnabled,
-    emailNotificationsEnabled,
-    goals,
-    pushNotification,
-    reminderLeadMinutes,
-    session?.access_token,
-    tasks,
-    user,
-  ])
+
+    for (const deadline of planningDeadlines) {
+      for (const dispatch of collectDateApproachReminders(
+        {
+          id: deadline.id,
+          title: deadline.label,
+          date: deadline.date,
+          subtitle: deadline.subtitle,
+          href: '/college/deadlines',
+          prefix: 'college',
+        },
+        sentIds,
+      )) {
+        await dispatchReminder(dispatch)
+      }
+    }
+  }, [dispatchReminder, goals, planningDeadlines, reminderLeadMinutes, tasks, user])
 
   useEffect(() => {
     if (!user) return
     void checkReminders()
-    const interval = window.setInterval(() => void checkReminders(), 60_000)
+    const interval = window.setInterval(() => void checkReminders(), CHECK_INTERVAL_MS)
     return () => window.clearInterval(interval)
+  }, [checkReminders, user])
+
+  useEffect(() => {
+    if (!user) return
+    function onVisible() {
+      if (document.visibilityState === 'visible') void checkReminders()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+    }
   }, [checkReminders, user])
 
   const markRead = useCallback((id: string) => {

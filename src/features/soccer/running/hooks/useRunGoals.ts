@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { runGoalService } from '@services/database/runLogs'
 import type { CreateRunGoalInput, RunGoal, UpdateRunGoalInput } from '../types'
 
@@ -22,7 +23,7 @@ export function useRunGoals() {
       setGoals(data)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load goals')
+      setError(loadError('run goals', err))
     } finally {
       setLoading(false)
     }

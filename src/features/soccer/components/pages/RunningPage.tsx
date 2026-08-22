@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
 import { Panel } from '@components/ui/Panel'
+import { deleteError } from '@lib/userFacingError'
 import { RunLogCard } from '../../running/components/RunLogCard'
 import { RunLogForm } from '../../running/components/RunLogForm'
 import { RunGoalCard } from '../../running/components/RunGoalCard'
@@ -117,16 +118,16 @@ export function RunningPage() {
     try {
       await deleteRun(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete')
+      alert(deleteError('this run', err))
     }
   }
 
   async function handleDeleteGoal(id: string) {
-    if (!confirm('Delete this goal?')) return
+    if (!confirm('Delete this pace goal?')) return
     try {
       await deleteGoal(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete')
+      alert(deleteError('this run goal', err))
     }
   }
 
@@ -137,16 +138,17 @@ export function RunningPage() {
   const isLoading = loading || goalsLoading
 
   return (
-    <div className="perf-page-fit flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+    <div className="perf-tab-scroll">
+      <div className="flex flex-col gap-1.5 pb-1">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-[var(--color-text-tertiary)]">Distance:</span>
+          <span className="text-xs text-[var(--color-text-tertiary)]">Distance:</span>
           {(['mi', 'km'] as const).map((u) => (
             <button
               key={u}
               type="button"
               onClick={() => void setUnit(u)}
-              className={`rounded-[var(--radius-sm)] border px-2 py-0.5 text-[10px] uppercase ${
+              className={`rounded-[var(--radius-sm)] border px-2 py-0.5 text-xs uppercase ${
                 unit === u
                   ? 'border-[var(--color-accent)] bg-[var(--color-accent-subtle)]'
                   : 'border-[var(--color-border)]'
@@ -155,7 +157,7 @@ export function RunningPage() {
               {u}
             </button>
           ))}
-          <span className="text-[10px] text-[var(--color-text-tertiary)]">({longLabel})</span>
+          <span className="text-xs text-[var(--color-text-tertiary)]">({longLabel})</span>
         </div>
         <div className="flex gap-2">
           <Button onClick={openCreateGoal} variant="secondary" size="sm">
@@ -176,7 +178,7 @@ export function RunningPage() {
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 p-4">
           <p className="text-sm text-[var(--color-danger)]">{error}</p>
           <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            Could not load runs. Check your connection or database sync, then retry.
+            Could not load runs. Check your connection and try again.
           </p>
           <Button variant="secondary" size="sm" className="mt-3" onClick={() => { reload(); reloadGoals() }}>
             Retry
@@ -185,8 +187,8 @@ export function RunningPage() {
       )}
 
       {!isLoading && !error && (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 lg:grid-cols-2">
-          <Panel fillHeight title="Cardio overview" subtitle="PRs, plans, and goals" className="min-h-0">
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-2 lg:items-start">
+          <Panel title="Cardio overview" subtitle="PRs, plans, and goals">
             <div className="space-y-3">
               <RunningCharts runs={runs} />
 
@@ -198,7 +200,7 @@ export function RunningPage() {
 
               {goals.length > 0 && (
                 <div>
-                  <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
                     Pace goals · {goals.length} active
                   </p>
                   <ul className="space-y-3">
@@ -219,7 +221,7 @@ export function RunningPage() {
             </div>
           </Panel>
 
-          <Panel fillHeight title="Run log" subtitle={`${runs.length} logged`} className="min-h-0">
+          <Panel title="Run log" subtitle={`${runs.length} logged`}>
             {runs.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-sm text-[var(--color-text-secondary)]">No runs logged yet.</p>
@@ -242,6 +244,8 @@ export function RunningPage() {
           </Panel>
         </div>
       )}
+
+      </div>
 
       <Modal
         open={runModalOpen}

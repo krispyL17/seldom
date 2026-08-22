@@ -6,10 +6,8 @@ import { PageSkeleton } from '@components/ui/PanelSkeleton'
 import { useUserPreferences } from '@features/preferences'
 import { getCollegeNav } from '../types'
 import { cn } from '@lib/utils'
-import { CollegeProvider, useCollege } from '../hooks/useCollege'
-import { SeniorModePrompt } from './shared/SeniorModePrompt'
-import { phaseDescription, phaseLabel } from '../phaseUtils'
-import { Badge } from '@components/ui/Badge'
+import { useCollege } from '../hooks/useCollege'
+import { ApplicationPhaseToggle } from './shared/ApplicationPhaseToggle'
 import { CollegeOnboardingGate } from '../onboarding/CollegeOnboardingGate'
 
 export function CollegeNav() {
@@ -22,7 +20,7 @@ export function CollegeNav() {
 
   const linkClass = (isActive: boolean) =>
     cn(
-      'shrink-0 rounded-t-[var(--radius-sm)] px-2.5 py-2 text-[11px] font-medium transition-colors',
+      'shrink-0 rounded-t-[var(--radius-sm)] px-2.5 py-2 text-xs font-medium transition-colors',
       isActive
         ? 'border border-b-0 border-[var(--color-border)] bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]'
         : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-overlay)] hover:text-[var(--color-text-secondary)]',
@@ -60,7 +58,7 @@ export function CollegeNav() {
 }
 
 function CollegeLayoutInner() {
-  const { applicationPhase, loading, error, onboardingComplete, reload } = useCollege()
+  const { loading, error, onboardingComplete, reload } = useCollege()
   const { collegeEnabled, updatePreferences } = useUserPreferences()
 
   if (!collegeEnabled) {
@@ -98,7 +96,7 @@ function CollegeLayoutInner() {
   if (error) {
     return (
       <div className="mx-auto max-w-[1600px]">
-        <ErrorPanel message={error} onRetry={() => void reload()} title="College workspace" />
+        <ErrorPanel message={error} onRetry={() => void reload()} title="Couldn't load Junior Prep" />
       </div>
     )
   }
@@ -112,35 +110,21 @@ function CollegeLayoutInner() {
   }
 
   return (
-    <div className="relative mx-auto flex h-full max-w-[1600px] min-h-0 animate-fade-in flex-col overflow-hidden">
-      <header className="mb-2 shrink-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
-            {phaseLabel(applicationPhase)}
-          </h2>
-          <Badge variant={applicationPhase === 'senior' ? 'success' : 'accent'}>
-            {applicationPhase === 'senior' ? 'Senior' : 'Junior'}
-          </Badge>
-        </div>
-        <p className="text-[10px] text-[var(--color-text-tertiary)]">{phaseDescription(applicationPhase)}</p>
-      </header>
+    <div className="relative mx-auto flex h-0 min-h-0 w-full max-w-[1600px] flex-1 flex-col overflow-hidden animate-fade-in">
+      <ApplicationPhaseToggle />
 
-      <div className="mb-1.5 shrink-0">
-        <SeniorModePrompt className="py-2 px-3" />
+      <div className="shrink-0">
+        <CollegeNav />
       </div>
-
-      <CollegeNav />
-      <div className="college-page-shell mt-2 min-h-0 flex-1">
-        <Outlet />
+      <div className="mt-2 flex min-h-0 flex-1 basis-0 flex-col overflow-hidden">
+        <div className="college-tab-scroll min-h-0 flex-1 basis-0 overflow-x-hidden overflow-y-auto overscroll-contain">
+          <Outlet />
+        </div>
       </div>
     </div>
   )
 }
 
 export function CollegeLayout() {
-  return (
-    <CollegeProvider>
-      <CollegeLayoutInner />
-    </CollegeProvider>
-  )
+  return <CollegeLayoutInner />
 }

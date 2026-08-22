@@ -20,10 +20,24 @@ export function isTargetOverdue(goal: Goal): boolean {
   return new Date(`${goal.target_date}T00:00:00`) < today
 }
 
-export function progressFromMilestones(milestones: Milestone[]): number {
+/** Milestone completion as 0–100% (ignores user baseline). */
+export function milestoneCompletionPercent(milestones: Milestone[]): number {
   if (milestones.length === 0) return 0
   const done = milestones.filter((m) => m.completed).length
   return Math.round((done / milestones.length) * 100)
+}
+
+/** Overall progress: user baseline plus milestone share of remaining progress. */
+export function calculateGoalProgress(startingProgress: number, milestones: Milestone[]): number {
+  const baseline = Math.min(100, Math.max(0, startingProgress))
+  if (milestones.length === 0) return baseline
+  const done = milestones.filter((m) => m.completed).length
+  const remaining = 100 - baseline
+  return Math.min(100, Math.round(baseline + (done / milestones.length) * remaining))
+}
+
+export function goalDisplayProgress(goal: Goal): number {
+  return calculateGoalProgress(goal.progress, goal.milestones)
 }
 
 export function filterGoals(goals: Goal[], filters: GoalFilters): Goal[] {
@@ -62,7 +76,7 @@ export function sortGoals(
         cmp = a.title.localeCompare(b.title)
         break
       case 'progress':
-        cmp = a.progress - b.progress
+        cmp = goalDisplayProgress(a) - goalDisplayProgress(b)
         break
       case 'target_date': {
         const aTime = a.target_date ? new Date(a.target_date).getTime() : Infinity
@@ -112,4 +126,27 @@ export function progressVariant(progress: number): 'accent' | 'success' | 'warni
   if (progress >= 100) return 'success'
   if (progress >= 50) return 'accent'
   return 'warning'
+}
+
+/** Goals tied to the user's Performance tab (category / passion). */
+export function isPerformanceGoal(
+  goal: Goal,
+  hobbyTabLabel: string,
+  hobbyPassion: string,
+): boolean {
+  const cat = (goal.category ?? '').trim().toLowerCase()
+  if (!cat) return false
+  const labels = [
+    hobbyTabLabel.toLowerCase(),
+    hobbyPassion.toLowerCase(),
+    'performance',
+    'soccer',
+    'fitness',
+    'training',
+  ].filter(Boolean)
+  return labels.some((label) => cat === label || cat.includes(label))
+}
+
+export function nextPendingMilestone(goal: Goal) {
+  return goal.milestones.find((m) => !m.completed) ?? null
 }

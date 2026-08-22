@@ -18,7 +18,7 @@ interface MileRunPerformanceBadgeProps {
 export function MileRunPerformanceBadge({ tag }: MileRunPerformanceBadgeProps) {
   const { variant, label } = TAG_CONFIG[tag]
   return (
-    <Badge variant={variant} className="!px-1.5 !py-0 !text-[9px] normal-case tracking-normal">
+    <Badge variant={variant} className="!px-1.5 !py-0 !text-xs normal-case tracking-normal">
       {label}
     </Badge>
   )

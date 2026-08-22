@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
-import { Modal } from '@components/ui/Modal'
+import { Modal, ModalFooter } from '@components/ui/Modal'
+import { saveError } from '@lib/userFacingError'
 import { useCollege } from '../../hooks/useCollege'
 import type { ApplicationStatus } from '../../types'
 
@@ -42,7 +43,7 @@ export function AddCollegeModal({ open, onClose }: AddCollegeModalProps) {
       setInterest(isSeniorMode ? 'planning' : 'researching')
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not add college')
+      setError(saveError('this school', err))
     } finally {
       setSaving(false)
     }
@@ -53,6 +54,7 @@ export function AddCollegeModal({ open, onClose }: AddCollegeModalProps) {
       open={open}
       onClose={onClose}
       title={isSeniorMode ? 'Add school to your list' : 'Add a school you are exploring'}
+      preventClose={saving}
     >
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
         <Input
@@ -92,15 +94,19 @@ export function AddCollegeModal({ open, onClose }: AddCollegeModalProps) {
             )}
           </select>
         </div>
-        {error && <p className="text-xs text-[var(--color-danger)]">{error}</p>}
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" onClick={onClose}>
+        {error && (
+          <p className="text-xs text-[var(--color-danger)]" role="alert">
+            {error}
+          </p>
+        )}
+        <ModalFooter>
+          <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={saving}>
             Cancel
           </Button>
-          <Button type="submit" disabled={saving}>
+          <Button type="submit" size="sm" disabled={saving}>
             {saving ? 'Adding…' : 'Add school'}
           </Button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   )

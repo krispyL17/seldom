@@ -13,7 +13,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-sm',
+    'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] shadow-[0_1px_2px_rgba(0,0,0,0.25),0_0_0_1px_rgba(45,212,191,0.15)] hover:shadow-[0_4px_14px_rgba(13,148,136,0.35)] active:scale-[0.98]',
   secondary:
     'bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-overlay)] border border-[var(--color-border)]',
   ghost:
@@ -21,14 +21,13 @@ const variantStyles: Record<ButtonVariant, string> = {
 }
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'h-8 px-3 text-xs rounded-[var(--radius-sm)]',
+  sm: 'h-9 min-h-10 px-3 text-xs rounded-[var(--radius-sm)]',
   md: 'h-10 px-4 text-sm rounded-[var(--radius-md)]',
   lg: 'h-12 px-6 text-base rounded-[var(--radius-md)]',
 }
 
 /**
  * Primary interactive button primitive.
- * Apple-inspired: rounded corners, subtle hover states, no harsh borders.
  */
 export function Button({
   variant = 'primary',

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
+import { saveError } from '@lib/userFacingError'
 import type { CreateJournalEntryInput, JournalEntry, JournalMood } from '../types'
 import { ENERGY_LABELS, JOURNAL_MOODS, MOOD_LABELS } from '../types'
 import { todayIsoDate } from '../utils'
@@ -52,7 +53,7 @@ export function JournalEntryForm({ entry, onSubmit, onCancel }: JournalEntryForm
         tomorrows_focus: tomorrowsFocus.trim() || undefined,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save entry')
+      setError(saveError('this entry', err))
     } finally {
       setSubmitting(false)
     }
@@ -104,7 +105,7 @@ export function JournalEntryForm({ entry, onSubmit, onCancel }: JournalEntryForm
           onChange={(e) => setEnergyLevel(Number(e.target.value))}
           className="w-full accent-[var(--color-accent)]"
         />
-        <div className="mt-1 flex justify-between text-[10px] text-[var(--color-text-tertiary)]">
+        <div className="mt-1 flex justify-between text-xs text-[var(--color-text-tertiary)]">
           <span>1</span>
           <span>2</span>
           <span>3</span>

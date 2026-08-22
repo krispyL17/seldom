@@ -53,20 +53,20 @@ export function ProgressionPage() {
 
   return (
     <InjuryModeLock>
-      <div className="perf-page-fit flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+      <div className="perf-page-fit flex flex-col gap-2">
         <PerformanceStatsBar />
 
-        <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 lg:grid-cols-3">
-          <Panel fillHeight title="Streak" className="min-h-0">
+        <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
+          <Panel title="Streak">
             <StreakFlame current={streak.current} longest={streak.longest} frozen={streak.frozen} compact />
             <div className="mt-1.5">
               <StreakMilestoneBadges achieved={streak.milestonesAchieved} />
             </div>
           </Panel>
 
-          <Panel fillHeight title={`Weekly ${unit}`} subtitle="Cardio volume" className="min-h-0">
+          <Panel title={`Weekly ${unit}`} subtitle="Cardio volume">
             {weeklyRuns.length === 0 ? (
-              <p className="text-[11px] text-[var(--color-text-tertiary)]">
+              <p className="text-xs text-[var(--color-text-tertiary)]">
                 Log runs in{' '}
                 <Link to="/soccer/running" className="text-[var(--color-accent-muted)] hover:underline">
                   Cardio
@@ -85,7 +85,7 @@ export function ProgressionPage() {
                   showAxis
                   showValues
                 />
-                <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                   Total: {formatDistance(runs.reduce((s, r) => s + r.distance_m, 0))}
                 </p>
               </>
@@ -93,7 +93,7 @@ export function ProgressionPage() {
           </Panel>
 
           {recent.length >= 2 && (
-            <Panel fillHeight title="Intensity" subtitle="Recent sessions" className="min-h-0">
+            <Panel title="Intensity" subtitle="Recent sessions">
               <MiniBarChart
                 data={recent.map((s) => s.intensity)}
                 labels={recent.map((s) => formatShortSessionDate(s.session_date))}
@@ -106,9 +106,9 @@ export function ProgressionPage() {
             </Panel>
           )}
 
-          <Panel fillHeight title="Weak side" subtitle="Session balance" className="min-h-0">
+          <Panel title="Weak side" subtitle="Session balance">
             {sideHistory.length === 0 ? (
-              <p className="text-[11px] text-[var(--color-text-tertiary)]">Enable side balance when logging.</p>
+              <p className="text-xs text-[var(--color-text-tertiary)]">Enable side balance when logging.</p>
             ) : (
               <>
                 <p className="text-xs text-[var(--color-text-primary)]">

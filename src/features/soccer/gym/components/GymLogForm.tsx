@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
+import { ModalFooter } from '@components/ui/Modal'
+import { saveError } from '@lib/userFacingError'
 import type { CreateGymLogInput } from '../hooks/useGymLogs'
 
 interface GymLogFormProps {
@@ -34,7 +36,7 @@ export function GymLogForm({ onSubmit, onCancel }: GymLogFormProps) {
         notes: notes.trim() || undefined,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save workout')
+      setError(saveError('this workout', err))
     } finally {
       setSaving(false)
     }
@@ -70,15 +72,19 @@ export function GymLogForm({ onSubmit, onCancel }: GymLogFormProps) {
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
       />
-      {error && <p className="text-xs text-[var(--color-danger)]">{error}</p>}
-      <div className="flex gap-2">
+      {error && (
+        <p className="text-xs text-[var(--color-danger)]" role="alert">
+          {error}
+        </p>
+      )}
+      <ModalFooter className="mt-2">
+        <Button type="button" variant="secondary" size="sm" onClick={onCancel} disabled={saving}>
+          Cancel
+        </Button>
         <Button type="submit" size="sm" disabled={saving}>
           {saving ? 'Saving…' : 'Save workout'}
         </Button>
-        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
+      </ModalFooter>
     </form>
   )
 }

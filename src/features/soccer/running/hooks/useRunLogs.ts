@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { runLogService } from '@services/database/runLogs'
 import type { CreateRunLogInput, RunLog, UpdateRunLogInput } from '../types'
 import { sortRunsChronologically } from '../utils'
@@ -24,7 +25,7 @@ export function useRunLogs() {
       setRuns(sortRunsChronologically(data))
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load runs')
+      setError(loadError('runs', err))
     } finally {
       setLoading(false)
     }

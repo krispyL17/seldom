@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { goalService } from '@services/database/goals'
 import type { Goal } from '@features/goals/types'
+import { goalDisplayProgress } from '@features/goals/utils'
 import { cn } from '@lib/utils'
 
 interface GoalLinkSelectProps {
@@ -49,7 +50,7 @@ export function GoalLinkSelect({ value, onChange, className }: GoalLinkSelectPro
         <option value="">None</option>
         {goals.map((goal) => (
           <option key={goal.id} value={goal.id}>
-            {goal.title} ({goal.progress}%)
+            {goal.title} ({goalDisplayProgress(goal)}%)
           </option>
         ))}
       </select>

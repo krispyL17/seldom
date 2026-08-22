@@ -8,6 +8,7 @@ import { Panel, PanelActionLink, PanelDivider } from '@components/ui/Panel'
 import { useTasks } from '@features/tasks/hooks/useTasks'
 import { useGoals } from '@features/goals/hooks/useGoals'
 import type { Goal } from '@features/goals/types'
+import { goalDisplayProgress } from '@features/goals/utils'
 
 function formatDue(deadline: string | null): { label: string; overdue: boolean } {
   if (!deadline) return { label: 'No due date', overdue: false }
@@ -129,7 +130,7 @@ export function TasksAndGoalsPanel() {
                         {due.overdue ? (
                           <Badge variant="danger">Overdue</Badge>
                         ) : (
-                          <span className="text-[10px] text-[var(--color-text-tertiary)]">{due.label}</span>
+                          <span className="text-xs text-[var(--color-text-tertiary)]">{due.label}</span>
                         )}
                       </div>
                     </li>
@@ -141,7 +142,7 @@ export function TasksAndGoalsPanel() {
               <div className="mt-1">
                 <Link
                   to="/tasks"
-                  className="text-[10px] text-[var(--color-accent-muted)] hover:underline"
+                  className="text-xs text-[var(--color-accent-muted)] hover:underline"
                 >
                   +{openTasks.length - 2} more
                 </Link>
@@ -166,7 +167,9 @@ export function TasksAndGoalsPanel() {
               </div>
             ) : (
               <div className="space-y-2">
-                {activeGoals.map((goal) => (
+                {activeGoals.map((goal) => {
+                  const displayProgress = goalDisplayProgress(goal)
+                  return (
                   <div
                     key={goal.id}
                     className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-2"
@@ -176,22 +179,22 @@ export function TasksAndGoalsPanel() {
                       <Badge variant="muted">ETA {formatEta(goal.target_date)}</Badge>
                     </div>
                     <ProgressBar
-                      value={goal.progress}
-                      variant={goal.progress >= 70 ? 'success' : 'accent'}
+                      value={displayProgress}
+                      variant={displayProgress >= 70 ? 'success' : 'accent'}
                       size="sm"
                     />
-                    <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+                    <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                       Next: <span className="text-[var(--color-text-secondary)]">{nextMilestone(goal)}</span>
                     </p>
                   </div>
-                ))}
+                )})}
               </div>
             )}
             {goals.filter((g) => g.status === 'active').length > 1 && (
               <div className="mt-1">
                 <Link
                   to="/goals"
-                  className="text-[10px] text-[var(--color-accent-muted)] hover:underline"
+                  className="text-xs text-[var(--color-accent-muted)] hover:underline"
                 >
                   +{goals.filter((g) => g.status === 'active').length - 1} more
                 </Link>

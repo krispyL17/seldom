@@ -190,7 +190,7 @@ export function ProgressChartsPage() {
             })}
           </div>
           <PanelDivider />
-          <p className="text-[10px] text-[var(--color-text-tertiary)]">
+          <p className="text-xs text-[var(--color-text-tertiary)]">
             All {TECHNICAL_RATING_KEYS.length} skills are rated when you log a session — only the most
             useful four are charted here.
           </p>

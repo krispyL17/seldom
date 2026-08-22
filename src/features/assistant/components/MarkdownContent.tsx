@@ -23,19 +23,19 @@ function CodeBlock({ className, children }: { className?: string; children: Reac
   return (
     <div className="group relative my-3 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[#0d0d0d]">
       <div className="flex items-center justify-between border-b border-[var(--color-border)] px-3 py-1.5">
-        <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
+        <span className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
           {language}
         </span>
         <button
           type="button"
           onClick={copy}
           aria-label={copied ? 'Copied to clipboard' : 'Copy code to clipboard'}
-          className="text-[10px] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
+          className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]"
         >
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="overflow-x-auto p-3 text-[13px] leading-relaxed">
+      <pre className="overflow-x-auto p-3 text-sm leading-relaxed">
         <code className="font-mono text-[var(--color-text-primary)]">{code}</code>
       </pre>
     </div>

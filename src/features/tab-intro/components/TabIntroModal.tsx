@@ -42,13 +42,13 @@ export function TabIntroPanel({ open, config, onComplete, onDismiss }: TabIntroP
               <h2 id="tab-intro-title" className="truncate text-xs font-semibold text-[var(--color-text-primary)]">
                 {config.title}
               </h2>
-              <p className="truncate text-[10px] text-[var(--color-text-tertiary)]">{config.subtitle}</p>
+              <p className="truncate text-xs text-[var(--color-text-tertiary)]">{config.subtitle}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onDismiss}
-            className="shrink-0 rounded-[var(--radius-sm)] px-1.5 py-0.5 text-[10px] text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-overlay)] hover:text-[var(--color-text-secondary)]"
+            className="shrink-0 rounded-[var(--radius-sm)] px-1.5 py-0.5 text-xs text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-overlay)] hover:text-[var(--color-text-secondary)]"
           >
             Close
           </button>

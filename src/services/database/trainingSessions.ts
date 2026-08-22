@@ -35,6 +35,11 @@ function parseSideBalance(raw: unknown): SideBalance | null {
   return { dominant_pct: o.dominant_pct, weak_pct: o.weak_pct }
 }
 
+function parseSkillsTrained(raw: unknown): string[] {
+  if (!Array.isArray(raw)) return []
+  return raw.filter((id): id is string => typeof id === 'string')
+}
+
 function normalizeSession(row: TrainingSessionRow): TrainingSession {
   const ratings = parseTechnicalRatings(row.technical_ratings)
   if (!ratings) throw new Error('Invalid technical ratings in database row')
@@ -44,6 +49,8 @@ function normalizeSession(row: TrainingSessionRow): TrainingSession {
     work_on: row.work_on ?? null,
     goal_id: row.goal_id ?? null,
     side_balance: parseSideBalance(row.side_balance),
+    skills_trained: parseSkillsTrained((row as { skills_trained?: unknown }).skills_trained),
+    team_session: Boolean((row as { team_session?: boolean }).team_session),
     technical_ratings: ratings,
   }
 }
@@ -83,6 +90,8 @@ export const trainingSessionService = {
         notes: input.notes?.trim() || null,
         goal_id: input.goal_id ?? null,
         side_balance: sideBalanceToJson(input.side_balance),
+        skills_trained: (input.skills_trained ?? []) as unknown as Json,
+        team_session: input.team_session ?? false,
       })
       .select()
       .single()
@@ -108,6 +117,10 @@ export const trainingSessionService = {
     if (input.notes !== undefined) payload.notes = input.notes?.trim() || null
     if (input.goal_id !== undefined) payload.goal_id = input.goal_id
     if (input.side_balance !== undefined) payload.side_balance = sideBalanceToJson(input.side_balance)
+    if (input.skills_trained !== undefined) {
+      payload.skills_trained = input.skills_trained as unknown as Json
+    }
+    if (input.team_session !== undefined) payload.team_session = input.team_session
     if (input.technical_ratings !== undefined) {
       payload.technical_ratings = ratingsToJson(input.technical_ratings)
     }

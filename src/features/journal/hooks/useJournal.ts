@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { journalService } from '@services/database/journal'
 import type {
   CreateJournalEntryInput,
@@ -27,7 +28,7 @@ export function useJournal() {
       setEntries(sortEntriesChronologically(data))
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load journal entries')
+      setError(loadError('your journal entries', err))
     } finally {
       setLoading(false)
     }

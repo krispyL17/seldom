@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useUserPreferences } from '@features/preferences'
 import { useCollegeNavLabel } from '@hooks/useCollegeNavLabel'
-import { SIDEBAR_NAV, type NavItemConfig } from '@config/navigation'
+import { PRIMARY_SIDEBAR_NAV, type NavItemConfig } from '@config/navigation'
 
 export function useSidebarNav(): NavItemConfig[] {
   const { hobbyTabLabel, collegeEnabled } = useUserPreferences()
@@ -9,7 +9,7 @@ export function useSidebarNav(): NavItemConfig[] {
 
   return useMemo(
     () =>
-      SIDEBAR_NAV.filter((item) => {
+      PRIMARY_SIDEBAR_NAV.filter((item) => {
         if (item.id === 'college' && !collegeEnabled) return false
         return true
       }).map((item) => {

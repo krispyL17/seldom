@@ -4,6 +4,7 @@ import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
 import { DateTimeField } from '@components/ui/DateTimeField'
 import { useDistanceUnit } from '@hooks/useDistanceUnit'
+import { saveError } from '@lib/userFacingError'
 import type { CreateRunGoalInput, RunGoal } from '../types'
 import {
   durationInputFromSeconds,
@@ -85,7 +86,7 @@ export function RunGoalForm({ goal, onSubmit, onCancel }: RunGoalFormProps) {
         notes: notes.trim() || undefined,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save goal')
+      setError(saveError('this run goal', err))
     } finally {
       setSubmitting(false)
     }

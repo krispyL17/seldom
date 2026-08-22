@@ -16,7 +16,7 @@ import { soccerUserDataService } from '@services/database/soccerUserData'
 import { parseAthleteDevelopment } from '../athlete/defaults'
 import { collectActivityDates, computeStreak, mergeStreakMeta } from '../athlete/streak'
 import { analyzeRecovery, type RecoverySnapshot } from '../athlete/recovery'
-import { generateSportTabs } from '../athlete/sportTabs'
+import { generateSportSkills, MAX_SKILLS } from '../athlete/sportSkills'
 import { sportUsesSideTracking } from '../athlete/sideTracking'
 import { parseKnowledgeFile } from '../knowledge/importParser'
 import { registerRecoverySync, registerStreakSync } from '../athlete/streakSyncBridge'
@@ -24,23 +24,22 @@ import {
   readCustomTabsPromptDismissed,
   writeCustomTabsPromptDismissed,
 } from '../athlete/promptDismiss'
-import type { AthleteDevelopmentState, AthleteSideProfile, CustomPerformanceTab } from '../athlete/types'
+import type { AthleteDevelopmentState, AthleteSideProfile, TrainingSkill } from '../athlete/types'
 
 interface AthleteContextValue {
   development: AthleteDevelopmentState
   loading: boolean
-  /** Stable custom tabs while reloading — avoids nav flicker on Performance revisit. */
-  displayCustomTabs: CustomPerformanceTab[]
+  /** Stable skills while reloading — avoids nav flicker on Performance revisit. */
+  displaySkills: TrainingSkill[]
   recovery: RecoverySnapshot | null
   syncStreak: () => Promise<void>
   markStreakExplained: () => Promise<void>
   updateSideProfile: (profile: Partial<AthleteSideProfile>) => Promise<void>
   setInjuryMode: (active: boolean, reason?: string, aiSuggested?: boolean) => Promise<void>
   setGymEnabled: (enabled: boolean) => Promise<void>
-  updateCustomTabs: (tabs: CustomPerformanceTab[]) => Promise<void>
-  dismissCustomTabsPrompt: () => Promise<void>
+  updateSkills: (skills: TrainingSkill[]) => Promise<void>
   importKnowledgeFile: (content: string, filename: string) => Promise<{ count: number; warnings: string[] }>
-  ensureSportTabs: () => Promise<void>
+  ensureSportSkills: () => Promise<void>
 }
 
 const AthleteContext = createContext<AthleteContextValue | null>(null)
@@ -54,7 +53,7 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
     parseAthleteDevelopment(null),
   )
   const developmentRef = useRef(development)
-  const displayTabsRef = useRef<CustomPerformanceTab[]>([])
+  const displaySkillsRef = useRef<TrainingSkill[]>([])
   const initialLoadDoneRef = useRef(false)
   const persistQueueRef = useRef(Promise.resolve())
   const [recovery, setRecovery] = useState<RecoverySnapshot | null>(null)
@@ -68,7 +67,7 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
     if (!user) {
       const empty = parseAthleteDevelopment(null)
       developmentRef.current = empty
-      displayTabsRef.current = []
+      displaySkillsRef.current = []
       initialLoadDoneRef.current = false
       setDevelopment(empty)
       setRecovery(null)
@@ -85,8 +84,8 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
         next = { ...next, customTabsPromptDismissed: true }
       }
       developmentRef.current = next
-      if (next.customTabs.length > 0) {
-        displayTabsRef.current = next.customTabs
+      if (next.skills.length > 0) {
+        displaySkillsRef.current = next.skills
       }
       setDevelopment(next)
     } finally {
@@ -162,7 +161,9 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
     const [sessionsRes, runsRes] = await Promise.all([
       client
         .from('training_sessions')
-        .select('session_date, duration_min, intensity, energy_level, position_played')
+        .select(
+          'session_date, duration_min, intensity, energy_level, skills_trained, team_session',
+        )
         .eq('user_id', user.id)
         .gte('session_date', new Date(Date.now() - 90 * 86_400_000).toISOString().slice(0, 10)),
       client
@@ -172,13 +173,25 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
         .gte('run_date', new Date(Date.now() - 14 * 86_400_000).toISOString().slice(0, 10)),
     ])
 
-    const sessions = (sessionsRes.data ?? []).map((r) => ({
-      session_date: r.session_date as string,
-      duration_min: r.duration_min as number,
-      intensity: r.intensity as number,
-      energy_level: r.energy_level as number,
-      focus: r.position_played as string,
-    }))
+    const skillCatalog = developmentRef.current.skills
+    const sessions = (sessionsRes.data ?? []).map((r) => {
+      const skillIds = Array.isArray(r.skills_trained)
+        ? (r.skills_trained as unknown[]).filter((id): id is string => typeof id === 'string')
+        : []
+      const skills = skillIds
+        .map((id) => skillCatalog.find((s) => s.id === id))
+        .filter((s): s is (typeof skillCatalog)[number] => Boolean(s))
+        .map((s) => ({ slug: s.slug, label: s.label }))
+
+      return {
+        session_date: r.session_date as string,
+        duration_min: r.duration_min as number,
+        intensity: r.intensity as number,
+        energy_level: r.energy_level as number,
+        skills,
+        team_session: Boolean((r as { team_session?: boolean }).team_session),
+      }
+    })
 
     const runs = (runsRes.data ?? []).map((r) => ({
       run_date: r.run_date as string,
@@ -254,48 +267,35 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
     [persist],
   )
 
-  const updateCustomTabs = useCallback(
-    async (tabs: CustomPerformanceTab[]) => {
-      const nextTabs = tabs.slice(0, 4)
-      const disabled = nextTabs.length === 0
-      displayTabsRef.current = nextTabs
+  const updateSkills = useCallback(
+    async (skills: TrainingSkill[]) => {
+      const nextSkills = skills.slice(0, MAX_SKILLS)
+      displaySkillsRef.current = nextSkills
+      if (user) writeCustomTabsPromptDismissed(user.id)
       await persist((prev) => ({
         ...prev,
-        customTabs: nextTabs,
-        customTabsDisabled: disabled,
-        ...(disabled ? { customTabsPromptDismissed: true } : {}),
+        skills: nextSkills,
+        skillsSeeded: true,
+        customTabsPromptDismissed: true,
       }))
     },
-    [persist],
+    [persist, user],
   )
 
-  const dismissCustomTabsPrompt = useCallback(async () => {
-    if (!user) return
-    writeCustomTabsPromptDismissed(user.id)
-    const optimistic = { ...developmentRef.current, customTabsPromptDismissed: true }
-    developmentRef.current = optimistic
-    setDevelopment(optimistic)
-    await persist((prev) => ({ ...prev, customTabsPromptDismissed: true }))
-  }, [user, persist])
-
-  const ensureSportTabs = useCallback(async () => {
+  const ensureSportSkills = useCallback(async () => {
     const current = developmentRef.current
-    if (current.customTabs.length > 0 || current.customTabsDisabled || !hobbyPassion.trim()) return
-    const tabs = generateSportTabs(hobbyPassion)
-    displayTabsRef.current = tabs
-    const dismissed = user ? readCustomTabsPromptDismissed(user.id) : false
+    if (current.skills.length > 0 || current.skillsSeeded || !hobbyPassion.trim()) return
+    const skills = generateSportSkills(hobbyPassion)
+    displaySkillsRef.current = skills
     await persist((prev) => ({
       ...prev,
-      customTabs: tabs,
-      customTabsDisabled: false,
-      ...(dismissed ? { customTabsPromptDismissed: true } : {}),
+      skills,
+      skillsSeeded: true,
     }))
-  }, [hobbyPassion, persist, user])
+  }, [hobbyPassion, persist])
 
-  const displayCustomTabs =
-    loading && displayTabsRef.current.length > 0
-      ? displayTabsRef.current
-      : development.customTabs
+  const displaySkills =
+    loading && displaySkillsRef.current.length > 0 ? displaySkillsRef.current : development.skills
 
   const importKnowledgeFile = useCallback(
     async (content: string, filename: string) => {
@@ -316,15 +316,10 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
   )
 
   useEffect(() => {
-    if (
-      !loading &&
-      hobbyPassion &&
-      development.customTabs.length === 0 &&
-      !development.customTabsDisabled
-    ) {
-      void ensureSportTabs()
+    if (!loading && hobbyPassion && development.skills.length === 0 && !development.skillsSeeded) {
+      void ensureSportSkills()
     }
-  }, [loading, hobbyPassion, development.customTabs.length, development.customTabsDisabled, ensureSportTabs])
+  }, [loading, hobbyPassion, development.skills.length, development.skillsSeeded, ensureSportSkills])
 
   useEffect(() => {
     if (hobbyPassion && !development.sideProfile.usesSideTracking && sportUsesSideTracking(hobbyPassion)) {
@@ -336,32 +331,30 @@ export function AthleteDevelopmentProvider({ children }: { children: ReactNode }
     () => ({
       development,
       loading,
-      displayCustomTabs,
+      displaySkills,
       recovery,
       syncStreak,
       markStreakExplained,
       updateSideProfile,
       setInjuryMode,
       setGymEnabled,
-      updateCustomTabs,
-      dismissCustomTabsPrompt,
+      updateSkills,
       importKnowledgeFile,
-      ensureSportTabs,
+      ensureSportSkills,
     }),
     [
       development,
       loading,
-      displayCustomTabs,
+      displaySkills,
       recovery,
       syncStreak,
       markStreakExplained,
       updateSideProfile,
       setInjuryMode,
       setGymEnabled,
-      updateCustomTabs,
-      dismissCustomTabsPrompt,
+      updateSkills,
       importKnowledgeFile,
-      ensureSportTabs,
+      ensureSportSkills,
     ],
   )
 

@@ -1,8 +1,8 @@
 /**
  * Seldom — Global Styles
  *
- * Restrained dark-first design system. Muted accents, clear hierarchy,
- * purposeful motion. Light theme via [data-theme="light"].
+ * Midnight Field — deep blue-black surfaces, teal accent, amber brand mark.
+ * Light theme via [data-theme="light"]. Palette overrides via themePalettes.ts.
  */
 
 @import "tailwindcss";
@@ -10,53 +10,64 @@
 /* ─── Design Tokens (dark default) ─────────────────────────────────────── */
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bricolage Grotesque", "Figtree", var(--font-sans);
 
-  /* Surfaces — warm charcoal, not pure black */
-  --color-surface-base: #0c0c0d;
-  --color-surface-raised: #141416;
-  --color-surface-overlay: #1c1c1f;
-  --color-surface-elevated: #262628;
+  /* Surfaces — midnight blue-black, not flat charcoal */
+  --color-surface-base: #080b12;
+  --color-surface-raised: #0f141f;
+  --color-surface-overlay: #151c2b;
+  --color-surface-elevated: #1c2638;
 
-  /* Accent — deep navy with a purple undertone (logo uses --color-brand) */
-  --color-accent: #3d3a5c;
-  --color-accent-muted: #6b6794;
-  --color-accent-hover: #4a466c;
-  --color-accent-subtle: rgba(61, 58, 92, 0.16);
+  /* Accent — field teal (actions, focus, selection) */
+  --color-accent: #0d9488;
+  --color-accent-muted: #2dd4bf;
+  --color-accent-hover: #14b8a6;
+  --color-accent-subtle: rgba(45, 212, 191, 0.14);
 
-  /* Brand mark */
-  --color-brand: #5a8fd4;
-  --color-brand-muted: #7aa8e0;
-  --color-brand-bg: rgba(90, 143, 212, 0.1);
+  /* Brand mark — stadium amber */
+  --color-brand: #fbbf24;
+  --color-brand-muted: #fcd34d;
+  --color-brand-bg: rgba(251, 191, 36, 0.12);
 
   /* Text */
-  --color-text-primary: #ececee;
-  --color-text-secondary: #9a9a9f;
-  --color-text-tertiary: #636366;
+  --color-text-primary: #eef2f8;
+  --color-text-secondary: #94a3b8;
+  --color-text-tertiary: #8898ae;
 
   /* Borders */
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-border-strong: rgba(255, 255, 255, 0.12);
+  --color-border: rgba(148, 163, 184, 0.1);
+  --color-border-strong: rgba(148, 163, 184, 0.16);
 
   /* Semantic */
   --color-success: #34c759;
   --color-warning: #e6b800;
   --color-danger: #e54d4d;
+  --color-scrim: rgba(0, 0, 0, 0.55);
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
 
-  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-panel-hover: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-elevated: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  /* Panels use tight ledger corners — not pill/card radius */
+  --radius-panel: 2px;
+
+  --shadow-panel: 0 1px 0 rgba(148, 163, 184, 0.08);
+  --shadow-panel-hover: 0 1px 0 rgba(45, 212, 191, 0.2);
+  --shadow-elevated:
+    0 24px 48px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(148, 163, 184, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
   /* Minimum readable panel size before internal scroll kicks in */
   --panel-min-height: 12rem;
   --panel-body-min-height: 8rem;
-  --dashboard-panel-scroll-max: min(16rem, 28vh);
+  --dashboard-panel-scroll-max: min(14rem, 24vh);
+  --dashboard-task-row-height: 2.75rem;
+  --dashboard-tasks-scroll-max: calc(1.5rem + var(--dashboard-task-row-height) * 2.5);
+  --perf-panel-scroll-max: min(18rem, 38vh);
 }
 
 /* ─── Light theme ───────────────────────────────────────────────────────── */
@@ -64,30 +75,31 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --color-surface-base: #f4f4f5;
+  --color-surface-base: #f4f7fb;
   --color-surface-raised: #ffffff;
-  --color-surface-overlay: #ebebed;
-  --color-surface-elevated: #e0e0e3;
+  --color-surface-overlay: #e8eef6;
+  --color-surface-elevated: #dce6f2;
 
-  --color-accent: #343652;
-  --color-accent-muted: #5c5a78;
-  --color-accent-hover: #424064;
-  --color-accent-subtle: rgba(52, 54, 82, 0.12);
+  --color-accent: #0f766e;
+  --color-accent-muted: #14b8a6;
+  --color-accent-hover: #0d9488;
+  --color-accent-subtle: rgba(20, 184, 166, 0.12);
 
-  --color-brand: #3d7dd4;
-  --color-brand-muted: #5a94e0;
-  --color-brand-bg: rgba(61, 125, 212, 0.08);
+  --color-brand: #d97706;
+  --color-brand-muted: #f59e0b;
+  --color-brand-bg: rgba(217, 119, 6, 0.1);
 
-  --color-text-primary: #1a1a1c;
-  --color-text-secondary: #5c5c60;
-  --color-text-tertiary: #8e8e93;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #5c6b80;
 
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-strong: rgba(0, 0, 0, 0.14);
+  --color-border: rgba(15, 23, 42, 0.08);
+  --color-border-strong: rgba(15, 23, 42, 0.14);
+  --color-scrim: rgba(15, 23, 42, 0.35);
 
-  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
-  --shadow-panel-hover: 0 4px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.06);
-  --shadow-elevated: 0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --shadow-panel: 0 1px 3px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  --shadow-panel-hover: 0 6px 20px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(20, 184, 166, 0.12);
+  --shadow-elevated: 0 24px 48px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
 /* ─── Base ──────────────────────────────────────────────────────────────── */
@@ -117,35 +129,231 @@ body {
   min-height: 100dvh;
   font-family: var(--font-sans);
   background-color: var(--color-surface-base);
-  background-image: var(--color-surface-base-gradient, none);
+  background-image: var(
+    --color-surface-base-gradient,
+    radial-gradient(ellipse 120% 70% at 50% -15%, rgba(45, 212, 191, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(251, 191, 36, 0.04) 0%, transparent 50%)
+  );
   background-attachment: fixed;
   color: var(--color-text-primary);
   line-height: 1.5;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
+.font-display {
+  font-family: var(--font-display);
+}
+
 /* Sidebar tab bookmark underscores */
 .nav-tab-bookmark {
   position: absolute;
-  bottom: 6px;
-  left: 12px;
-  right: 12px;
-  height: 2px;
+  bottom: 5px;
+  left: 14px;
+  right: 14px;
+  height: 3px;
   border-radius: 999px;
-  opacity: 0.55;
-  transition: opacity 0.2s ease, height 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0.65;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .nav-tab-bookmark--active {
-  height: 3px;
+  height: 4px;
   opacity: 1;
 }
 
-/* Home dashboard — natural panel heights, no page scroll; long panels scroll internally */
+/* App shell — sidebar rail + top bar */
+.app-shell-sidebar {
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-surface-raised) 96%, var(--color-accent-muted) 4%) 0%,
+    var(--color-surface-raised) 40%,
+    color-mix(in srgb, var(--color-surface-raised) 98%, var(--color-brand) 2%) 100%
+  );
+  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.32);
+}
+
+[data-theme='light'] .app-shell-sidebar {
+  background: var(--color-surface-raised);
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.06);
+}
+
+.app-shell-topbar {
+  background: color-mix(in srgb, var(--color-surface-raised) 92%, transparent);
+  box-shadow:
+    0 1px 0 var(--color-border),
+    0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme='light'] .app-shell-topbar {
+  box-shadow:
+    0 1px 0 var(--color-border),
+    0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-nav-link {
+  position: relative;
+}
+
+.sidebar-nav-link--active {
+  background: color-mix(in srgb, var(--color-surface-elevated) 88%, var(--color-accent-muted) 12%);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-panel);
+}
+
+.sidebar-nav-link--active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 58%;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-accent-muted);
+  transform: translateY(-50%);
+  opacity: 0.85;
+}
+
+.sidebar-nav-link:not(.sidebar-nav-link--active):hover {
+  background: var(--color-surface-overlay);
+  color: var(--color-text-primary);
+}
+
+.app-shell-brand-mark {
+  box-shadow:
+    var(--shadow-panel),
+    0 0 20px rgba(251, 191, 36, 0.12);
+}
+
+/* Panels — scoreboard ledger: flat surface, top accent rule, no card slop */
+.panel {
+  position: relative;
+  border-radius: var(--radius-panel);
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--panel-accent-rule, var(--color-accent-muted));
+  background: var(--color-surface-raised);
+  box-shadow: none;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+}
+
+.panel-header h3 {
+  color: color-mix(in srgb, var(--panel-heading, transparent) 18%, var(--color-text-primary));
+}
+
+.panel-header h3::before {
+  content: "";
+  display: inline-block;
+  width: 0.625rem;
+  height: 2px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  background: var(--panel-accent-mark, var(--color-brand));
+  opacity: 0.85;
+}
+
+@keyframes typing-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+.animate-typing-dot {
+  animation: typing-pulse 1.2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.skip-to-main {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.75rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-elevated);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-elevated);
+  transition: transform 0.15s ease-out;
+}
+
+.skip-to-main:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Home overview — calendar-centric Today layout */
+.home-overview {
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.home-overview-grid {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 0.95fr);
+  gap: 0.625rem;
+  min-height: 0;
+  flex: 1;
+}
+
+.home-overview-row-top,
+.home-overview-row-bottom,
+.home-overview-row-calendar {
+  min-height: 0;
+}
+
+/* Home dashboard — fit viewport; panels scroll internally, not the page */
 .home-dashboard {
   min-height: 0;
   flex: 1;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-dashboard-layout {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+@media (min-width: 1280px) {
+  .home-dashboard-layout {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .home-insights-rail {
+    width: 18rem;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 0.25rem;
+  }
+}
+
+.home-insights-rail {
+  min-width: 0;
 }
 
 .home-dashboard-grid {
@@ -153,15 +361,16 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: auto;
   gap: 0.5rem;
-  align-content: start;
-  height: 100%;
+  align-content: stretch;
   min-height: 0;
+  flex: 1;
   overflow: hidden;
 }
 
 @media (min-width: 1024px) {
   .home-dashboard-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
   }
 }
 
@@ -169,7 +378,7 @@ body {
   min-width: 0;
 }
 
-.home-dashboard-grid .panel header {
+.home-dashboard-grid .panel .panel-header {
   padding: 0.5rem 0.75rem;
 }
 
@@ -180,27 +389,35 @@ body {
 .home-dashboard-grid .panel {
   height: auto;
   min-height: 0;
+  max-height: 100%;
 }
 
 .home-dashboard-grid .panel.panel--scroll-cap {
   display: flex;
   flex-direction: column;
-  max-height: var(--dashboard-panel-scroll-max);
   overflow: hidden;
+  min-height: 0;
 }
 
 .home-dashboard-grid .panel.panel--scroll-cap > div:last-child {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.home-dashboard-grid .panel.panel--compact .panel-header {
+  padding: 0.375rem 0.625rem;
+}
+
+.home-dashboard-grid .panel.panel--compact > div:last-child {
+  padding: 0.375rem 0.625rem;
 }
 
 .college-page-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(var(--panel-min-height), 1fr));
+  grid-template-rows: repeat(2, minmax(var(--panel-min-height), auto));
   gap: 0.5rem;
 }
 
@@ -213,28 +430,172 @@ body {
 }
 
 .college-page-grid--1row {
-  grid-template-rows: minmax(var(--panel-min-height), 1fr);
+  grid-template-rows: minmax(var(--panel-min-height), auto);
 }
 
 .college-page-grid--3row {
-  grid-template-rows: repeat(3, minmax(var(--panel-min-height), 1fr));
+  grid-template-rows: repeat(3, minmax(var(--panel-min-height), auto));
+  flex: none;
+  height: auto;
+}
+
+.college-page-grid--4row {
+  grid-template-rows: repeat(4, minmax(var(--panel-min-height), auto));
+  flex: none;
+  height: auto;
 }
 
 .college-page-grid > *,
 .college-page-span-2 {
   min-height: var(--panel-min-height);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .college-page-span-2 {
   grid-column: 1 / -1;
 }
 
-/* Performance tab — fit content without page scroll */
+/* Tab shell scroll — panels expand; region scrolls when content exceeds viewport */
+.adaptive-scroll-region {
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.adaptive-scroll-region .college-page-fit {
+  height: auto;
+  min-height: 0;
+}
+
+.adaptive-scroll-region .college-page-grid {
+  flex: none;
+  height: auto;
+  grid-template-rows: repeat(2, minmax(var(--panel-min-height), auto));
+}
+
+.adaptive-scroll-region .college-page-grid--1row {
+  grid-template-rows: minmax(var(--panel-min-height), auto);
+}
+
+.adaptive-scroll-region .college-page-grid--3row {
+  grid-template-rows: repeat(3, minmax(var(--panel-min-height), auto));
+}
+
+.adaptive-scroll-region .college-page-grid--4row {
+  grid-template-rows: repeat(4, minmax(var(--panel-min-height), auto));
+}
+
+.adaptive-scroll-region.home-dashboard,
+.adaptive-scroll-region .home-dashboard {
+  height: auto;
+  flex: 1;
+  overflow: hidden;
+}
+
+.adaptive-scroll-region .home-dashboard-grid {
+  height: auto;
+  overflow: hidden;
+}
+
+.adaptive-scroll-region.perf-page-shell {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.adaptive-scroll-region.perf-page-shell > * {
+  flex: 1;
+  min-height: 0;
+}
+
+.adaptive-scroll-region .perf-page-fit {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Performance tabs — fill viewport; panels scroll internally */
+.perf-page-viewport {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.perf-page-viewport > .perf-page-grid,
+.perf-page-viewport.perf-page-grid {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.perf-page-grid {
+  display: grid;
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.perf-page-viewport .panel.panel--fill-height.panel--scroll-cap {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.perf-page-viewport .panel.panel--fill-height.panel--scroll-cap > div:last-child {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Multi-panel perf tabs (Recovery) — one scroll region for the full page */
+.adaptive-scroll-region.perf-page-shell:has(.perf-tab-scroll) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.perf-tab-scroll {
+  flex: 1 1 0%;
+  height: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.perf-tab-scroll .panel {
+  overflow: visible;
+}
+
+.perf-page-viewport.perf-page-grid .panel.panel--fill-height,
+.perf-page-viewport > .perf-page-grid .panel.panel--fill-height {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.perf-page-viewport.perf-page-grid .panel.panel--scroll-cap > div:last-child,
+.perf-page-viewport > .perf-page-grid .panel.panel--scroll-cap > div:last-child {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.adaptive-scroll-region .profile-tab-content {
+  overflow: visible;
+}
+
+/* Tab pages — panels grow; scroll at tab shell, not inside panels */
 .perf-page-shell {
   min-height: 0;
   flex: 1;
-  overflow: hidden;
 }
 
 .perf-page-fit {
@@ -246,58 +607,103 @@ body {
 .college-page-shell {
   min-height: 0;
   flex: 1;
+}
+
+/* Junior Prep — single scroll surface below sub-nav (flex basis-0 + height:0 forces a bounded box) */
+.college-tab-scroll {
+  flex: 1 1 0%;
+  height: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.college-tab-scroll .panel {
+  overflow: visible;
+}
+
+.college-tab-scroll .panel > div:last-child,
+.college-tab-scroll .panel > .panel-body-fill {
+  overflow: visible;
+}
+
+/* Advisor tab fills viewport; chat scrolls inside the panel */
+.college-tab-scroll:has(#college-advisor) {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
+}
+
+.college-tab-scroll:has(#college-advisor) .college-page-fit {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#college-advisor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .college-page-fit {
-  height: 100%;
+  height: auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
-.perf-page-fit > .grid {
+.perf-page-fit > .grid:not(.perf-page-grid),
+.perf-page-fit > .flex {
   min-height: 0;
-  grid-auto-rows: minmax(var(--panel-min-height), 1fr);
+  grid-auto-rows: minmax(var(--panel-min-height), auto);
+}
+
+.perf-page-viewport .panel.panel--fill-height {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
 }
 
 /*
- * Panel sizing: content gets a readable minimum first; scroll only when
- * the body exceeds the space left in the grid cell (college / performance grids).
+ * Tab panels: expand with content unless viewport-fit + fillHeight scrollCap.
  */
 .college-page-grid .panel,
 .perf-page-fit .grid .panel,
+.perf-page-fit .flex .panel,
 .college-page-fit .profile-section-grid .panel,
 .college-page-fit .profile-tab-content .panel,
 .panel.panel--fill-height {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
   min-height: var(--panel-min-height);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .college-page-grid .panel > div:last-child,
 .perf-page-fit .grid .panel > div:last-child,
+.perf-page-fit .flex .panel > div:last-child,
 .college-page-fit .profile-section-grid .panel > div:last-child,
 .college-page-fit .profile-tab-content .panel > div:last-child,
 .panel.panel--fill-height > .panel-body-fill {
-  flex: 1 1 auto;
-  min-height: var(--panel-body-min-height);
-  overflow-x: hidden;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow: visible;
 }
 
-/* Standalone panels — grow with content, no forced internal scroll */
+/* Standalone panels — grow with content */
 .panel:not(.panel--fill-height) > div:last-child:not(.panel-body-fill) {
   flex: 0 0 auto;
   overflow: visible;
 }
 
 .college-scroll-region {
-  min-height: var(--panel-body-min-height);
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  min-height: 0;
+  overflow: visible;
 }
 
 #root {
@@ -430,12 +836,19 @@ html.animations-disabled .animate-nav-in {
   transform: none !important;
 }
 
+html.animations-disabled .animate-typing-dot {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-slide-up,
   .animate-scale-in,
   .animate-backdrop-in,
-  .animate-nav-in {
+  .animate-nav-in,
+  .animate-typing-dot {
     animation: none;
     opacity: 1;
     transform: none;
@@ -445,12 +858,7 @@ html.animations-disabled .animate-nav-in {
     animation-delay: 0ms !important;
   }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+  html {
+    scroll-behavior: auto;
   }
 }

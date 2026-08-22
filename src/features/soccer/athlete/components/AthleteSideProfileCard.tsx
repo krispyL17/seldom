@@ -49,13 +49,13 @@ export function AthleteSideProfileCard() {
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3">
       <p className="text-xs font-medium text-[var(--color-text-primary)]">Athlete profile</p>
-      <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+      <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
         Dominant and weak side tracking for {hobbyPassion || 'your sport'}.
       </p>
 
       {usesFeet && (
         <fieldset className="mt-3">
-          <legend className="mb-1.5 text-[11px] text-[var(--color-text-secondary)]">Preferred foot</legend>
+          <legend className="mb-1.5 text-xs text-[var(--color-text-secondary)]">Preferred foot</legend>
           <div className="flex flex-wrap gap-1.5">
             {SIDE_OPTIONS.filter((s) => s !== 'unknown').map((side) => (
               <button
@@ -65,8 +65,8 @@ export function AthleteSideProfileCard() {
                 onClick={() => void setDominant(side)}
                 className={
                   sideProfile.dominantSide === side
-                    ? 'rounded-full bg-[var(--color-accent)] px-2.5 py-1 text-[10px] text-white'
-                    : 'rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[10px] text-[var(--color-text-secondary)]'
+                    ? 'rounded-full bg-[var(--color-accent)] px-2.5 py-1 text-xs text-white'
+                    : 'rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)]'
                 }
               >
                 {dominantSideLabel(side)}
@@ -74,7 +74,7 @@ export function AthleteSideProfileCard() {
             ))}
           </div>
           {sideProfile.weakSide !== 'unknown' && (
-            <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
               Weak side: {dominantSideLabel(sideProfile.weakSide)}
             </p>
           )}
@@ -83,7 +83,7 @@ export function AthleteSideProfileCard() {
 
       {usesHands && (
         <fieldset className="mt-3">
-          <legend className="mb-1.5 text-[11px] text-[var(--color-text-secondary)]">Preferred hand</legend>
+          <legend className="mb-1.5 text-xs text-[var(--color-text-secondary)]">Preferred hand</legend>
           <div className="flex flex-wrap gap-1.5">
             {(['left', 'right', 'both', 'none'] as const).map((side) => (
               <button
@@ -93,8 +93,8 @@ export function AthleteSideProfileCard() {
                 onClick={() => void setHand(side)}
                 className={
                   sideProfile.preferredHand === side
-                    ? 'rounded-full bg-[var(--color-accent)] px-2.5 py-1 text-[10px] text-white'
-                    : 'rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[10px] text-[var(--color-text-secondary)]'
+                    ? 'rounded-full bg-[var(--color-accent)] px-2.5 py-1 text-xs text-white'
+                    : 'rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)]'
                 }
               >
                 {side === 'none' ? 'N/A' : dominantSideLabel(side)}
@@ -105,7 +105,7 @@ export function AthleteSideProfileCard() {
       )}
 
       {sideProfile.dominantSide === 'unknown' && usesFeet && (
-        <p className="mt-2 text-[10px] text-[var(--color-warning)]">Set your dominant foot to enable side balance logging.</p>
+        <p className="mt-2 text-xs text-[var(--color-warning)]">Set your dominant foot to enable side balance logging.</p>
       )}
     </div>
   )
@@ -126,9 +126,9 @@ export function SideBalanceFields({ dominantPct, weakPct, onChange, disabled }: 
 
   return (
     <div className="space-y-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-3">
-      <p className="text-[11px] font-medium text-[var(--color-text-secondary)]">Side balance (% of session)</p>
+      <p className="text-xs font-medium text-[var(--color-text-secondary)]">Side balance (% of session)</p>
       <div>
-        <label className="mb-1 flex justify-between text-[10px] text-[var(--color-text-tertiary)]">
+        <label className="mb-1 flex justify-between text-xs text-[var(--color-text-tertiary)]">
           <span>Dominant side</span>
           <span>{dominantPct}%</span>
         </label>
@@ -143,7 +143,7 @@ export function SideBalanceFields({ dominantPct, weakPct, onChange, disabled }: 
         />
       </div>
       <div>
-        <label className="mb-1 flex justify-between text-[10px] text-[var(--color-text-tertiary)]">
+        <label className="mb-1 flex justify-between text-xs text-[var(--color-text-tertiary)]">
           <span>Weak side</span>
           <span>{weakPct}%</span>
         </label>
@@ -184,7 +184,7 @@ export function InjuryModeControls({ className }: InjuryModeControlsProps) {
   return (
     <div className={className}>
       <p className="text-xs font-medium text-[var(--color-text-primary)]">Injury Mode</p>
-      <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+      <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
         Freezes your streak and prioritizes recovery. Does not change your logged history.
       </p>
       <input

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { trainingSessionService } from '@services/database/trainingSessions'
 import { goalService } from '@services/database/goals'
 import type {
@@ -29,7 +30,7 @@ export function useTrainingSessions() {
       setSessions(sortSessionsChronologically(data))
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load training sessions')
+      setError(loadError('training sessions', err))
     } finally {
       setLoading(false)
     }

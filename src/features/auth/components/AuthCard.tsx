@@ -10,9 +10,9 @@ interface AuthCardProps {
 /** Card wrapper for auth form content */
 export function AuthCard({ title, subtitle, children, footer }: AuthCardProps) {
   return (
-    <div className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-panel)] sm:p-8">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-6 shadow-[var(--shadow-elevated)] sm:p-8">
       <header className="mb-6">
-        <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+        <h1 className="font-display text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
           {title}
         </h1>
         {subtitle && (

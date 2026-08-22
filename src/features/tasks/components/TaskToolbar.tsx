@@ -1,4 +1,5 @@
 import { cn } from '@lib/utils'
+import { Button } from '@components/ui/Button'
 import type { TaskFilters, TaskSortDirection, TaskSortField } from '@features/tasks/types'
 import { IconSearch } from '@components/ui/icons'
 
@@ -12,6 +13,7 @@ interface TaskToolbarProps {
   categories: string[]
   resultCount: number
   totalCount: number
+  completedCount: number
 }
 
 const selectClass = cn(
@@ -30,7 +32,19 @@ export function TaskToolbar({
   categories,
   resultCount,
   totalCount,
+  completedCount,
 }: TaskToolbarProps) {
+  const showingCompleted = filters.status === 'all'
+  const completedOnly = filters.status === 'completed'
+
+  function toggleCompletedVisibility() {
+    if (completedOnly || showingCompleted) {
+      onFiltersChange({ ...filters, status: 'active' })
+      return
+    }
+    onFiltersChange({ ...filters, status: 'all' })
+  }
+
   return (
     <div className="space-y-3">
       {/* Search */}
@@ -67,8 +81,7 @@ export function TaskToolbar({
           className={selectClass}
           aria-label="Filter by status"
         >
-          <option value="all">All status</option>
-          <option value="active">Active</option>
+          <option value="active">Open</option>
           <option value="completed">Completed</option>
         </select>
 
@@ -132,9 +145,20 @@ export function TaskToolbar({
         </div>
       </div>
 
-      <p className="text-xs text-[var(--color-text-tertiary)]">
-        Showing {resultCount} of {totalCount} tasks
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs text-[var(--color-text-tertiary)]">
+          Showing {resultCount} of {totalCount} tasks
+        </p>
+        {completedCount > 0 && (
+          <Button variant="ghost" size="sm" onClick={toggleCompletedVisibility}>
+            {completedOnly
+              ? 'Show open tasks'
+              : showingCompleted
+                ? 'Hide completed'
+                : `Show completed (${completedCount})`}
+          </Button>
+        )}
+      </div>
     </div>
   )
 }

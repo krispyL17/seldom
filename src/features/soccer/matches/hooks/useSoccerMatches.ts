@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { soccerMatchService } from '@services/database/soccerMatches'
 import type { CreateSoccerMatchInput, SoccerMatch, UpdateSoccerMatchInput } from '../types'
 import { triggerAthleteSync } from '../../athlete/streakSyncBridge'
@@ -22,7 +23,7 @@ export function useSoccerMatches() {
       setMatches(data)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load games')
+      setError(loadError('games', err))
     } finally {
       setLoading(false)
     }

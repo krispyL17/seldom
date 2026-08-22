@@ -34,7 +34,7 @@ export function DeadlineCalendarPanel() {
         <div className="space-y-4">
           {Object.entries(byMonth).map(([month, items]) => (
             <div key={month}>
-              <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
+              <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-tertiary)]">
                 {month}
               </p>
               <ul className="space-y-1.5">

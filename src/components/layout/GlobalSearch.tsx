@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { buildSearchIndex, filterSearchResults, type SearchResult } from '@config/searchIndex'
 import { useUserPreferences } from '@features/preferences'
@@ -24,6 +24,9 @@ export function GlobalSearch({
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const rootRef = useRef<HTMLDivElement>(null)
+  const inputId = useId()
+  const searchLabelId = useId()
+  const listboxId = useId()
 
   const index = useMemo(
     () => buildSearchIndex(hobbyTabLabel, hobbyPassion),
@@ -31,6 +34,7 @@ export function GlobalSearch({
   )
 
   const results = useMemo(() => filterSearchResults(query, index), [query, index])
+  const showResults = open && query.trim().length > 0
 
   useEffect(() => {
     setActiveIndex(0)
@@ -71,14 +75,25 @@ export function GlobalSearch({
 
   return (
     <div ref={rootRef} className={cn('relative', className)}>
-      <label className="relative block">
-        <span className="sr-only">Search Seldom</span>
+      <label className="relative block" htmlFor={inputId}>
+        <span id={searchLabelId} className="sr-only">
+          Search Seldom
+        </span>
         <IconSearch
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
           aria-hidden
         />
         <input
+          id={inputId}
           type="search"
+          role="combobox"
+          aria-expanded={showResults}
+          aria-controls={showResults ? listboxId : undefined}
+          aria-labelledby={searchLabelId}
+          aria-activedescendant={
+            showResults && results[activeIndex] ? `${listboxId}-option-${activeIndex}` : undefined
+          }
+          aria-autocomplete="list"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value)
@@ -89,7 +104,7 @@ export function GlobalSearch({
           autoFocus={autoFocus}
           placeholder="Search tasks, goals, tabs…"
           className={cn(
-            'h-9 w-full rounded-[var(--radius-md)] border border-[var(--color-border)]',
+            'h-11 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] md:h-9',
             'bg-[var(--color-surface-overlay)] pl-9 pr-4 text-sm text-[var(--color-text-primary)]',
             'placeholder:text-[var(--color-text-tertiary)]',
             'transition-colors duration-200',
@@ -100,17 +115,24 @@ export function GlobalSearch({
         />
       </label>
 
-      {open && query.trim() && (
+      {showResults && (
         <div
+          id={listboxId}
           className="absolute left-0 right-0 top-[calc(100%+4px)] z-[400] overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] shadow-[var(--shadow-elevated)]"
           role="listbox"
         >
           {results.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-[var(--color-text-tertiary)]">No matches</p>
+            <div
+              role="option"
+              aria-disabled="true"
+              className="px-3 py-2 text-xs text-[var(--color-text-tertiary)]"
+            >
+              No matches
+            </div>
           ) : (
             <ul className="max-h-64 overflow-y-auto py-1">
               {results.map((result, i) => (
-                <li key={result.id}>
+                <li key={result.id} id={`${listboxId}-option-${i}`}>
                   <button
                     type="button"
                     role="option"
@@ -128,7 +150,7 @@ export function GlobalSearch({
                       {result.label}
                     </span>
                     {result.description && (
-                      <span className="text-[11px] text-[var(--color-text-tertiary)]">
+                      <span className="text-xs text-[var(--color-text-secondary)]">
                         {result.description}
                       </span>
                     )}

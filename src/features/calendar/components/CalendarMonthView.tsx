@@ -17,7 +17,7 @@ export function CalendarMonthView({ anchor, events }: CalendarMonthViewProps) {
       <h3 className="mb-3 text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
         {formatMonthYear(anchor)}
       </h3>
-      <div className="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <div className="mb-2 grid grid-cols-7 gap-1 text-center text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
           <span key={d}>{d}</span>
         ))}
@@ -40,19 +40,19 @@ export function CalendarMonthView({ anchor, events }: CalendarMonthViewProps) {
                 isToday && 'border-[var(--color-accent)]/40 bg-[var(--color-accent-subtle)]/20',
               )}
             >
-              <span className="text-[11px] font-medium tabular-nums text-[var(--color-text-secondary)]">
+              <span className="text-xs font-medium tabular-nums text-[var(--color-text-secondary)]">
                 {day.getDate()}
               </span>
               {dayEvents.slice(0, 2).map((e) => (
                 <p
                   key={e.id}
-                  className="mt-0.5 truncate rounded bg-[var(--color-surface-overlay)] px-1 text-[9px] text-[var(--color-text-primary)]"
+                  className="mt-0.5 truncate rounded bg-[var(--color-surface-overlay)] px-1 text-xs text-[var(--color-text-primary)]"
                 >
                   {e.title}
                 </p>
               ))}
               {dayEvents.length > 2 && (
-                <p className="text-[9px] text-[var(--color-text-tertiary)]">
+                <p className="text-xs text-[var(--color-text-tertiary)]">
                   +{dayEvents.length - 2} more
                 </p>
               )}

@@ -8,6 +8,10 @@ import type {
   CollegeDeadline,
   CollegeUserData,
   EssayDraftStatus,
+  FinancialAidItem,
+  FinancialPlanningStats,
+  CollegePriorityAction,
+  PlanningDeadline,
   Project,
   RecommendationLetter,
   Scholarship,
@@ -203,7 +207,7 @@ export function computeDashboardStats(
   const applicationsCompleted = colleges.filter(
     (c) => c.checklist.find((item) => item.key === 'application_submitted')?.completed,
   ).length
-  const upcomingDeadlineCount = getAllDeadlines(colleges).filter((d) => daysUntil(d.date) >= 0).length
+  const collegeDeadlineCount = getAllDeadlines(colleges).filter((d) => daysUntil(d.date) >= 0).length
 
   return {
     overallProgress: overallProgress(colleges),
@@ -214,8 +218,259 @@ export function computeDashboardStats(
     applicationsCompleted,
     averageAcceptanceRate: averageAcceptanceRate(colleges),
     upcomingDeadlineCount:
-      upcomingDeadlineCount + scholarships.filter((s) => daysUntil(s.deadline) >= 0).length,
+      collegeDeadlineCount + scholarships.filter((s) => daysUntil(s.deadline) >= 0).length,
   }
+}
+
+export function computeFinancialPlanningStats(
+  financialAid: FinancialAidItem[],
+  scholarships: Scholarship[],
+  colleges: College[],
+): FinancialPlanningStats {
+  const aidTotal = financialAid.length
+  const aidCompleted = financialAid.filter((i) => i.completed).length
+  const aidChecklistProgress = aidTotal > 0 ? Math.round((aidCompleted / aidTotal) * 100) : 0
+  const overdueAidCount = financialAid.filter(
+    (i) => !i.completed && i.dueDate && isOverdue(i.dueDate),
+  ).length
+
+  const upcomingAid = financialAid
+    .filter((i) => !i.completed && i.dueDate && daysUntil(i.dueDate) >= 0)
+    .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''))
+  const nextAid = upcomingAid[0]
+
+  const activeScholarships = scholarships.filter(
+    (s) => s.status !== 'awarded' && s.status !== 'rejected',
+  )
+  const scholarshipAwardedTotal = scholarships
+    .filter((s) => s.status === 'awarded')
+    .reduce((sum, s) => sum + s.amount, 0)
+  const scholarshipPendingTotal = activeScholarships.reduce((sum, s) => sum + s.amount, 0)
+  const nextScholarship = [...activeScholarships]
+    .filter((s) => daysUntil(s.deadline) >= 0)
+    .sort((a, b) => a.deadline.localeCompare(b.deadline))[0]
+
+  const listTuitionTotal = colleges.reduce((sum, c) => sum + (c.tuition ?? 0), 0)
+  const netGapEstimate = Math.max(0, listTuitionTotal - scholarshipAwardedTotal)
+
+  return {
+    aidChecklistProgress,
+    aidCompleted,
+    aidTotal,
+    overdueAidCount,
+    nextAidLabel: nextAid?.label ?? null,
+    nextAidDueDate: nextAid?.dueDate ?? null,
+    scholarshipAwardedTotal,
+    scholarshipPendingTotal,
+    scholarshipActiveCount: activeScholarships.length,
+    nextScholarshipName: nextScholarship?.name ?? null,
+    nextScholarshipDueDate: nextScholarship?.deadline ?? null,
+    listTuitionTotal,
+    netGapEstimate,
+  }
+}
+
+export function getUnifiedPlanningDeadlines(
+  colleges: College[],
+  financialAid: FinancialAidItem[],
+  scholarships: Scholarship[],
+  limit = 6,
+): PlanningDeadline[] {
+  const entries: PlanningDeadline[] = []
+
+  for (const d of getAllDeadlines(colleges)) {
+    entries.push({
+      id: `college-${d.id}`,
+      label: d.label,
+      date: d.date,
+      subtitle: d.collegeName,
+    })
+  }
+
+  for (const item of financialAid) {
+    if (item.completed || !item.dueDate) continue
+    entries.push({
+      id: `aid-${item.id}`,
+      label: item.label,
+      date: item.dueDate,
+      subtitle: 'Financial planning',
+    })
+  }
+
+  for (const s of scholarships) {
+    if (s.status === 'awarded' || s.status === 'rejected') continue
+    entries.push({
+      id: `sch-${s.id}`,
+      label: s.name,
+      date: s.deadline,
+      subtitle: `Scholarship · ${scholarshipStatusLabel(s.status)}`,
+    })
+  }
+
+  return entries
+    .filter((e) => daysUntil(e.date) >= 0)
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(0, limit)
+}
+
+export function getCollegePriorityActions(
+  colleges: College[],
+  activities: Activity[],
+  awards: Award[],
+  projects: Project[],
+  userData: CollegeUserData | null,
+  isSeniorMode: boolean,
+  limit = 5,
+): CollegePriorityAction[] {
+  const actions: CollegePriorityAction[] = []
+  const financialAid = userData?.financialAid ?? []
+  const scholarships = userData?.scholarships ?? []
+  const testScores = userData?.testScores
+  const deadlines = getUnifiedPlanningDeadlines(colleges, financialAid, scholarships, 12)
+
+  for (const d of deadlines) {
+    const days = daysUntil(d.date)
+    if (days < 0) {
+      actions.push({
+        id: `overdue-${d.id}`,
+        label: d.label,
+        detail: `Overdue · ${d.subtitle}`,
+        to: '/college/deadlines',
+        urgency: 'high',
+      })
+    } else if (days <= 7) {
+      actions.push({
+        id: `soon-${d.id}`,
+        label: d.label,
+        detail: `Due in ${days} day${days === 1 ? '' : 's'} · ${d.subtitle}`,
+        to: '/college/deadlines',
+        urgency: 'high',
+      })
+    }
+  }
+
+  if (colleges.length === 0) {
+    actions.push({
+      id: 'no-colleges',
+      label: 'Add schools to your list',
+      detail: isSeniorMode
+        ? 'Track deadlines and checklists per application'
+        : 'Start researching fit, cost, and visit dates',
+      to: '/college/schools',
+      urgency: 'high',
+    })
+  } else {
+    const weakest = [...colleges].sort((a, b) => collegeProgress(a) - collegeProgress(b))[0]
+    if (weakest && collegeProgress(weakest) < 100) {
+      const pending = weakest.checklist.filter((i) => !i.completed).length
+      actions.push({
+        id: `checklist-${weakest.id}`,
+        label: `${weakest.name} checklist`,
+        detail: `${pending} step${pending === 1 ? '' : 's'} left · ${collegeProgress(weakest)}% done`,
+        to: `/college/schools/${weakest.id}`,
+        urgency: collegeProgress(weakest) < 40 ? 'high' : 'medium',
+      })
+    }
+  }
+
+  const nextAid = financialAid
+    .filter((i) => !i.completed)
+    .sort((a, b) => {
+      if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate)
+      if (a.dueDate) return -1
+      if (b.dueDate) return 1
+      return 0
+    })[0]
+
+  if (nextAid) {
+    actions.push({
+      id: `aid-${nextAid.id}`,
+      label: nextAid.label,
+      detail: nextAid.dueDate
+        ? `Financial planning · due ${formatShortDate(nextAid.dueDate)}`
+        : 'Financial planning checklist',
+      to: '/college/planning',
+      urgency:
+        nextAid.dueDate && isOverdue(nextAid.dueDate)
+          ? 'high'
+          : nextAid.dueDate && daysUntil(nextAid.dueDate) <= 14
+            ? 'medium'
+            : 'low',
+    })
+  } else if (financialAid.length === 0) {
+    actions.push({
+      id: 'load-aid',
+      label: isSeniorMode ? 'Load financial aid checklist' : 'Start financial planning',
+      detail: 'FAFSA, scholarships, and cost tracking',
+      to: '/college/planning',
+      urgency: isSeniorMode ? 'medium' : 'low',
+    })
+  }
+
+  const experienceCount = activities.length + awards.length + projects.length
+  if (experienceCount === 0) {
+    actions.push({
+      id: 'add-experience',
+      label: 'Add activities & experience',
+      detail: 'Build your Common App activity list',
+      to: '/college/common-app?tab=experience',
+      urgency: 'medium',
+    })
+  } else if (!isSeniorMode && activities.length < 3) {
+    actions.push({
+      id: 'more-activities',
+      label: 'Expand your activity list',
+      detail: `${activities.length} activit${activities.length === 1 ? 'y' : 'ies'} logged — aim for depth across junior year`,
+      to: '/college/common-app?tab=experience',
+      urgency: 'low',
+    })
+  }
+
+  if (isSeniorMode) {
+    const essaysPending = colleges
+      .flatMap((c) => c.essays)
+      .filter((e) => e.status !== 'final' && e.status !== 'not_started').length
+    const draftsPending = (userData?.commonApp.personalStatementDrafts ?? []).filter(
+      (d) => d.status !== 'final',
+    ).length
+    if (essaysPending + draftsPending > 0) {
+      actions.push({
+        id: 'essays-in-progress',
+        label: 'Finish in-progress essays',
+        detail: `${essaysPending + draftsPending} draft${essaysPending + draftsPending === 1 ? '' : 's'} not marked final`,
+        to: '/college/common-app?tab=essays',
+        urgency: 'medium',
+      })
+    }
+
+    const satDone = testScores?.sat.status === 'completed' || testScores?.sat.status === 'sent'
+    const actDone = testScores?.act.status === 'completed' || testScores?.act.status === 'sent'
+    if (!satDone && !actDone) {
+      actions.push({
+        id: 'test-scores',
+        label: 'Log test scores',
+        detail: 'SAT/ACT status for applications and aid',
+        to: '/college/planning',
+        urgency: 'low',
+      })
+    }
+  }
+
+  const urgencyRank: Record<CollegePriorityAction['urgency'], number> = {
+    high: 0,
+    medium: 1,
+    low: 2,
+  }
+
+  const seen = new Set<string>()
+  return actions
+    .sort((a, b) => urgencyRank[a.urgency] - urgencyRank[b.urgency])
+    .filter((a) => {
+      if (seen.has(a.id)) return false
+      seen.add(a.id)
+      return true
+    })
+    .slice(0, limit)
 }
 
 export function buildTimeline(
@@ -300,6 +555,30 @@ export function buildTimeline(
       subtitle: `Personal statement · ${essayStatusLabel(draft.status)}`,
       category: 'essay',
       entityId: draft.id,
+    })
+  }
+
+  for (const item of userData.financialAid) {
+    if (item.completed || !item.dueDate) continue
+    entries.push({
+      id: `aid-${item.id}`,
+      date: item.dueDate,
+      title: item.label,
+      subtitle: 'Financial planning',
+      category: 'deadline',
+      entityId: item.id,
+    })
+  }
+
+  for (const s of userData.scholarships) {
+    if (s.status === 'awarded' || s.status === 'rejected') continue
+    entries.push({
+      id: `sch-${s.id}`,
+      date: s.deadline,
+      title: s.name,
+      subtitle: `Scholarship · ${scholarshipStatusLabel(s.status)}`,
+      category: 'deadline',
+      entityId: s.id,
     })
   }
 

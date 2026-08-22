@@ -67,7 +67,7 @@ export function OnboardingChatPanel({
     <>
       {showProgressBar && (
         <div className="mb-3">
-          <div className="mb-1 flex items-center justify-between text-[10px] text-[var(--color-text-tertiary)]">
+          <div className="mb-1 flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
             <span>{progressLabel}</span>
             <span>{progressCaption ?? `${progress}%`}</span>
           </div>
@@ -126,7 +126,7 @@ export function OnboardingChatPanel({
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => void submitAnswer(option)}
-                    className="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-[10px] text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
+                    className="rounded-full border border-[var(--color-border)] px-2.5 py-1 text-xs text-[var(--color-text-secondary)] transition-colors hover:border-[var(--color-accent)]/40 hover:text-[var(--color-accent-muted)] disabled:opacity-50"
                   >
                     {option}
                   </button>

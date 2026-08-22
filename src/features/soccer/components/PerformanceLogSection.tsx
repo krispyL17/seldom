@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
 import { Panel, PanelActionLink } from '@components/ui/Panel'
+import { deleteError, updateError } from '@lib/userFacingError'
 import { MatchLogForm } from '../matches/components/MatchLogForm'
 import { useSoccerMatches } from '../matches/hooks/useSoccerMatches'
 import type { CreateSoccerMatchInput, SoccerMatch } from '../matches/types'
@@ -11,7 +12,7 @@ import { TrainingSessionForm } from '../training/components/TrainingSessionForm'
 import { useTrainingSessions } from '../training/hooks/useTrainingSessions'
 import type { CreateTrainingSessionInput, TrainingSession } from '../training/types'
 import { useAthleteDevelopment } from '../hooks/useAthleteDevelopment'
-import { resolveSessionTabLabel, isOrphanedSessionCategory } from '../utils/sessionTabCategory'
+import { resolveSessionSkillsDisplay } from '../training/components/SkillChecklist'
 import { cn } from '@lib/utils'
 import { formatMinutesDuration } from '@lib/formatDuration'
 import { formatShortDate } from '../utils'
@@ -47,7 +48,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
   } = useSoccerMatches()
 
   const { development } = useAthleteDevelopment()
-  const customTabs = development.customTabs
+  const skills = development.skills
 
   const [sessionModalOpen, setSessionModalOpen] = useState(false)
   const [editingSession, setEditingSession] = useState<TrainingSession | null>(null)
@@ -98,7 +99,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
     try {
       await deleteSession(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete session')
+      alert(deleteError('this session', err))
     }
   }
 
@@ -107,7 +108,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
     try {
       await deleteMatch(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete game')
+      alert(deleteError('this game', err))
     }
   }
 
@@ -117,11 +118,11 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
     closeSessionModal()
   }
 
-  async function clearOrphanedCategory(session: TrainingSession) {
+  async function clearLegacySessionLabel(session: TrainingSession) {
     try {
-      await updateSession(session.id, { tab_category: null })
+      await updateSession(session.id, { tab_category: null, skills_trained: [] })
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to clear category')
+      alert(updateError('this label', err))
     }
   }
 
@@ -159,6 +160,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
             : `${sessions.length} session${sessions.length === 1 ? '' : 's'} · ${matches.length} game${matches.length === 1 ? '' : 's'}`
         }
         fillHeight={compact}
+        scrollCap={compact}
         className={cn(compact && 'min-h-0 flex-1')}
         action={
           <div className="flex shrink-0 items-center gap-2">
@@ -191,9 +193,12 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
           <ul className="space-y-1">
             {entries.map((entry) =>
               entry.kind === 'session' ? (
+                (() => {
+                  const display = resolveSessionSkillsDisplay(entry.session, skills)
+                  return (
                 <li
                   key={`session-${entry.session.id}`}
-                  className="flex items-center justify-between gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1.5 text-[11px]"
+                  className="flex items-center justify-between gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1.5 text-xs"
                 >
                   <div className="min-w-0 truncate text-[var(--color-text-secondary)]">
                     <span className="font-medium text-[var(--color-accent-muted)]">Session</span>
@@ -201,24 +206,24 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
                     <span
                       className={cn(
                         'font-medium',
-                        isOrphanedSessionCategory(entry.session.position_played, customTabs)
+                        display.orphaned
                           ? 'text-[var(--color-warning)]'
                           : 'text-[var(--color-text-primary)]',
                       )}
                     >
-                      {resolveSessionTabLabel(entry.session.position_played, customTabs)}
+                      {display.label}
                     </span>
                     {' · '}
                     {formatMinutesDuration(entry.session.duration_min)} · {entry.session.intensity}/10 ·{' '}
                     {formatShortDate(entry.session.session_date)}
                   </div>
                   <div className="flex shrink-0 gap-1">
-                    {isOrphanedSessionCategory(entry.session.position_played, customTabs) && (
+                    {display.orphaned && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-[10px] text-[var(--color-warning)]"
-                        onClick={() => void clearOrphanedCategory(entry.session)}
+                        className="h-9 min-h-10 px-3 text-xs text-[var(--color-warning)]"
+                        onClick={() => void clearLegacySessionLabel(entry.session)}
                       >
                         Clear
                       </Button>
@@ -226,7 +231,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-[10px]"
+                      className="h-9 min-h-10 px-3 text-xs"
                       onClick={() => openEditSession(entry.session)}
                     >
                       Edit
@@ -234,17 +239,19 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-[10px]"
+                      className="h-9 min-h-10 px-3 text-xs"
                       onClick={() => void handleDeleteSession(entry.session.id)}
                     >
                       Del
                     </Button>
                   </div>
                 </li>
+                  )
+                })()
               ) : (
                 <li
                   key={`game-${entry.match.id}`}
-                  className="flex items-center justify-between gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1.5 text-[11px]"
+                  className="flex items-center justify-between gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1.5 text-xs"
                 >
                   <div className="min-w-0 truncate text-[var(--color-text-secondary)]">
                     <span className="font-medium text-[var(--color-warning)]">Game</span>
@@ -262,7 +269,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-[10px]"
+                      className="h-9 min-h-10 px-3 text-xs"
                       onClick={() => openEditGame(entry.match)}
                     >
                       Edit
@@ -270,7 +277,7 @@ export function PerformanceLogSection({ className, compact = false }: Performanc
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-[10px]"
+                      className="h-9 min-h-10 px-3 text-xs"
                       onClick={() => void handleDeleteGame(entry.match.id)}
                     >
                       Del

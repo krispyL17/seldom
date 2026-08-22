@@ -24,7 +24,7 @@ export function BasicInfoSection({ college }: BasicInfoSectionProps) {
         <DataRow label="Application type" value={college.applicationType} />
       </div>
       <div className="mt-3">
-        <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
           Major(s)
         </p>
         <div className="flex flex-wrap gap-1.5">

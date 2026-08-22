@@ -6,19 +6,15 @@ interface CollegePageShellProps {
   className?: string
 }
 
-/** Viewport-fitted college tab content — no page scroll. */
+/** College tab content — panels expand; CollegeLayout tab shell scrolls when needed. */
 export function CollegePageShell({ children, className }: CollegePageShellProps) {
-  return (
-    <div className={cn('college-page-fit flex h-full min-h-0 flex-col gap-2 overflow-hidden', className)}>
-      {children}
-    </div>
-  )
+  return <div className={cn('college-page-fit flex flex-col gap-2', className)}>{children}</div>
 }
 
 interface CollegePageGridProps {
   children: ReactNode
   columns?: 1 | 2 | 3
-  rows?: 1 | 2 | 3
+  rows?: 1 | 2 | 3 | 4
   className?: string
 }
 
@@ -26,11 +22,12 @@ export function CollegePageGrid({ children, columns = 2, rows = 2, className }: 
   return (
     <div
       className={cn(
-        'college-page-grid min-h-0 flex-1',
+        'college-page-grid',
         columns === 1 && 'college-page-grid--1col',
         columns === 3 && 'college-page-grid--3col',
         rows === 1 && 'college-page-grid--1row',
         rows === 3 && 'college-page-grid--3row',
+        rows === 4 && 'college-page-grid--4row',
         className,
       )}
     >
@@ -44,10 +41,10 @@ interface CollegeScrollRegionProps {
   className?: string
 }
 
-/** Internal scroll for long lists inside a fixed tab. */
+/** Long tab sections — expand with content (tab shell scrolls). */
 export function CollegeScrollRegion({ children, className }: CollegeScrollRegionProps) {
   return (
-    <div className={cn('college-scroll-region min-h-0 flex-1 overflow-y-auto pr-1', className)}>
+    <div className={cn('college-scroll-region pr-1', className)}>
       {children}
     </div>
   )

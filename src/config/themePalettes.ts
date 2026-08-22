@@ -3,7 +3,7 @@ import { isCustomThemePalette } from '@/types/userPreferences'
 
 /** Gradient stops cycled across sidebar tabs in order. */
 export const PALETTE_GRADIENT_STOPS: Record<'classic' | 'sunset' | 'ocean', readonly string[]> = {
-  classic: ['#5a8fd4', '#6b6794', '#8b87b8'],
+  classic: ['#2dd4bf', '#fbbf24', '#fb7185'],
   sunset: ['#d4726a', '#e8956a', '#f2b8c6'],
   ocean: ['#3d7dd4', '#5b6bb5', '#7b5ba8'],
 }
@@ -32,7 +32,7 @@ export const THEME_PALETTE_OPTIONS: {
   label: string
   description: string
 }[] = [
-  { id: 'classic', label: 'Classic', description: 'Neutral charcoal with blue accents' },
+  { id: 'classic', label: 'Classic', description: 'Midnight field — teal, amber, coral' },
   { id: 'sunset', label: 'Sunset', description: 'Soft red → orange → pink' },
   { id: 'ocean', label: 'Ocean', description: 'Blue → purple gradient' },
 ]
@@ -98,6 +98,16 @@ function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+/** Complement for paired UI accents (e.g. junior / senior phase toggle). */
+export function complementaryHex(hex: string): string {
+  const { r, g, b } = hexToRgb(hex)
+  return rgbToHex({ r: 255 - r, g: 255 - g, b: 255 - b })
+}
+
+export function withHexAlpha(hex: string, alpha: number): string {
+  return withAlpha(hex, alpha)
+}
+
 /** Sample a color along gradient stops at position t ∈ [0, 1]. */
 export function sampleGradient(stops: readonly string[], t: number): string {
   if (stops.length === 0) return '#888888'
@@ -140,48 +150,129 @@ export function resolveNavTabColor(
   return defaults[navId] ?? stops[0]
 }
 
+/** Faint ledger accents derived from a nav bookmark color (dashboard panel headers). */
+export function bookmarkPanelAccents(bookmarkHex: string): {
+  rule: string
+  mark: string
+  heading: string
+} {
+  return {
+    rule: withAlpha(bookmarkHex, 0.38),
+    mark: withAlpha(bookmarkHex, 0.72),
+    heading: bookmarkHex,
+  }
+}
+
 function resolveAppearance(appearance: ThemeAppearance): 'dark' | 'light' {
   if (appearance === 'light') return 'light'
   if (appearance === 'dark') return 'dark'
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
+/** Resolved brightness for accent derivation (exported for tab accent scoping). */
+export function resolveThemeMode(appearance: ThemeAppearance): 'dark' | 'light' {
+  return resolveAppearance(appearance)
+}
+
+function normalizeHex(hex: string): string {
+  return hex.trim().toLowerCase()
+}
+
+/** Accent tokens derived from a sidebar bookmark color. */
+export function bookmarkAccentTokens(
+  bookmarkHex: string,
+  mode: 'dark' | 'light',
+): {
+  accent: string
+  accentMuted: string
+  accentHover: string
+  accentSubtle: string
+} {
+  const rgb = hexToRgb(bookmarkHex)
+  const black = { r: 0, g: 0, b: 0 }
+  const accent = rgbToHex(mix(rgb, black, mode === 'dark' ? 0.22 : 0.28))
+  const accentMuted = bookmarkHex
+  const accentHover = rgbToHex(mix(hexToRgb(accent), rgb, 0.42))
+  const accentSubtle = withAlpha(bookmarkHex, mode === 'dark' ? 0.14 : 0.12)
+
+  return { accent, accentMuted, accentHover, accentSubtle }
+}
+
+/** CSS variables for tab-scoped accent + panel ledger tints from a bookmark color. */
+export function bookmarkAccentScopeVars(
+  bookmarkHex: string,
+  mode: 'dark' | 'light',
+): Record<string, string> {
+  const accents = bookmarkAccentTokens(bookmarkHex, mode)
+  const panel = bookmarkPanelAccents(bookmarkHex)
+  return {
+    '--color-accent': accents.accent,
+    '--color-accent-muted': accents.accentMuted,
+    '--color-accent-hover': accents.accentHover,
+    '--color-accent-subtle': accents.accentSubtle,
+    '--panel-accent-rule': panel.rule,
+    '--panel-accent-mark': panel.mark,
+    '--panel-heading': panel.heading,
+  }
+}
+
+export function navTabColorsMatch(a: string, b: string): boolean {
+  return normalizeHex(a) === normalizeHex(b)
+}
+
+/** Whether a tab route should remap default (Today) accents to its bookmark color. */
+export function shouldScopeTabAccent(
+  navId: string,
+  tabColor: string,
+  homeColor: string,
+  defaultHomeColor: string,
+): boolean {
+  if (navId === 'home') {
+    return !navTabColorsMatch(tabColor, defaultHomeColor)
+  }
+  return !navTabColorsMatch(tabColor, homeColor)
+}
+
 const CLASSIC_DARK: ThemeTokens = {
-  '--color-surface-base': '#0c0c0d',
-  '--color-surface-raised': '#141416',
-  '--color-surface-overlay': '#1c1c1f',
-  '--color-surface-elevated': '#262628',
-  '--color-accent': '#3d3a5c',
-  '--color-accent-muted': '#6b6794',
-  '--color-accent-hover': '#4a466c',
-  '--color-accent-subtle': 'rgba(61, 58, 92, 0.16)',
-  '--color-brand': '#5a8fd4',
-  '--color-brand-muted': '#7aa8e0',
-  '--color-brand-bg': 'rgba(90, 143, 212, 0.1)',
-  '--color-text-primary': '#ececee',
-  '--color-text-secondary': '#9a9a9f',
-  '--color-text-tertiary': '#636366',
-  '--color-border': 'rgba(255, 255, 255, 0.07)',
-  '--color-border-strong': 'rgba(255, 255, 255, 0.12)',
+  '--color-surface-base': '#080b12',
+  '--color-surface-raised': '#0f141f',
+  '--color-surface-overlay': '#151c2b',
+  '--color-surface-elevated': '#1c2638',
+  '--color-accent': '#0d9488',
+  '--color-accent-muted': '#2dd4bf',
+  '--color-accent-hover': '#14b8a6',
+  '--color-accent-subtle': 'rgba(45, 212, 191, 0.14)',
+  '--color-brand': '#fbbf24',
+  '--color-brand-muted': '#fcd34d',
+  '--color-brand-bg': 'rgba(251, 191, 36, 0.12)',
+  '--color-text-primary': '#eef2f8',
+  '--color-text-secondary': '#94a3b8',
+  '--color-text-tertiary': '#8898ae',
+  '--color-border': 'rgba(148, 163, 184, 0.1)',
+  '--color-border-strong': 'rgba(148, 163, 184, 0.16)',
+  '--color-surface-base-gradient':
+    'radial-gradient(ellipse 120% 70% at 50% -15%, rgba(45, 212, 191, 0.07) 0%, transparent 55%), radial-gradient(ellipse 70% 50% at 100% 100%, rgba(251, 191, 36, 0.04) 0%, transparent 50%)',
 }
 
 const CLASSIC_LIGHT: ThemeTokens = {
-  '--color-surface-base': '#f4f4f5',
+  '--color-surface-base': '#f4f7fb',
   '--color-surface-raised': '#ffffff',
-  '--color-surface-overlay': '#ebebed',
-  '--color-surface-elevated': '#e0e0e3',
-  '--color-accent': '#343652',
-  '--color-accent-muted': '#5c5a78',
-  '--color-accent-hover': '#424064',
-  '--color-accent-subtle': 'rgba(52, 54, 82, 0.12)',
-  '--color-brand': '#3d7dd4',
-  '--color-brand-muted': '#5a94e0',
-  '--color-brand-bg': 'rgba(61, 125, 212, 0.08)',
-  '--color-text-primary': '#1a1a1c',
-  '--color-text-secondary': '#5c5c60',
-  '--color-text-tertiary': '#8e8e93',
-  '--color-border': 'rgba(0, 0, 0, 0.08)',
-  '--color-border-strong': 'rgba(0, 0, 0, 0.14)',
+  '--color-surface-overlay': '#e8eef6',
+  '--color-surface-elevated': '#dce6f2',
+  '--color-accent': '#0f766e',
+  '--color-accent-muted': '#14b8a6',
+  '--color-accent-hover': '#0d9488',
+  '--color-accent-subtle': 'rgba(20, 184, 166, 0.12)',
+  '--color-brand': '#d97706',
+  '--color-brand-muted': '#f59e0b',
+  '--color-brand-bg': 'rgba(217, 119, 6, 0.1)',
+  '--color-text-primary': '#0f172a',
+  '--color-text-secondary': '#475569',
+  '--color-text-tertiary': '#5c6b80',
+  '--color-border': 'rgba(15, 23, 42, 0.08)',
+  '--color-border-strong': 'rgba(15, 23, 42, 0.14)',
+  '--color-surface-base-gradient':
+    'radial-gradient(ellipse 100% 60% at 50% -10%, rgba(20, 184, 166, 0.08) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(217, 119, 6, 0.05) 0%, transparent 45%)',
 }
 
 function buildTokensFromStops(stops: readonly string[], mode: 'dark' | 'light'): ThemeTokens {

@@ -162,6 +162,39 @@ export interface FinancialAidItem {
   dueDate: string | null
 }
 
+export interface FinancialPlanningStats {
+  aidChecklistProgress: number
+  aidCompleted: number
+  aidTotal: number
+  overdueAidCount: number
+  nextAidLabel: string | null
+  nextAidDueDate: string | null
+  scholarshipAwardedTotal: number
+  scholarshipPendingTotal: number
+  scholarshipActiveCount: number
+  nextScholarshipName: string | null
+  nextScholarshipDueDate: string | null
+  listTuitionTotal: number
+  netGapEstimate: number
+}
+
+export interface PlanningDeadline {
+  id: string
+  label: string
+  date: string
+  subtitle: string
+}
+
+export type PriorityActionUrgency = 'high' | 'medium' | 'low'
+
+export interface CollegePriorityAction {
+  id: string
+  label: string
+  detail: string
+  to: string
+  urgency: PriorityActionUrgency
+}
+
 export interface RecommendationLetter {
   id: string
   recommender: string

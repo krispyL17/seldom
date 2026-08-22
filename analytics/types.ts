@@ -13,6 +13,51 @@ export interface AnalyticsKpi {
   value: string | number
   unit?: string
   trend?: 'up' | 'down' | 'neutral'
+  /** Change vs prior period (e.g. +2 sessions). */
+  delta?: number | null
+  deltaLabel?: string
+  /** Recent values for inline sparkline (typically last 7 days or weeks). */
+  sparkline?: number[]
+}
+
+export interface PersonalRecord {
+  id: string
+  label: string
+  value: string
+  detail?: string
+  isRecent?: boolean
+}
+
+export interface StreakStat {
+  id: string
+  label: string
+  count: number
+  unit: string
+}
+
+export interface SuggestedAction {
+  title: string
+  description: string
+  href: string
+  duration?: string
+}
+
+export type WeekHeadlineTone = 'strong' | 'mixed' | 'quiet' | 'urgent'
+
+export interface WeekHeadline {
+  tone: WeekHeadlineTone
+  adjective: string
+  sentence: string
+}
+
+export interface PulseSummary {
+  trainingSessions: number
+  journalDays: number
+  openTasks: number
+  overdueTasks: number
+  collegeApps: number
+  collegeProgress: number
+  message: string
 }
 
 export interface GymLog {

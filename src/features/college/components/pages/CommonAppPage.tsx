@@ -15,18 +15,17 @@ import { generateId } from '../../utils'
 type Tab = ExperienceTab | 'descriptions' | 'essays'
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'activities', label: 'Activities' },
-  { id: 'awards', label: 'Awards' },
-  { id: 'projects', label: 'Projects' },
+  { id: 'experience', label: 'Experience' },
   { id: 'descriptions', label: 'App Descriptions' },
   { id: 'essays', label: 'Essays' },
   { id: 'resume', label: 'Résumé' },
 ]
 
 const LEGACY_TAB_MAP: Record<string, Tab> = {
-  activities: 'activities',
-  awards: 'awards',
-  projects: 'projects',
+  experience: 'experience',
+  activities: 'experience',
+  awards: 'experience',
+  projects: 'experience',
   resume: 'resume',
   essays: 'essays',
   'activity-descriptions': 'descriptions',
@@ -39,7 +38,7 @@ const LEGACY_TAB_MAP: Record<string, Tab> = {
 
 function parseTab(value: string | null): Tab {
   if (value && LEGACY_TAB_MAP[value]) return LEGACY_TAB_MAP[value]
-  return 'activities'
+  return 'experience'
 }
 
 export function CommonAppPage() {
@@ -74,9 +73,9 @@ export function CommonAppPage() {
   return (
     <CollegePageShell>
       <div className="flex shrink-0 flex-wrap items-center gap-2">
-        <p className="text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="text-xs text-[var(--color-text-tertiary)]">
           {isSeniorMode
-            ? 'Activities, essays, and résumé — everything for your Common Application in one place.'
+            ? 'Experience, essays, and résumé — everything for your Common Application in one place.'
             : 'Build your activity list, brainstorm essays, and prep descriptions before application season.'}
         </p>
         <PreviewBadge />
@@ -95,10 +94,8 @@ export function CommonAppPage() {
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden">
-        {(tab === 'activities' || tab === 'awards' || tab === 'projects' || tab === 'resume') && (
-          <ExperienceWorkspacePanel tab={tab} />
-        )}
+      <div className="min-h-0 flex-1">
+        {(tab === 'experience' || tab === 'resume') && <ExperienceWorkspacePanel tab={tab} />}
 
         {tab === 'descriptions' && (
           <Panel fillHeight title="Activity Descriptions" subtitle="150-character Common App versions">
@@ -166,7 +163,7 @@ function ActivityDescriptionEditor({
         placeholder="150-character Common App description…"
       />
       <div className="mt-1 flex items-center justify-between">
-        <span className="text-[10px] text-[var(--color-text-tertiary)]">{text.length}/150</span>
+        <span className="text-xs text-[var(--color-text-tertiary)]">{text.length}/150</span>
         <Button size="sm" variant="secondary" onClick={() => onSave(text)}>
           Save
         </Button>

@@ -15,6 +15,8 @@ export function AnalyticsKpiRow({ kpis }: AnalyticsKpiRowProps) {
           value={kpi.value}
           unit={kpi.unit}
           trend={kpi.trend}
+          deltaLabel={kpi.deltaLabel}
+          sparkline={kpi.sparkline}
         />
       ))}
     </div>

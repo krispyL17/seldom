@@ -1,16 +1,13 @@
 import type { TrainingSession } from '@features/soccer/training/types'
 import { TRAINING_MOOD_LABELS } from '@features/soccer/training/types'
-import type { CustomPerformanceTab } from '@features/soccer/athlete/types'
-import { resolveSessionTabLabel } from '@features/soccer/utils/sessionTabCategory'
+import type { TrainingSkill } from '@features/soccer/athlete/types'
+import { resolveSessionSkillsDisplay } from '@features/soccer/training/components/SkillChecklist'
 import { formatMinutesDuration } from '@lib/formatDuration'
 
-/** Short headline for dashboard (category + duration). */
-export function sessionHeadline(
-  session: TrainingSession,
-  customTabs: CustomPerformanceTab[] = [],
-): string {
-  const category = resolveSessionTabLabel(session.position_played, customTabs)
-  return `${category} · ${formatMinutesDuration(session.duration_min)}`
+/** Short headline for dashboard (skills + duration). */
+export function sessionHeadline(session: TrainingSession, skills: TrainingSkill[] = []): string {
+  const { label } = resolveSessionSkillsDisplay(session, skills)
+  return `${label} · ${formatMinutesDuration(session.duration_min)}`
 }
 
 /** 2–3 word tagline from notes or session feel. */

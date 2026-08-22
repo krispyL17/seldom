@@ -1,7 +1,7 @@
-import type { Goal } from '@features/goals/types'
+import type { Goal, Milestone } from '@features/goals/types'
 import type { Task } from '@features/tasks/types'
 
-export type CalendarEventSource = 'task' | 'goal'
+export type CalendarEventSource = 'task' | 'goal' | 'milestone'
 
 export interface CalendarEvent {
   id: string
@@ -12,19 +12,50 @@ export interface CalendarEvent {
   category?: string | null
   completed?: boolean
   href: string
+  goalId?: string
+  milestoneId?: string
+}
+
+/** Parse calendar timestamps without UTC date-only drift (YYYY-MM-DD → local noon). */
+export function parseCalendarInstant(at: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(at)) {
+    return new Date(`${at}T12:00:00`)
+  }
+  return new Date(at)
 }
 
 export function taskToCalendarEvent(task: Task): CalendarEvent | null {
   if (!task.deadline || task.completed) return null
+  const at = /^\d{4}-\d{2}-\d{2}$/.test(task.deadline)
+    ? `${task.deadline}T12:00:00`
+    : task.deadline
   return {
     id: `task-${task.id}`,
     source: 'task',
     title: task.title,
-    at: task.deadline,
+    at,
     allDay: !task.deadline.includes('T') || task.deadline.endsWith('T00:00:00'),
     category: task.category,
     completed: task.completed,
     href: '/tasks',
+  }
+}
+
+export function milestoneToCalendarEvent(goal: Goal, milestone: Milestone): CalendarEvent | null {
+  if (!milestone.target_date || milestone.completed || goal.status !== 'active') return null
+  const at = milestone.target_date.includes('T')
+    ? milestone.target_date
+    : `${milestone.target_date}T12:00:00`
+  return {
+    id: `milestone-${goal.id}-${milestone.id}`,
+    source: 'milestone',
+    title: milestone.title,
+    at,
+    allDay: !milestone.target_date.includes('T'),
+    category: goal.category,
+    href: '/goals',
+    goalId: goal.id,
+    milestoneId: milestone.id,
   }
 }
 
@@ -34,7 +65,7 @@ export function goalToCalendarEvent(goal: Goal): CalendarEvent | null {
     id: `goal-${goal.id}`,
     source: 'goal',
     title: goal.title,
-    at: goal.target_date.includes('T') ? goal.target_date : `${goal.target_date}T09:00:00`,
+    at: goal.target_date.includes('T') ? goal.target_date : `${goal.target_date}T12:00:00`,
     allDay: !goal.target_date.includes('T'),
     category: goal.category,
     href: '/goals',
@@ -48,10 +79,26 @@ export function buildCalendarEvents(tasks: Task[], goals: Goal[]): CalendarEvent
     if (e) events.push(e)
   }
   for (const goal of goals) {
+    for (const milestone of goal.milestones) {
+      const me = milestoneToCalendarEvent(goal, milestone)
+      if (me) events.push(me)
+    }
     const e = goalToCalendarEvent(goal)
     if (e) events.push(e)
   }
   return events.sort((a, b) => a.at.localeCompare(b.at))
+}
+
+/** Events strictly after the current week (from next Monday onward). */
+export function eventsAfterWeek(events: CalendarEvent[], weekDays: Date[]): CalendarEvent[] {
+  if (weekDays.length === 0) return []
+  const lastDay = weekDays[weekDays.length - 1]!
+  const cutoff = endOfDay(lastDay)
+  return events.filter((e) => parseCalendarInstant(e.at).getTime() > cutoff.getTime())
+}
+
+export function getWeekDaysPlusOne(anchor: Date): Date[] {
+  return [...getWeekDays(anchor), addDays(getWeekDays(anchor)[6]!, 1)]
 }
 
 export function startOfDay(d: Date): Date {
@@ -82,13 +129,13 @@ export function isSameDay(a: Date, b: Date): boolean {
 
 export function formatEventTime(at: string, allDay: boolean): string {
   if (allDay) return 'All day'
-  const date = new Date(at)
+  const date = parseCalendarInstant(at)
   if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
 }
 
 export function formatEventDate(at: string): string {
-  const date = new Date(at)
+  const date = parseCalendarInstant(at)
   if (Number.isNaN(date.getTime())) return at.slice(0, 10)
   return date.toLocaleDateString(undefined, {
     weekday: 'short',
@@ -119,12 +166,12 @@ export function getMonthGrid(anchor: Date): Date[] {
 }
 
 export function eventsOnDay(events: CalendarEvent[], day: Date): CalendarEvent[] {
-  return events.filter((e) => isSameDay(new Date(e.at), day))
+  return events.filter((e) => isSameDay(parseCalendarInstant(e.at), day))
 }
 
 export function eventsInRange(events: CalendarEvent[], start: Date, end: Date): CalendarEvent[] {
   return events.filter((e) => {
-    const t = new Date(e.at).getTime()
+    const t = parseCalendarInstant(e.at).getTime()
     return t >= start.getTime() && t <= end.getTime()
   })
 }

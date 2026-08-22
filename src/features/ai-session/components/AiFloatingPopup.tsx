@@ -92,14 +92,14 @@ export function AiFloatingPopup() {
               <h2 id="ai-floating-title" className="truncate text-xs font-semibold text-[var(--color-text-primary)]">
                 {session.label}
               </h2>
-              <p className="truncate text-[10px] text-[var(--color-text-tertiary)]">
+              <p className="truncate text-xs text-[var(--color-text-tertiary)]">
                 {isBusy ? 'Working on your request…' : 'Tap return to open the full view'}
               </p>
             </div>
           </div>
           <Link
             to={returnPath}
-            className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-2 py-1 text-[10px] font-medium text-white hover:bg-[var(--color-accent-hover)]"
+            className="shrink-0 rounded-[var(--radius-sm)] bg-[var(--color-accent)] px-2 py-1 text-xs font-medium text-white hover:bg-[var(--color-accent-hover)]"
           >
             Return
           </Link>
@@ -118,7 +118,7 @@ export function AiFloatingPopup() {
               <li
                 key={key}
                 className={cn(
-                  'max-w-[92%] rounded-[var(--radius-md)] px-2.5 py-2 text-[11px] leading-relaxed',
+                  'max-w-[92%] rounded-[var(--radius-md)] px-2.5 py-2 text-xs leading-relaxed',
                   role === 'user'
                     ? 'ml-auto bg-[var(--color-accent)]/25 text-[var(--color-text-primary)]'
                     : 'mr-auto bg-[var(--color-surface-overlay)] text-[var(--color-text-secondary)]',
@@ -129,7 +129,7 @@ export function AiFloatingPopup() {
             )
           })}
           {isBusy && (
-            <li className="mr-auto rounded-[var(--radius-md)] bg-[var(--color-surface-overlay)] px-2.5 py-2 text-[10px] text-[var(--color-text-tertiary)]">
+            <li className="mr-auto rounded-[var(--radius-md)] bg-[var(--color-surface-overlay)] px-2.5 py-2 text-xs text-[var(--color-text-tertiary)]">
               Seldom AI is typing…
             </li>
           )}

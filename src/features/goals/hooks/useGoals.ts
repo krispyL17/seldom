@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { goalService } from '@services/database/goals'
 import type { CreateGoalInput, Goal, UpdateGoalInput } from '@features/goals/types'
 
@@ -22,7 +23,7 @@ export function useGoals() {
       setGoals(data)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load goals')
+      setError(loadError('your goals', err))
     } finally {
       setLoading(false)
     }

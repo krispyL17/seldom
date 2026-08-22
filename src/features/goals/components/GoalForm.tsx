@@ -4,6 +4,7 @@ import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
 import { DateTimeField } from '@components/ui/DateTimeField'
 import { ProgressBar } from '@components/ui/ProgressBar'
+import { saveError } from '@lib/userFacingError'
 import type { CreateGoalInput, Goal, GoalStatus, Milestone } from '@features/goals/types'
 import { GOAL_CATEGORIES, GOAL_STATUSES } from '@features/goals/types'
 import { createMilestoneId } from '@features/goals/utils'
@@ -11,7 +12,7 @@ import { cn } from '@lib/utils'
 
 interface GoalFormProps {
   goal?: Goal | null
-  onSubmit: (input: CreateGoalInput) => Promise<void>
+  onSubmit: (input: CreateGoalInput, options?: { milestonesAsTasks?: boolean }) => Promise<void>
   onCancel: () => void
 }
 
@@ -25,6 +26,7 @@ export function GoalForm({ goal, onSubmit, onCancel }: GoalFormProps) {
   const [category, setCategory] = useState('')
   const [status, setStatus] = useState<GoalStatus>('active')
   const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [milestonesAsTasks, setMilestonesAsTasks] = useState(false)
   const [newMilestone, setNewMilestone] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -45,9 +47,25 @@ export function GoalForm({ goal, onSubmit, onCancel }: GoalFormProps) {
     if (!trimmed) return
     setMilestones((prev) => [
       ...prev,
-      { id: createMilestoneId(), title: trimmed, completed: false, target_date: null },
+      {
+        id: createMilestoneId(),
+        title: trimmed,
+        completed: false,
+        target_date: milestonesAsTasks ? targetDate || null : null,
+      },
     ])
     setNewMilestone('')
+  }
+
+  function handleMilestonesAsTasksToggle(checked: boolean) {
+    setMilestonesAsTasks(checked)
+    if (!checked) return
+    setMilestones((prev) =>
+      prev.map((m) => ({
+        ...m,
+        target_date: m.target_date ?? (targetDate || null),
+      })),
+    )
   }
 
   function removeMilestone(id: string) {
@@ -65,17 +83,20 @@ export function GoalForm({ goal, onSubmit, onCancel }: GoalFormProps) {
 
     setSubmitting(true)
     try {
-      await onSubmit({
-        title: title.trim(),
-        description: description.trim() || undefined,
-        target_date: targetDate || null,
-        progress,
-        milestones,
-        category: category.trim() || undefined,
-        status,
-      })
+      await onSubmit(
+        {
+          title: title.trim(),
+          description: description.trim() || undefined,
+          target_date: targetDate || null,
+          progress,
+          milestones,
+          category: category.trim() || undefined,
+          status,
+        },
+        !isEdit && milestonesAsTasks ? { milestonesAsTasks: true } : undefined,
+      )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save goal')
+      setError(saveError('this goal', err))
     } finally {
       setSubmitting(false)
     }
@@ -177,10 +198,24 @@ export function GoalForm({ goal, onSubmit, onCancel }: GoalFormProps) {
         </label>
 
         {milestones.length > 0 && (
-          <ul className="space-y-1.5 rounded-[var(--radius-md)] border border-[var(--color-border)] p-2">
+          <ul className="space-y-2 rounded-[var(--radius-md)] border border-[var(--color-border)] p-2">
             {milestones.map((m) => (
-              <li key={m.id} className="flex items-center justify-between gap-2 text-xs">
-                <span className="text-[var(--color-text-primary)]">{m.title}</span>
+              <li key={m.id} className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="min-w-0 flex-1 text-[var(--color-text-primary)]">{m.title}</span>
+                <input
+                  type="date"
+                  value={m.target_date?.slice(0, 10) ?? ''}
+                  onChange={(e) => {
+                    const value = e.target.value || null
+                    setMilestones((prev) =>
+                      prev.map((row) =>
+                        row.id === m.id ? { ...row, target_date: value } : row,
+                      ),
+                    )
+                  }}
+                  className={cn(selectClass, 'h-8 w-auto shrink-0 px-2 text-xs')}
+                  aria-label={`Due date for ${m.title}`}
+                />
                 <button
                   type="button"
                   onClick={() => removeMilestone(m.id)}
@@ -210,6 +245,21 @@ export function GoalForm({ goal, onSubmit, onCancel }: GoalFormProps) {
             Add
           </Button>
         </div>
+
+        {!isEdit && milestones.length > 0 && (
+          <label className="flex items-start gap-2 pt-1">
+            <input
+              type="checkbox"
+              checked={milestonesAsTasks}
+              onChange={(e) => handleMilestonesAsTasksToggle(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded accent-[var(--color-accent)]"
+            />
+            <span className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
+              Add all milestones as tasks — each uses its due date, or the goal deadline until you
+              assign one.
+            </span>
+          </label>
+        )}
       </div>
 
       {error && (

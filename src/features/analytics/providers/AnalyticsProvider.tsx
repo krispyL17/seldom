@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { buildAnalyticsDashboard } from '@analytics/aggregations'
 import type { AnalyticsDashboard, AnalyticsSyncPayload } from '@analytics/types'
 import { computeDashboardStats, overallProgress, collegeProgress } from '@features/college/utils'
@@ -133,9 +134,17 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
         })
       }
 
-      setError(partialErrors.length === results.length ? 'Failed to load analytics data' : null)
+      const firstRejected = results.find((r) => r.status === 'rejected')
+      setError(
+        partialErrors.length === results.length
+          ? loadError(
+              'analytics',
+              firstRejected?.status === 'rejected' ? firstRejected.reason : undefined,
+            )
+          : null,
+      )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load analytics')
+      setError(loadError('analytics', err))
     } finally {
       setLoading(false)
       setRefreshing(false)

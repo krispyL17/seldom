@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Panel } from '@components/ui/Panel'
+import { ActivityHeatmap } from '@components/ui/ActivityHeatmap'
 import { MiniBarChart } from '@components/ui/MiniBarChart'
 import type { ChartSeries } from '@analytics/types'
 
@@ -15,6 +16,8 @@ interface ChartPanelProps {
   fullWidth?: boolean
   action?: ReactNode
   formatValue?: (value: number) => string
+  /** Use heatmap grid instead of bar chart (journal consistency). */
+  variant?: 'bars' | 'heatmap'
 }
 
 export function ChartPanel({
@@ -28,6 +31,7 @@ export function ChartPanel({
   fullWidth,
   action,
   formatValue,
+  variant = 'bars',
 }: ChartPanelProps) {
   const hasPoints = series.data.length > 0
   const hasValues = series.data.some((v) => v > 0)
@@ -38,6 +42,8 @@ export function ChartPanel({
         <p className="text-xs text-[var(--color-text-tertiary)]">{emptyMessage}</p>
       ) : !hasValues ? (
         <p className="text-xs text-[var(--color-text-tertiary)]">{zeroMessage}</p>
+      ) : variant === 'heatmap' ? (
+        <ActivityHeatmap data={series.data} labels={series.labels} activeColor={color} />
       ) : (
         <>
           <MiniBarChart
@@ -50,7 +56,7 @@ export function ChartPanel({
             showValues
           />
           {series.unit && (
-            <p className="mt-2 text-[10px] text-[var(--color-text-tertiary)]">Unit: {series.unit}</p>
+            <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">Unit: {series.unit}</p>
           )}
         </>
       )}

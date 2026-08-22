@@ -41,7 +41,7 @@ export function AiRecommendationsPanel() {
                 </span>
                 <div>
                   <p className="text-xs font-medium text-[var(--color-text-primary)]">{rec.title}</p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-[var(--color-text-secondary)]">
+                  <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-secondary)]">
                     {rec.description}
                   </p>
                 </div>
@@ -53,7 +53,7 @@ export function AiRecommendationsPanel() {
       <button
         type="button"
         onClick={scrollToAdvisor}
-        className="mt-3 w-full text-center text-[11px] text-[var(--color-accent-muted)] hover:underline"
+        className="mt-3 w-full text-center text-xs text-[var(--color-accent-muted)] hover:underline"
       >
         Ask the advisor →
       </button>

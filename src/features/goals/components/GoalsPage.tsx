@@ -3,10 +3,13 @@ import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
 import { useOpenCreateFromQuery } from '@hooks/useOpenCreateFromQuery'
+import { deleteError, updateError } from '@lib/userFacingError'
 import { GoalCard } from './GoalCard'
 import { GoalForm } from './GoalForm'
 import { GoalToolbar } from './GoalToolbar'
 import { useGoals } from '../hooks/useGoals'
+import { useTasks } from '@features/tasks/hooks/useTasks'
+import { milestoneTaskNote } from '../milestoneTasks'
 import type { Goal, Milestone } from '../types'
 import {
   DEFAULT_GOAL_FILTERS,
@@ -14,7 +17,7 @@ import {
   type GoalSortDirection,
   type GoalSortField,
 } from '../types'
-import { filterGoals, getUniqueCategories, sortGoals } from '../utils'
+import { calculateGoalProgress, filterGoals, getUniqueCategories, sortGoals } from '../utils'
 
 export function GoalsPage() {
   const {
@@ -28,6 +31,7 @@ export function GoalsPage() {
     restoreGoal,
     reload,
   } = useGoals()
+  const { createTask } = useTasks()
 
   const [filters, setFilters] = useState<GoalFilters>(DEFAULT_GOAL_FILTERS)
   const [sortField, setSortField] = useState<GoalSortField>('target_date')
@@ -64,7 +68,7 @@ export function GoalsPage() {
     try {
       await deleteGoal(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete goal')
+      alert(deleteError('this goal', err))
     }
   }
 
@@ -72,7 +76,7 @@ export function GoalsPage() {
     try {
       await archiveGoal(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to archive goal')
+      alert(updateError('this goal', err))
     }
   }
 
@@ -80,32 +84,59 @@ export function GoalsPage() {
     try {
       await restoreGoal(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to restore goal')
+      alert(updateError('this goal', err))
     }
   }
 
-  async function handleMilestonesChange(
-    id: string,
-    milestones: Milestone[],
-    progress: number,
-  ) {
+  async function handleMilestonesChange(id: string, milestones: Milestone[]) {
+    const goal = goals.find((g) => g.id === id)
+    if (!goal) return
+    const progress = calculateGoalProgress(goal.progress, milestones)
+    const allDone = milestones.length > 0 && milestones.every((m) => m.completed)
     try {
-      const status = progress >= 100 ? 'completed' : undefined
       await updateGoal(id, {
         milestones,
         progress,
-        ...(status ? { status } : {}),
+        status: allDone ? 'completed' : goal.status,
       })
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update milestones')
+      alert(updateError('this goal', err))
     }
   }
 
-  async function handleFormSubmit(input: Parameters<typeof createGoal>[0]) {
+  async function handleMilestoneToTask(goal: Goal, milestone: Milestone) {
+    try {
+      await createTask({
+        title: milestone.title,
+        deadline: milestone.target_date,
+        goal_id: goal.id,
+        notes: milestoneTaskNote(milestone.id),
+        category: goal.category ?? undefined,
+      })
+    } catch (err) {
+      alert(updateError('task from milestone', err))
+    }
+  }
+
+  async function handleFormSubmit(
+    input: Parameters<typeof createGoal>[0],
+    options?: { milestonesAsTasks?: boolean },
+  ) {
     if (editingGoal) {
       await updateGoal(editingGoal.id, input)
     } else {
-      await createGoal(input)
+      const created = await createGoal(input)
+      if (options?.milestonesAsTasks && created.milestones.length > 0) {
+        for (const milestone of created.milestones) {
+          await createTask({
+            title: milestone.title,
+            deadline: milestone.target_date ?? created.target_date,
+            goal_id: created.id,
+            notes: milestoneTaskNote(milestone.id),
+            category: created.category ?? undefined,
+          })
+        }
+      }
     }
     closeModal()
   }
@@ -148,12 +179,8 @@ export function GoalsPage() {
       {error && (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 p-4">
           <p className="text-sm text-[var(--color-danger)]">{error}</p>
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            Run the SQL migration in Supabase Dashboard → SQL Editor (
-            <code>supabase/migrations/002_goals.sql</code>).
-          </p>
-          <Button variant="secondary" size="sm" className="mt-3" onClick={reload}>
-            Retry
+          <Button variant="secondary" size="sm" className="mt-3" onClick={() => void reload()}>
+            Try again
           </Button>
         </div>
       )}
@@ -184,6 +211,7 @@ export function GoalsPage() {
                 onRestore={handleRestore}
                 onDelete={handleDelete}
                 onMilestonesChange={handleMilestonesChange}
+                onMilestoneToTask={handleMilestoneToTask}
               />
             </li>
           ))}

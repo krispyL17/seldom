@@ -6,8 +6,8 @@ import { GoalLinkSelect } from '@components/goals/GoalLinkSelect'
 import { useUserPreferences } from '@features/preferences'
 import { sportUsesSideTracking } from '../../athlete/sideTracking'
 import { SideBalanceFields } from '../../athlete/components/AthleteSideProfileCard'
-import { SessionTabSelect } from './SessionTabSelect'
-import { decodeSessionTabCategory } from '../../utils/sessionTabCategory'
+import { SkillChecklist } from './SkillChecklist'
+import { saveError } from '@lib/userFacingError'
 import type { CreateTrainingSessionInput, TrainingMood, TrainingSession } from '../types'
 import { defaultSideBalance, ENERGY_LABELS, TRAINING_MOODS, TRAINING_MOOD_LABELS } from '../types'
 import { todayIsoDate } from '../utils'
@@ -26,7 +26,8 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
 
   const [sessionDate, setSessionDate] = useState(todayIsoDate())
   const [durationMin, setDurationMin] = useState(60)
-  const [tabCategory, setTabCategory] = useState<string | null>(null)
+  const [skillsTrained, setSkillsTrained] = useState<string[]>([])
+  const [teamSession, setTeamSession] = useState(false)
   const [highPoints, setHighPoints] = useState('')
   const [workOn, setWorkOn] = useState('')
   const [intensity, setIntensity] = useState(6)
@@ -44,7 +45,8 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
     if (!session) return
     setSessionDate(session.session_date)
     setDurationMin(session.duration_min)
-    setTabCategory(decodeSessionTabCategory(session.position_played).tabKey)
+    setSkillsTrained(session.skills_trained ?? [])
+    setTeamSession(session.team_session ?? false)
     setHighPoints(session.high_points ?? '')
     setWorkOn(session.work_on ?? '')
     setIntensity(session.intensity)
@@ -73,7 +75,8 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
       await onSubmit({
         session_date: sessionDate,
         duration_min: durationMin,
-        tab_category: tabCategory,
+        skills_trained: skillsTrained,
+        team_session: teamSession,
         intensity,
         mood,
         energy_level: energyLevel,
@@ -84,7 +87,7 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
         side_balance: trackSides && trackSideBalance ? { dominant_pct: dominantPct, weak_pct: weakPct } : null,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save session')
+      setError(saveError('this session', err))
     } finally {
       setSubmitting(false)
     }
@@ -111,7 +114,22 @@ export function TrainingSessionForm({ session, onSubmit, onCancel }: TrainingSes
         />
       </div>
 
-      <SessionTabSelect value={tabCategory} onChange={setTabCategory} />
+      <SkillChecklist value={skillsTrained} onChange={setSkillsTrained} />
+
+      <label className="flex items-start gap-2 text-xs text-[var(--color-text-secondary)]">
+        <input
+          type="checkbox"
+          checked={teamSession}
+          onChange={(e) => setTeamSession(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          Team / group session
+          <span className="block text-xs text-[var(--color-text-tertiary)]">
+            Skill credit is halved — less focused on individual skills
+          </span>
+        </span>
+      </label>
 
       <Textarea
         label="High points"

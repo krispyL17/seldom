@@ -32,7 +32,7 @@ export function CalendarWeekView({ anchor, events }: CalendarWeekViewProps) {
               isToday && 'border-[var(--color-accent)]/40 bg-[var(--color-accent-subtle)]/30',
             )}
           >
-            <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
               {day.toLocaleDateString(undefined, { weekday: 'short' })}
             </p>
             <p className="text-sm font-semibold tabular-nums text-[var(--color-text-primary)]">
@@ -40,17 +40,17 @@ export function CalendarWeekView({ anchor, events }: CalendarWeekViewProps) {
             </p>
             <ul className="mt-2 space-y-1.5">
               {dayEvents.length === 0 ? (
-                <li className="text-[10px] text-[var(--color-text-tertiary)]">—</li>
+                <li className="text-xs text-[var(--color-text-tertiary)]">—</li>
               ) : (
                 dayEvents.map((e) => (
                   <li
                     key={e.id}
                     className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1.5"
                   >
-                    <p className="truncate text-[11px] font-medium text-[var(--color-text-primary)]">
+                    <p className="truncate text-xs font-medium text-[var(--color-text-primary)]">
                       {e.title}
                     </p>
-                    <p className="text-[10px] text-[var(--color-text-tertiary)]">
+                    <p className="text-xs text-[var(--color-text-tertiary)]">
                       {formatEventTime(e.at, e.allDay)} · {e.source}
                     </p>
                   </li>

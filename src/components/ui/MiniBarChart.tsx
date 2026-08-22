@@ -1,4 +1,5 @@
 import { cn } from '@lib/utils'
+import { Sparkline } from './Sparkline'
 
 interface MiniBarChartProps {
   data: number[]
@@ -59,7 +60,7 @@ export function MiniBarChart({
     <div className={cn('flex gap-1.5', className)}>
       {useAxis && (
         <div
-          className="flex w-9 shrink-0 flex-col justify-between py-0.5 text-right text-[9px] tabular-nums leading-none text-[var(--color-text-tertiary)]"
+          className="flex w-9 shrink-0 flex-col justify-between py-0.5 text-right text-xs tabular-nums leading-none text-[var(--color-text-tertiary)]"
           style={{ height }}
           aria-hidden
         >
@@ -84,7 +85,7 @@ export function MiniBarChart({
             >
               {showValues && value > 0 && (
                 <span
-                  className="mb-0.5 max-w-full truncate px-0.5 text-[8px] font-medium tabular-nums text-[var(--color-text-secondary)]"
+                  className="mb-0.5 max-w-full truncate px-0.5 text-xs font-medium tabular-nums text-[var(--color-text-secondary)]"
                   title={format(value)}
                 >
                   {format(value)}
@@ -113,7 +114,7 @@ export function MiniBarChart({
             {chartLabels.map((label, i) => (
               <span
                 key={`${label}-${i}`}
-                className="min-w-0 flex-1 truncate text-center text-[9px] text-[var(--color-text-tertiary)]"
+                className="min-w-0 flex-1 truncate text-center text-xs text-[var(--color-text-tertiary)]"
                 title={label}
               >
                 {label}
@@ -131,11 +132,25 @@ interface MetricTileProps {
   value: string | number
   unit?: string
   trend?: 'up' | 'down' | 'neutral'
+  deltaLabel?: string
+  sparkline?: number[]
+  sparklineColor?: string
+  size?: 'sm' | 'md'
   className?: string
 }
 
 /** Compact stat tile for analytics grid */
-export function MetricTile({ label, value, unit, trend, className }: MetricTileProps) {
+export function MetricTile({
+  label,
+  value,
+  unit,
+  trend,
+  deltaLabel,
+  sparkline,
+  sparklineColor,
+  size = 'md',
+  className,
+}: MetricTileProps) {
   const trendColor =
     trend === 'up'
       ? 'text-[var(--color-success)]'
@@ -146,25 +161,47 @@ export function MetricTile({ label, value, unit, trend, className }: MetricTileP
   return (
     <div
       className={cn(
-        'rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3',
+        'rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)]',
+        size === 'sm' ? 'p-1.5' : 'p-3',
         className,
       )}
     >
-      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p
+        className={cn(
+          'font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]',
+          size === 'sm' ? 'text-xs leading-tight' : 'text-xs',
+        )}
+      >
         {label}
       </p>
-      <p className="mt-1 text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">
-        {value}
-        {unit && (
-          <span className="ml-0.5 text-xs font-normal text-[var(--color-text-secondary)]">
-            {unit}
-          </span>
+      <div className="flex items-end justify-between gap-1">
+        <p
+          className={cn(
+            'font-semibold tabular-nums text-[var(--color-text-primary)]',
+            size === 'sm' ? 'mt-0.5 text-sm leading-none' : 'mt-1 text-lg',
+          )}
+        >
+          {value}
+          {unit && (
+            <span
+              className={cn(
+                'ml-0.5 font-normal text-[var(--color-text-secondary)]',
+                size === 'sm' ? 'text-xs' : 'text-xs',
+              )}
+            >
+              {unit}
+            </span>
+          )}
+        </p>
+        {sparkline && sparkline.length > 0 && (
+          <Sparkline data={sparkline} color={sparklineColor} height={size === 'sm' ? 16 : 20} />
         )}
-      </p>
-      {trend && (
-        <span className={cn('text-[10px]', trendColor)}>
+      </div>
+      {(trend || deltaLabel) && (
+        <p className={cn('mt-0.5 text-xs tabular-nums', trendColor)}>
           {trend === 'up' ? '↑' : trend === 'down' ? '↓' : '—'}
-        </span>
+          {deltaLabel ? ` ${deltaLabel}` : ''}
+        </p>
       )}
     </div>
   )

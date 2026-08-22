@@ -162,9 +162,9 @@ export function AssistantChatProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch('/api/health')
         const data = (await res.json()) as { hint?: string }
-        setConnectionHint(data.hint ?? 'Could not reach the assistant API.')
+        setConnectionHint(data.hint ?? 'Could not reach Seldom AI. Try again in a moment.')
       } catch {
-        setConnectionHint('Could not reach the assistant API.')
+        setConnectionHint('Could not reach Seldom AI. Try again in a moment.')
       }
     }
   }, [session?.access_token])
@@ -326,7 +326,7 @@ export function AssistantChatProvider({ children }: { children: ReactNode }) {
               streamAssistantReply(
                 conversationId!,
                 assistantMsg.id,
-                `**AI is offline right now**\n\n${formatUserError(err, 'The assistant could not reach Ollama.')}\n\nIf you are the app host, start Ollama locally or keep your tunnel running and check **Settings → AI**. Everyone else can try again later — no setup is required on your device.`,
+                `**AI is offline**\n\n${formatUserError(err, 'Seldom AI could not respond.')}\n\nTry again in a few minutes. If you host this app, check **Settings → AI status**.`,
               )
               return
             }
@@ -334,7 +334,7 @@ export function AssistantChatProvider({ children }: { children: ReactNode }) {
               streamAssistantReply(
                 conversationId!,
                 assistantMsg.id,
-                `Sorry — something went wrong.\n\n${formatUserError(err, 'The assistant could not complete that request.')}`,
+                `Sorry — that did not work.\n\n${formatUserError(err, 'Seldom AI could not complete that request.')}\n\nTry again, or start a new message if the problem continues.`,
               )
               return
             }

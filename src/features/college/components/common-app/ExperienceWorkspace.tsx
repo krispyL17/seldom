@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Button } from '@components/ui/Button'
-import { Modal } from '@components/ui/Modal'
+import { Modal, ModalFooter } from '@components/ui/Modal'
 import { Panel } from '@components/ui/Panel'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
@@ -18,7 +18,7 @@ import type {
 import { ACTIVITY_CATEGORIES, RESUME_TEMPLATES } from '../../types'
 import { formatDateRange, parseSkillsInput } from '../../utils'
 
-export type ExperienceTab = 'activities' | 'awards' | 'projects' | 'resume'
+export type ExperienceTab = 'experience' | 'resume'
 
 export function ExperienceWorkspacePanel({ tab }: { tab: ExperienceTab }) {
   const {
@@ -71,105 +71,110 @@ export function ExperienceWorkspacePanel({ tab }: { tab: ExperienceTab }) {
 
   return (
     <>
-      {tab === 'activities' && (
+      {tab === 'experience' && (
         <Panel
           fillHeight
-          title="Activities"
-          subtitle={`${activities.length} entries — structured for Common App`}
-          action={
-            <Button size="sm" onClick={() => setModal('activity')}>
-              <IconPlus /> Add
-            </Button>
-          }
+          title="Experience"
+          subtitle={`${activities.length} activities · ${awards.length} awards · ${projects.length} projects`}
         >
-          <ul className="space-y-3">
-            {activities.map((a) => (
-              <ActivityCard key={a.id} activity={a} onDelete={() => deleteActivity(a.id)} />
-            ))}
-          </ul>
-        </Panel>
-      )}
+          <div className="space-y-6">
+            <ExperienceSection
+              title="Activities"
+              subtitle="Structured for Common App"
+              empty="No activities yet."
+              isEmpty={activities.length === 0}
+              action={
+                <Button size="sm" onClick={() => setModal('activity')}>
+                  <IconPlus /> Add activity
+                </Button>
+              }
+            >
+              <ul className="space-y-3">
+                {activities.map((a) => (
+                  <ActivityCard key={a.id} activity={a} onDelete={() => deleteActivity(a.id)} />
+                ))}
+              </ul>
+            </ExperienceSection>
 
-      {tab === 'awards' && (
-        <Panel
-          fillHeight
-          title="Awards & Honors"
-          subtitle={`${awards.length} entries`}
-          action={
-            <Button size="sm" onClick={() => setModal('award')}>
-              <IconPlus /> Add
-            </Button>
-          }
-        >
-          <ul className="space-y-3">
-            {awards.map((a) => (
-              <li
-                key={a.id}
-                className="rounded-[var(--radius-sm)] border border-[var(--color-border)] p-3"
-              >
-                <div className="flex justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{a.name}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">
-                      {[a.organization, a.level, a.awardDate].filter(Boolean).join(' · ')}
-                    </p>
-                    {a.description && (
-                      <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{a.description}</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => deleteAward(a.id)}
-                    className="text-[10px] text-[var(--color-danger)] hover:underline"
+            <ExperienceSection
+              title="Awards & honors"
+              empty="No awards yet."
+              isEmpty={awards.length === 0}
+              action={
+                <Button size="sm" variant="secondary" onClick={() => setModal('award')}>
+                  <IconPlus /> Add award
+                </Button>
+              }
+            >
+              <ul className="space-y-3">
+                {awards.map((a) => (
+                  <li
+                    key={a.id}
+                    className="rounded-[var(--radius-sm)] border border-[var(--color-border)] p-3"
                   >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      )}
+                    <div className="flex justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">{a.name}</p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
+                          {[a.organization, a.level, a.awardDate].filter(Boolean).join(' · ')}
+                        </p>
+                        {a.description && (
+                          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{a.description}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteAward(a.id)}
+                        className="text-xs text-[var(--color-danger)] hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </ExperienceSection>
 
-      {tab === 'projects' && (
-        <Panel
-          fillHeight
-          title="Projects & Research"
-          subtitle={`${projects.length} entries`}
-          action={
-            <Button size="sm" onClick={() => setModal('project')}>
-              <IconPlus /> Add
-            </Button>
-          }
-        >
-          <ul className="space-y-3">
-            {projects.map((p) => (
-              <li
-                key={p.id}
-                className="rounded-[var(--radius-sm)] border border-[var(--color-border)] p-3"
-              >
-                <div className="flex justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--color-text-primary)]">{p.name}</p>
-                    <p className="text-xs text-[var(--color-text-tertiary)]">
-                      {p.myRole}
-                      {p.technologies.length > 0 && ` · ${p.technologies.join(', ')}`}
-                    </p>
-                    {p.description && (
-                      <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{p.description}</p>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => deleteProject(p.id)}
-                    className="text-[10px] text-[var(--color-danger)] hover:underline"
+            <ExperienceSection
+              title="Projects & research"
+              empty="No projects yet."
+              isEmpty={projects.length === 0}
+              action={
+                <Button size="sm" variant="secondary" onClick={() => setModal('project')}>
+                  <IconPlus /> Add project
+                </Button>
+              }
+            >
+              <ul className="space-y-3">
+                {projects.map((p) => (
+                  <li
+                    key={p.id}
+                    className="rounded-[var(--radius-sm)] border border-[var(--color-border)] p-3"
                   >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+                    <div className="flex justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">{p.name}</p>
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
+                          {p.myRole}
+                          {p.technologies.length > 0 && ` · ${p.technologies.join(', ')}`}
+                        </p>
+                        {p.description && (
+                          <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{p.description}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => deleteProject(p.id)}
+                        className="text-xs text-[var(--color-danger)] hover:underline"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </ExperienceSection>
+          </div>
         </Panel>
       )}
 
@@ -178,7 +183,7 @@ export function ExperienceWorkspacePanel({ tab }: { tab: ExperienceTab }) {
           <Panel fillHeight title="Résumé builder" subtitle="Select experiences & export">
             <div className="space-y-4">
               <div>
-                <p className="mb-2 text-[10px] font-medium uppercase text-[var(--color-text-tertiary)]">
+                <p className="mb-2 text-xs font-medium uppercase text-[var(--color-text-tertiary)]">
                   Template
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -224,7 +229,7 @@ export function ExperienceWorkspacePanel({ tab }: { tab: ExperienceTab }) {
 
           <div
             ref={printRef}
-            className="college-scroll-region print-resume min-h-0 overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4"
+            className="college-scroll-region print-resume rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-4"
           >
             <ResumePreview
               template={settings.template}
@@ -247,6 +252,43 @@ export function ExperienceWorkspacePanel({ tab }: { tab: ExperienceTab }) {
   )
 }
 
+function ExperienceSection({
+  title,
+  subtitle,
+  empty,
+  isEmpty,
+  action,
+  children,
+}: {
+  title: string
+  subtitle?: string
+  empty: string
+  isEmpty: boolean
+  action?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <section>
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-primary)]">
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="text-xs text-[var(--color-text-tertiary)]">{subtitle}</p>
+          )}
+        </div>
+        {action}
+      </div>
+      {isEmpty ? (
+        <p className="text-xs text-[var(--color-text-tertiary)]">{empty}</p>
+      ) : (
+        children
+      )}
+    </section>
+  )
+}
+
 function ActivityCard({ activity, onDelete }: { activity: Activity; onDelete: () => void }) {
   return (
     <li className="rounded-[var(--radius-sm)] border border-[var(--color-border)] p-3">
@@ -266,7 +308,7 @@ function ActivityCard({ activity, onDelete }: { activity: Activity; onDelete: ()
             <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{activity.description}</p>
           )}
           {(activity.weeklyHours || activity.weeksPerYear) && (
-            <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+            <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
               {activity.weeklyHours ?? '?'} hrs/wk · {activity.weeksPerYear ?? '?'} wks/yr
             </p>
           )}
@@ -274,7 +316,7 @@ function ActivityCard({ activity, onDelete }: { activity: Activity; onDelete: ()
         <button
           type="button"
           onClick={onDelete}
-          className="text-[10px] text-[var(--color-danger)] hover:underline"
+          className="text-xs text-[var(--color-danger)] hover:underline"
         >
           Remove
         </button>
@@ -297,7 +339,7 @@ function SelectionGroup({
   if (items.length === 0) return null
   return (
     <div>
-      <p className="mb-2 text-[10px] font-medium uppercase text-[var(--color-text-tertiary)]">{title}</p>
+      <p className="mb-2 text-xs font-medium uppercase text-[var(--color-text-tertiary)]">{title}</p>
       <ul className="space-y-1">
         {items.map((item) => (
           <li key={item.id}>
@@ -346,7 +388,7 @@ function ActivityFormModal({
   }
 
   return (
-    <Modal open={true} title="Add activity" onClose={onClose}>
+    <Modal open={true} title="Add activity" onClose={onClose} preventClose={saving}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <label className="block text-xs text-[var(--color-text-secondary)]">
@@ -367,9 +409,14 @@ function ActivityFormModal({
         <Input label="Role" value={role} onChange={(e) => setRole(e.target.value)} />
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
         <Input label="Skills (comma-separated)" value={skills} onChange={(e) => setSkills(e.target.value)} />
-        <Button type="submit" disabled={saving || !name.trim()}>
-          Save
-        </Button>
+        <ModalFooter>
+          <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button type="submit" size="sm" disabled={saving || !name.trim()}>
+            {saving ? 'Saving…' : 'Save activity'}
+          </Button>
+        </ModalFooter>
       </form>
     </Modal>
   )
@@ -400,15 +447,20 @@ function AwardFormModal({
   }
 
   return (
-    <Modal open={true} title="Add award" onClose={onClose}>
+    <Modal open={true} title="Add award" onClose={onClose} preventClose={saving}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <Input label="Organization" value={organization} onChange={(e) => setOrganization(e.target.value)} />
         <Input label="Level" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="School, State, National…" />
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
-        <Button type="submit" disabled={saving || !name.trim()}>
-          Save
-        </Button>
+        <ModalFooter>
+          <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button type="submit" size="sm" disabled={saving || !name.trim()}>
+            {saving ? 'Saving…' : 'Save award'}
+          </Button>
+        </ModalFooter>
       </form>
     </Modal>
   )
@@ -446,16 +498,21 @@ function ProjectFormModal({
   }
 
   return (
-    <Modal open={true} title="Add project" onClose={onClose}>
+    <Modal open={true} title="Add project" onClose={onClose} preventClose={saving}>
       <form onSubmit={handleSubmit} className="space-y-3">
         <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
         <Input label="My role" value={myRole} onChange={(e) => setMyRole(e.target.value)} />
         <Textarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
         <Input label="Technologies" value={technologies} onChange={(e) => setTechnologies(e.target.value)} />
         <Textarea label="Results" value={results} onChange={(e) => setResults(e.target.value)} rows={2} />
-        <Button type="submit" disabled={saving || !name.trim()}>
-          Save
-        </Button>
+        <ModalFooter>
+          <Button type="button" variant="secondary" size="sm" onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button type="submit" size="sm" disabled={saving || !name.trim()}>
+            {saving ? 'Saving…' : 'Save project'}
+          </Button>
+        </ModalFooter>
       </form>
     </Modal>
   )

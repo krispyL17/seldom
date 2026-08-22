@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { getSupabaseClient } from '@lib/supabase'
 import { goalService } from '@services/database/goals'
 import { soccerInsightService } from '@services/database/soccerInsights'
@@ -81,7 +82,7 @@ export function SoccerProvider({ children }: { children: ReactNode }) {
       setOnboardingComplete(Boolean(data.onboarding_completed_at))
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load performance profile')
+      setError(loadError('your performance profile', err))
     } finally {
       setLoading(false)
     }

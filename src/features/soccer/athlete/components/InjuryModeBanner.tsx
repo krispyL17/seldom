@@ -16,7 +16,7 @@ export function InjuryModeBanner({ compact }: InjuryModeBannerProps) {
     <div
       className={
         compact
-          ? 'rounded-[var(--radius-sm)] border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-2 py-1.5 text-[11px] text-[var(--color-danger)]'
+          ? 'rounded-[var(--radius-sm)] border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-2 py-1.5 text-xs text-[var(--color-danger)]'
           : 'rounded-[var(--radius-md)] border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 p-3'
       }
       role="alert"
@@ -32,7 +32,7 @@ export function InjuryModeBanner({ compact }: InjuryModeBannerProps) {
                 {injuryMode.reason ? ` Reason: ${injuryMode.reason}` : ''}
               </p>
               {injuryMode.aiSuggested && (
-                <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                   Suggested by Seldom AI based on your message.
                 </p>
               )}
@@ -43,7 +43,7 @@ export function InjuryModeBanner({ compact }: InjuryModeBannerProps) {
           {!compact && (
             <Link
               to="/soccer/recovery"
-              className="inline-flex h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 text-[11px] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
+              className="inline-flex h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
             >
               Recovery
             </Link>

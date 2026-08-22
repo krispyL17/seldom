@@ -65,7 +65,7 @@ export function JournalPanel() {
               className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3 transition-colors hover:border-[var(--color-border-strong)]"
             >
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--color-text-tertiary)]">
                   {new Date(`${entry.entry_date}T12:00:00`).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
@@ -77,7 +77,7 @@ export function JournalPanel() {
                 {entry.reflection ?? entry.wins ?? entry.tomorrows_focus ?? 'No reflection text'}
               </p>
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-[10px] text-[var(--color-text-tertiary)]">Energy</span>
+                <span className="text-xs text-[var(--color-text-tertiary)]">Energy</span>
                 <EnergyDots level={entry.energy_level} />
               </div>
             </li>

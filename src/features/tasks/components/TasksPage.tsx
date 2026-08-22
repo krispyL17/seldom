@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
 import { useOpenCreateFromQuery } from '@hooks/useOpenCreateFromQuery'
+import { deleteError, updateError } from '@lib/userFacingError'
 import { TaskForm } from './TaskForm'
 import { TaskItem } from './TaskItem'
 import { TaskToolbar } from './TaskToolbar'
@@ -27,6 +28,7 @@ export function TasksPage() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   const categories = useMemo(() => getUniqueCategories(tasks), [tasks])
+  const completedCount = useMemo(() => tasks.filter((task) => task.completed).length, [tasks])
 
   const visibleTasks = useMemo(() => {
     const filtered = filterTasks(tasks, filters)
@@ -55,7 +57,7 @@ export function TasksPage() {
     try {
       await deleteTask(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete task')
+      alert(deleteError('this task', err))
     }
   }
 
@@ -63,7 +65,7 @@ export function TasksPage() {
     try {
       await toggleComplete(id, completed)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to update task')
+      alert(updateError('this task', err))
     }
   }
 
@@ -103,6 +105,7 @@ export function TasksPage() {
         categories={categories}
         resultCount={visibleTasks.length}
         totalCount={tasks.length}
+        completedCount={completedCount}
       />
 
       {loading && (
@@ -114,12 +117,8 @@ export function TasksPage() {
       {error && (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 p-4">
           <p className="text-sm text-[var(--color-danger)]">{error}</p>
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            Make sure you ran the SQL migration in Supabase Dashboard → SQL Editor
-            (<code>supabase/migrations/001_tasks.sql</code>).
-          </p>
-          <Button variant="secondary" size="sm" className="mt-3" onClick={reload}>
-            Retry
+          <Button variant="secondary" size="sm" className="mt-3" onClick={() => void reload()}>
+            Try again
           </Button>
         </div>
       )}
@@ -127,13 +126,19 @@ export function TasksPage() {
       {!loading && !error && visibleTasks.length === 0 && (
         <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border-strong)] py-16 text-center">
           <p className="text-sm text-[var(--color-text-secondary)]">
-            {tasks.length === 0 ? 'No tasks yet. Create your first one.' : 'No tasks match your filters.'}
+            {tasks.length === 0
+              ? 'No tasks yet. Create your first one.'
+              : filters.status === 'active' && completedCount > 0
+                ? 'All caught up — nothing open right now.'
+                : filters.status === 'completed' && completedCount === 0
+                  ? 'No completed tasks yet.'
+                  : 'No tasks match your filters.'}
           </p>
-          {tasks.length === 0 && (
+          {tasks.length === 0 ? (
             <Button className="mt-4" onClick={openCreate}>
               Create task
             </Button>
-          )}
+          ) : null}
         </div>
       )}
 

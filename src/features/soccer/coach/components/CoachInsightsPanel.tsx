@@ -13,7 +13,7 @@ export function CoachInsightsPanel({ insights, isGenerating, onGenerate }: Coach
   return (
     <Panel title="Coach Recommendations" subtitle="Training · technical · tactical · development">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <p className="text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="text-xs text-[var(--color-text-tertiary)]">
           Generated from your sessions, matches, goals, and coaching research.
         </p>
         <Button size="sm" variant="secondary" onClick={onGenerate} disabled={isGenerating}>
@@ -30,7 +30,7 @@ export function CoachInsightsPanel({ insights, isGenerating, onGenerate }: Coach
             <div className="mb-2 flex items-center justify-between gap-2">
               <h3 className="text-xs font-semibold text-[var(--color-text-primary)]">{insight.title}</h3>
               {insight.updatedAt && (
-                <span className="text-[10px] text-[var(--color-text-tertiary)]">
+                <span className="text-xs text-[var(--color-text-tertiary)]">
                   {new Date(insight.updatedAt).toLocaleDateString()}
                 </span>
               )}

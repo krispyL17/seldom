@@ -59,7 +59,7 @@ export const DEFAULT_TASK_FILTERS: TaskFilters = {
   search: '',
   priority: 'all',
   category: 'all',
-  status: 'all',
+  status: 'active',
 }
 
 export const TASK_PRIORITY_ORDER: Record<TaskPriority, number> = {

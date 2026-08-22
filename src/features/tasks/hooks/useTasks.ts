@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { taskService } from '@services/database/tasks'
 import type { CreateTaskInput, Task, UpdateTaskInput } from '@features/tasks/types'
 
@@ -22,7 +23,7 @@ export function useTasks() {
       setTasks(data)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tasks')
+      setError(loadError('your tasks', err))
     } finally {
       setLoading(false)
     }

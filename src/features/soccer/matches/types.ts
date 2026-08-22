@@ -1,6 +1,6 @@
 export type GameResult = 'W' | 'D' | 'L'
 
-export type GameEventType = 'game' | 'scrim' | 'practice' | 'tournament'
+export type GameEventType = 'game' | 'scrim' | 'tournament'
 
 export interface SoccerMatch {
   id: string
@@ -36,7 +36,6 @@ export interface UpdateSoccerMatchInput extends Partial<CreateSoccerMatchInput> 
 export const EVENT_TYPE_LABELS: Record<GameEventType, string> = {
   game: 'Game',
   scrim: 'Scrimmage',
-  practice: 'Team practice',
   tournament: 'Tournament',
 }
 

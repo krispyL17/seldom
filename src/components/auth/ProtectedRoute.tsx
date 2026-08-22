@@ -17,9 +17,10 @@ export function ProtectedRoute() {
     return (
       <div className="flex min-h-dvh items-center justify-center p-6">
         <ErrorPanel
-          title="Session error"
+          title="Couldn't restore your session"
           message={sessionError}
           onRetry={() => window.location.reload()}
+          retryLabel="Refresh page"
         />
       </div>
     )

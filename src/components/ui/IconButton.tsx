@@ -24,7 +24,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         type="button"
         aria-label={label}
         className={cn(
-          'relative inline-flex h-9 w-9 items-center justify-center rounded-full',
+          'relative inline-flex h-10 w-10 min-h-10 min-w-10 items-center justify-center rounded-full',
           'text-[var(--color-text-secondary)] transition-colors duration-150',
           'hover:bg-[var(--color-surface-overlay)] hover:text-[var(--color-text-primary)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]',
@@ -37,7 +37,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
           <span
             className={cn(
               'absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full',
-              'bg-[var(--color-danger)] px-1 text-[9px] font-bold leading-none text-white',
+              'bg-[var(--color-danger)] px-1 text-xs font-bold leading-none text-white',
               'ring-2 ring-[var(--color-surface-base)]',
             )}
             aria-hidden

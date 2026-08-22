@@ -40,6 +40,13 @@ export interface CustomPerformanceTab {
   focusHint: string
 }
 
+/** User-editable skill tracked in session logs and the Skills heatmap. */
+export interface TrainingSkill {
+  id: string
+  label: string
+  slug: string
+}
+
 export interface KnowledgeImportChunk {
   id: string
   sourceFile: string
@@ -55,9 +62,13 @@ export interface AthleteDevelopmentState {
   sideProfile: AthleteSideProfile
   /** Unlocks the Gym sub-tab when true (set during performance onboarding). */
   gymEnabled: boolean
+  /** @deprecated migrated to skills */
   customTabs: CustomPerformanceTab[]
+  skills: TrainingSkill[]
+  skillsSeeded: boolean
+  /** @deprecated */
   customTabsPromptDismissed: boolean
-  /** User removed or declined sport focus tabs — do not auto-seed again. */
+  /** @deprecated */
   customTabsDisabled: boolean
   knowledgeImports: KnowledgeImportChunk[]
 }
@@ -92,6 +103,8 @@ export const DEFAULT_ATHLETE_DEVELOPMENT: AthleteDevelopmentState = {
   sideProfile: DEFAULT_SIDE_PROFILE,
   gymEnabled: false,
   customTabs: [],
+  skills: [],
+  skillsSeeded: false,
   customTabsPromptDismissed: false,
   customTabsDisabled: false,
   knowledgeImports: [],

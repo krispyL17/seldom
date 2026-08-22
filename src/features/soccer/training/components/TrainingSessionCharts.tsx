@@ -57,7 +57,7 @@ export function TrainingSessionCharts({ sessions }: TrainingSessionChartsProps) 
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
             Duration
           </p>
           <MiniBarChart
@@ -69,7 +69,7 @@ export function TrainingSessionCharts({ sessions }: TrainingSessionChartsProps) 
           />
         </div>
         <div>
-          <p className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
             Intensity
           </p>
           <MiniBarChart
@@ -82,7 +82,7 @@ export function TrainingSessionCharts({ sessions }: TrainingSessionChartsProps) 
         </div>
       </div>
 
-      <p className="mt-3 text-[11px] text-[var(--color-text-tertiary)]">
+      <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
         <Link to="/soccer/progression" className="text-[var(--color-accent-muted)] hover:underline">
           Open Stats tab
         </Link>{' '}

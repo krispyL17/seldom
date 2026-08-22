@@ -90,7 +90,7 @@ export function CollegeProfilePage() {
   const progress = collegeProgress(college)
   const tabClass = (active: boolean) =>
     cn(
-      'rounded-[var(--radius-sm)] px-2.5 py-1.5 text-[11px] font-medium transition-colors',
+      'rounded-[var(--radius-sm)] px-2.5 py-1.5 text-xs font-medium transition-colors',
       active
         ? 'bg-[var(--color-accent)] text-white'
         : 'text-[var(--color-text-tertiary)] hover:bg-[var(--color-surface-overlay)]',
@@ -103,7 +103,7 @@ export function CollegeProfilePage() {
           <div className="min-w-0">
             <Link
               to="/college/schools"
-              className="text-[10px] text-[var(--color-accent-muted)] hover:underline"
+              className="text-xs text-[var(--color-accent-muted)] hover:underline"
             >
               ← Schools
             </Link>
@@ -111,7 +111,7 @@ export function CollegeProfilePage() {
               <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{college.name}</h2>
               <StatusBadge status={college.status} />
             </div>
-            <p className="truncate text-[10px] text-[var(--color-text-secondary)]">
+            <p className="truncate text-xs text-[var(--color-text-secondary)]">
               {college.location}
               {college.acceptanceRate != null && ` · ${formatPercent(college.acceptanceRate)} acceptance`}
               {` · ${college.applicationType}`}
@@ -153,7 +153,7 @@ export function CollegeProfilePage() {
         ))}
       </div>
 
-      <div className="profile-tab-content min-h-0 flex-1 overflow-hidden">
+      <div className="profile-tab-content min-h-0 flex-1">
         {tab === 'details' && (
           <div className="profile-section-grid grid h-full min-h-0 grid-cols-1 gap-2 lg:grid-cols-2">
             <BasicInfoSection college={college} />

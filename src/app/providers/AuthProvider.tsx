@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import { isSupabaseConfigured } from '@config/env'
+import { getAuthErrorMessage } from '@lib/authErrors'
 import { authService } from '@services/auth'
 import type { AuthContextValue, SignInCredentials, SignUpCredentials } from '@/types/auth'
 
@@ -42,7 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setSession(initialSession)
       setUser(initialUser)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not restore session'
+      const message = getAuthErrorMessage(err)
       setSessionError(message)
     } finally {
       setLoading(false)

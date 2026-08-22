@@ -70,13 +70,13 @@ export function TaskItem({ task, onToggle, onEdit, onDelete }: TaskItemProps) {
             </p>
           )}
 
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[var(--color-text-tertiary)]">
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--color-text-tertiary)]">
             <span>{formatDeadline(task.deadline)}</span>
             <span>Est. {formatDuration(task.estimated_duration)}</span>
           </div>
 
           {task.notes && (
-            <p className="mt-2 line-clamp-1 text-[10px] italic text-[var(--color-text-tertiary)]">
+            <p className="mt-2 line-clamp-1 text-xs italic text-[var(--color-text-tertiary)]">
               {task.notes}
             </p>
           )}

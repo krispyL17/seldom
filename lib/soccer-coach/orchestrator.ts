@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { generateChatReply } from '../ai/chat.js'
+import { resolveModeMaxTokens } from '../ollama/limits.js'
 import { loadPromptConfig, type PromptConfig } from '../prompts/loader.js'
 import { retrieveMemories } from '../assistant/memory.js'
 import { assembleSoccerContext, formatSoccerContextBlock, resolvePlayerFirstName } from './context.js'
@@ -91,7 +92,7 @@ export async function handleCoachRequest(
   const reply = await generateChatReply(env, systemPrompt, userMessage, {
     contextBlocks,
     history,
-    maxTokens: mode === 'development' ? 2200 : 1800,
+    maxTokens: resolveModeMaxTokens(mode),
   })
 
   return {

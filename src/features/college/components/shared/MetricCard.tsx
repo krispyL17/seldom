@@ -30,14 +30,14 @@ export function MetricCard({
         className,
       )}
     >
-      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {label}
       </p>
       <p className={cn('mt-1 text-xl font-semibold tabular-nums', valueColors[variant])}>
         {value}
       </p>
       {subValue && (
-        <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">{subValue}</p>
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">{subValue}</p>
       )}
     </div>
   )

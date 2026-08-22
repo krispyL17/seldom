@@ -128,7 +128,7 @@ export function AssistantPage() {
             <h2 className="truncate text-sm font-semibold text-[var(--color-text-primary)]">
               {activeConversation?.title ?? 'Seldom AI'}
             </h2>
-            <p className="text-[11px] text-[var(--color-text-tertiary)]">
+            <p className="text-xs text-[var(--color-text-tertiary)]">
               {liveConnected
                 ? `Live · ${modeLabel}`
                 : connectionHint ?? 'Ollama offline — start Ollama and retry'}

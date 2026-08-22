@@ -67,7 +67,7 @@ export function EssaysSection({ college }: EssaysSectionProps) {
                     {essay.versions.map((version) => (
                       <li
                         key={version.id}
-                        className="flex items-center justify-between text-[10px] text-[var(--color-text-secondary)]"
+                        className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]"
                       >
                         <span>{version.label}</span>
                         <span className="tabular-nums text-[var(--color-text-tertiary)]">

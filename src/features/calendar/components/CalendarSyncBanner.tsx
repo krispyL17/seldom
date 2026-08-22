@@ -67,7 +67,7 @@ export function CalendarSyncBanner({ events }: CalendarSyncBannerProps) {
         </Button>
       </div>
       {message && (
-        <p className="mt-3 text-[11px] text-[var(--color-text-tertiary)]" role="status">
+        <p className="mt-3 text-xs text-[var(--color-text-tertiary)]" role="status">
           {message}
         </p>
       )}

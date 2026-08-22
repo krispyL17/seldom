@@ -56,9 +56,9 @@ export function GymPage() {
   }
 
   return (
-    <div className="perf-page-fit flex h-full min-h-0 flex-col gap-2 overflow-hidden">
+    <div className="perf-page-viewport perf-page-fit flex flex-col gap-1.5">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-        <p className="text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="text-xs text-[var(--color-text-tertiary)]">
           {logs.length} workout{logs.length === 1 ? '' : 's'} · {formatMinutesDuration(totalMinutes)} total
         </p>
         <Button onClick={() => setModalOpen(true)} size="sm" className="gap-1.5">
@@ -67,10 +67,10 @@ export function GymPage() {
         </Button>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-2 lg:grid-cols-2">
-        <Panel fillHeight title="Weekly volume" subtitle="Last 6 weeks" className="min-h-0">
+      <div className="perf-page-grid grid min-h-0 flex-1 grid-cols-1 gap-2 lg:grid-cols-2">
+        <Panel title="Weekly volume" subtitle="Last 6 weeks" fillHeight scrollCap>
           {weekly.length === 0 ? (
-            <p className="text-[11px] text-[var(--color-text-tertiary)]">Log a workout to see trends.</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">Log a workout to see trends.</p>
           ) : (
             <>
               <MiniBarChart
@@ -83,14 +83,14 @@ export function GymPage() {
                 showAxis
                 showValues
               />
-              <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+              <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                 Avg {Math.round(totalMinutes / Math.max(logs.length, 1))} min per session
               </p>
             </>
           )}
         </Panel>
 
-        <Panel fillHeight title="Recent workouts" subtitle={`${logs.length} logged`} className="min-h-0">
+        <Panel title="Recent workouts" subtitle={`${logs.length} logged`} fillHeight scrollCap>
           {logs.length === 0 ? (
             <div className="py-6 text-center">
               <p className="text-xs text-[var(--color-text-secondary)]">No gym sessions yet.</p>
@@ -114,11 +114,11 @@ export function GymPage() {
                         </span>
                       )}
                     </p>
-                    <p className="text-[10px] text-[var(--color-text-tertiary)]">
+                    <p className="text-xs text-[var(--color-text-tertiary)]">
                       {formatShortDate(log.session_date)}
                     </p>
                     {log.notes && (
-                      <p className="mt-1 text-[11px] text-[var(--color-text-secondary)]">{log.notes}</p>
+                      <p className="mt-1 text-xs text-[var(--color-text-secondary)]">{log.notes}</p>
                     )}
                   </div>
                   <Button variant="ghost" size="sm" className="shrink-0" onClick={() => void handleDelete(log.id)}>

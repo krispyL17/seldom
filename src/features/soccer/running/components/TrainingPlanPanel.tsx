@@ -67,7 +67,7 @@ export function TrainingPlanPanel({ runs, sessionCount, avgIntensity }: Training
                   <p className="text-sm font-semibold text-[var(--color-text-primary)]">
                     {plan.title}
                   </p>
-                  <p className="mt-0.5 text-[10px] uppercase tracking-wide text-[var(--color-text-tertiary)]">
+                  <p className="mt-0.5 text-xs uppercase tracking-wide text-[var(--color-text-tertiary)]">
                     {plan.source}
                   </p>
                 </div>
@@ -83,7 +83,7 @@ export function TrainingPlanPanel({ runs, sessionCount, avgIntensity }: Training
               <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-secondary)]">
                 {plan.description}
               </p>
-              <p className="mt-2 text-[10px] italic text-[var(--color-text-tertiary)]">
+              <p className="mt-2 text-xs italic text-[var(--color-text-tertiary)]">
                 Why this fits you: {plan.matchReason}
               </p>
             </li>

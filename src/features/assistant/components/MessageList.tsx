@@ -49,7 +49,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
         )}
         <p
           className={cn(
-            'mt-2 text-[10px] tabular-nums',
+            'mt-2 text-xs tabular-nums',
             isUser ? 'text-white/60' : 'text-[var(--color-text-tertiary)]',
           )}
         >

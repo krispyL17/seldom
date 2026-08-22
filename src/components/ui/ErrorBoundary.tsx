@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { boundaryErrorMessage } from '@lib/userFacingError'
 import { Button } from './Button'
 
 interface ErrorBoundaryProps {
@@ -29,17 +30,25 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.error) {
+      const title = this.props.title ?? 'Something went wrong'
+      const message = boundaryErrorMessage(
+        this.state.error,
+        'We could not load this section. Try again — if it keeps happening, refresh the page.',
+      )
+      const devDetail = import.meta.env.DEV ? this.state.error.message : null
+
       return (
         <div
           role="alert"
           className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/5 p-6 text-center"
         >
-          <p className="text-sm font-medium text-[var(--color-text-primary)]">
-            {this.props.title ?? 'Something went wrong'}
-          </p>
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            {this.state.error.message}
-          </p>
+          <p className="text-sm font-medium text-[var(--color-text-primary)]">{title}</p>
+          <p className="mt-2 text-xs leading-relaxed text-[var(--color-text-secondary)]">{message}</p>
+          {devDetail && devDetail !== message && (
+            <p className="mt-2 break-all font-mono text-xs text-[var(--color-text-tertiary)]">
+              {devDetail}
+            </p>
+          )}
           <Button type="button" variant="secondary" size="sm" className="mt-4" onClick={this.handleReset}>
             Try again
           </Button>

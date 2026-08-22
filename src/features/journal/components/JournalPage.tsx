@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Modal } from '@components/ui/Modal'
 import { IconPlus } from '@components/ui/icons'
 import { useOpenCreateFromQuery } from '@hooks/useOpenCreateFromQuery'
+import { deleteError } from '@lib/userFacingError'
 import { JournalEntryCard } from './JournalEntryCard'
 import { JournalEntryForm } from './JournalEntryForm'
 import { useJournal } from '../hooks/useJournal'
@@ -37,7 +38,7 @@ export function JournalPage() {
     try {
       await deleteEntry(id)
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete entry')
+      alert(deleteError('this entry', err))
     }
   }
 
@@ -76,12 +77,8 @@ export function JournalPage() {
       {error && (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-danger)]/30 bg-[var(--color-danger)]/10 p-4">
           <p className="text-sm text-[var(--color-danger)]">{error}</p>
-          <p className="mt-2 text-xs text-[var(--color-text-secondary)]">
-            Run the SQL migration in Supabase Dashboard → SQL Editor (
-            <code>supabase/migrations/003_journal_entries.sql</code>).
-          </p>
-          <Button variant="secondary" size="sm" className="mt-3" onClick={reload}>
-            Retry
+          <Button variant="secondary" size="sm" className="mt-3" onClick={() => void reload()}>
+            Try again
           </Button>
         </div>
       )}

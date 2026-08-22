@@ -66,10 +66,10 @@ export function TimelineContent({
           Add a school under the Schools tab.
         </p>
       ) : (
-        <div className={cn('space-y-4', compact && 'college-scroll-region min-h-0 flex-1 overflow-y-auto pr-1')}>
+        <div className={cn('space-y-4', compact && 'college-scroll-region pr-1')}>
           {years.map((year) => (
             <section key={year}>
-              <h3 className="mb-2 text-[11px] font-semibold text-[var(--color-text-primary)]">{year}</h3>
+              <h3 className="mb-2 text-xs font-semibold text-[var(--color-text-primary)]">{year}</h3>
               <ol className="relative space-y-0 border-l border-[var(--color-border)] pl-3">
                 {byYear[year].map((entry) => (
                   <li key={entry.id} className="relative pb-3 last:pb-0">
@@ -79,14 +79,14 @@ export function TimelineContent({
                     />
                     <div className="flex flex-wrap items-start justify-between gap-1">
                       <div className="min-w-0">
-                        <p className="text-[11px] font-medium text-[var(--color-text-primary)]">{entry.title}</p>
-                        <p className="text-[10px] text-[var(--color-text-secondary)]">{entry.subtitle}</p>
+                        <p className="text-xs font-medium text-[var(--color-text-primary)]">{entry.title}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)]">{entry.subtitle}</p>
                       </div>
                       <div className="flex shrink-0 items-center gap-1.5">
                         <Badge variant={CATEGORY_VARIANTS[entry.category]}>
                           {CATEGORY_LABELS[entry.category]}
                         </Badge>
-                        <span className="text-[9px] tabular-nums text-[var(--color-text-tertiary)]">
+                        <span className="text-xs tabular-nums text-[var(--color-text-tertiary)]">
                           {formatDate(entry.date)}
                         </span>
                       </div>

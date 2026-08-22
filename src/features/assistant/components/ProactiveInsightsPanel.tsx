@@ -37,14 +37,14 @@ export function ProactiveInsightsPanel({ insights, onAct, className }: Proactive
                 <p className="text-xs font-medium text-[var(--color-text-primary)]">{insight.title}</p>
                 <Badge variant={priorityVariant[insight.priority]}>{insight.priority}</Badge>
               </div>
-              <p className="text-[11px] leading-relaxed text-[var(--color-text-secondary)]">
+              <p className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
                 {insight.description}
               </p>
               <button
                 type="button"
                 onClick={() => onAct(`Help me with this: ${insight.title} — ${insight.description}`)}
                 className={cn(
-                  'mt-2 text-[10px] font-medium text-[var(--color-accent-muted)] hover:underline',
+                  'mt-2 text-xs font-medium text-[var(--color-accent-muted)] hover:underline',
                 )}
               >
                 Address this →

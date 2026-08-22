@@ -4,6 +4,7 @@ import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
 import { DateTimeField, combineDateTime, splitIsoDateTime } from '@components/ui/DateTimeField'
 import { GoalLinkSelect } from '@components/goals/GoalLinkSelect'
+import { saveError } from '@lib/userFacingError'
 import type { CreateTaskInput, Task, TaskPriority } from '@features/tasks/types'
 import { TASK_CATEGORIES } from '@features/tasks/types'
 import { cn } from '@lib/utils'
@@ -67,7 +68,7 @@ export function TaskForm({ task, onSubmit, onCancel }: TaskFormProps) {
         goal_id: goalId,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save task')
+      setError(saveError('this task', err))
     } finally {
       setSubmitting(false)
     }

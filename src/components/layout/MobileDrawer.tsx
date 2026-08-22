@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef } from 'react'
 import { IconButton } from '@components/ui/IconButton'
 import { IconClose } from '@components/ui/icons'
+import { useFocusTrap } from '@hooks/useFocusTrap'
 import { SidebarNav } from './SidebarNav'
 import { SidebarBrand, SidebarFooter } from './SidebarBrand'
 import { cn } from '@lib/utils'
@@ -17,9 +18,15 @@ interface MobileDrawerProps {
 export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
   const titleId = useId()
   const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const drawerRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLElement | null>(null)
+
+  useFocusTrap(open, drawerRef)
 
   useEffect(() => {
     if (!open) return
+
+    menuButtonRef.current = document.activeElement as HTMLElement | null
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -33,6 +40,7 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
     return () => {
       document.body.style.overflow = previousOverflow
       window.removeEventListener('keydown', handleKeyDown)
+      menuButtonRef.current?.focus?.()
     }
   }, [open, onClose])
 
@@ -41,25 +49,26 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
   return (
     <>
       <div
-        className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+        className="fixed inset-0 z-40 bg-[var(--color-scrim)] md:hidden"
         onClick={onClose}
         aria-hidden
       />
 
       <aside
+        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-[var(--color-border)]',
+          'app-shell-sidebar fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-[var(--color-border)]',
           'bg-[var(--color-surface-raised)] md:hidden',
         )}
       >
-        <div className="flex h-16 items-center justify-between px-4">
+        <div className="flex min-h-[4.5rem] items-center justify-between border-b border-[var(--color-border)] px-4 py-4">
           <div id={titleId}>
             <SidebarBrand size="compact" />
           </div>
-          <IconButton ref={closeButtonRef} label="Close menu" onClick={onClose}>
+          <IconButton ref={closeButtonRef} label="Close menu" onClick={onClose} className="h-11 w-11">
             <IconClose />
           </IconButton>
         </div>
@@ -71,3 +80,4 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
     </>
   )
 }
+

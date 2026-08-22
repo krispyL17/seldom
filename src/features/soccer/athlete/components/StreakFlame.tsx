@@ -17,10 +17,10 @@ function flameColors(tier: number, frozen: boolean) {
       glow: 'rgba(147, 197, 253, 0.35)',
     }
   }
-  if (tier >= 100) return { fill: '#f97316', glow: 'rgba(249, 115, 22, 0.55)' }
-  if (tier >= 30) return { fill: '#fb923c', glow: 'rgba(251, 146, 60, 0.45)' }
-  if (tier >= 7) return { fill: '#fbbf24', glow: 'rgba(251, 191, 36, 0.4)' }
-  if (tier >= 3) return { fill: '#fcd34d', glow: 'rgba(252, 211, 77, 0.35)' }
+  if (tier >= 100) return { fill: 'var(--color-brand)', glow: 'rgba(251, 191, 36, 0.55)' }
+  if (tier >= 30) return { fill: 'var(--color-brand-muted)', glow: 'rgba(252, 211, 77, 0.45)' }
+  if (tier >= 7) return { fill: 'var(--color-brand)', glow: 'rgba(251, 191, 36, 0.4)' }
+  if (tier >= 3) return { fill: 'var(--color-brand-muted)', glow: 'rgba(252, 211, 77, 0.35)' }
   return { fill: 'var(--color-text-tertiary)', glow: 'transparent' }
 }
 
@@ -50,7 +50,7 @@ export function StreakFlame({ current, longest, frozen = false, compact, classNa
           />
         </svg>
         {frozen && (
-          <span className="absolute -bottom-0.5 rounded bg-[var(--color-surface-raised)] px-1 text-[8px] text-[var(--color-accent-muted)]">
+          <span className="absolute -bottom-0.5 rounded bg-[var(--color-surface-raised)] px-1 text-xs text-[var(--color-accent-muted)]">
             ❄
           </span>
         )}
@@ -61,11 +61,11 @@ export function StreakFlame({ current, longest, frozen = false, compact, classNa
         </p>
         {!compact && (
           <>
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">
+            <p className="text-xs text-[var(--color-text-tertiary)]">
               Best: {longest} · {frozen ? 'Frozen' : next ? `${next - current} to ${next}` : 'Max milestone'}
             </p>
             {tier > 0 && (
-              <p className="text-[10px] text-[var(--color-warning)]">{tier}-day milestone</p>
+              <p className="text-xs text-[var(--color-warning)]">{tier}-day milestone</p>
             )}
           </>
         )}
@@ -81,7 +81,7 @@ export function StreakMilestoneBadges({ achieved }: { achieved: number[] }) {
       {STREAK_MILESTONES.filter((m) => achieved.includes(m)).map((m) => (
         <span
           key={m}
-          className="rounded-full border border-[var(--color-warning)]/30 bg-[var(--color-warning)]/10 px-2 py-0.5 text-[10px] text-[var(--color-warning)]"
+          className="rounded-full border border-[var(--color-warning)]/30 bg-[var(--color-warning)]/10 px-2 py-0.5 text-xs text-[var(--color-warning)]"
         >
           {m}d
         </span>

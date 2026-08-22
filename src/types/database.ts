@@ -162,6 +162,8 @@ export interface Database {
           work_on: string | null
           goal_id: string | null
           side_balance: Json | null
+          skills_trained: Json
+          team_session: boolean
           created_at: string
           updated_at: string
         }
@@ -180,6 +182,8 @@ export interface Database {
           work_on?: string | null
           goal_id?: string | null
           side_balance?: Json | null
+          skills_trained?: Json
+          team_session?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -198,6 +202,8 @@ export interface Database {
           work_on?: string | null
           goal_id?: string | null
           side_balance?: Json | null
+          skills_trained?: Json
+          team_session?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -712,6 +718,8 @@ export interface Database {
           calendar_sync_prompted_at: string | null
           distance_unit: 'km' | 'mi'
           college_enabled: boolean
+          overview_insight_mode: 'analytics' | 'college'
+          overview_college_prompt_dismissed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -731,6 +739,8 @@ export interface Database {
           calendar_sync_prompted_at?: string | null
           distance_unit?: 'km' | 'mi'
           college_enabled?: boolean
+          overview_insight_mode?: 'analytics' | 'college'
+          overview_college_prompt_dismissed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -750,6 +760,8 @@ export interface Database {
           calendar_sync_prompted_at?: string | null
           distance_unit?: 'km' | 'mi'
           college_enabled?: boolean
+          overview_insight_mode?: 'analytics' | 'college'
+          overview_college_prompt_dismissed_at?: string | null
           updated_at?: string
         }
         Relationships: []

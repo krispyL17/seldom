@@ -1,5 +1,6 @@
 import { TestScoresPanel } from '../dashboard/TestScoresPanel'
 import { FinancialAidPanel } from '../dashboard/FinancialAidPanel'
+import { FinancialSnapshotPanel } from '../dashboard/FinancialSnapshotPanel'
 import { ScholarshipTrackerPanel } from '../dashboard/ScholarshipTrackerPanel'
 import { StudentContextPanel } from '../dashboard/StudentContextPanel'
 import { CollegePageGrid, CollegePageShell } from '../CollegePageShell'
@@ -11,15 +12,18 @@ export function CollegePlanningPage() {
 
   return (
     <CollegePageShell>
-      <p className="shrink-0 text-[11px] leading-relaxed text-[var(--color-text-secondary)]">
+      <p className="shrink-0 text-xs leading-relaxed text-[var(--color-text-secondary)]">
         {isSeniorMode
-          ? 'Update your profile and test scores, track financial aid steps, and manage scholarships — everything saves to your account.'
+          ? 'Track aid progress, scholarship dollars, and cost gaps — push checklist items to Tasks when you are ready to act.'
           : phaseDescription('junior')}{' '}
         Set your graduation year in your profile so checklist dates align with your timeline.
       </p>
-      <CollegePageGrid columns={2} rows={3}>
+      <CollegePageGrid columns={2} rows={4}>
         <div className="college-page-span-2 min-h-0">
           <StudentContextPanel />
+        </div>
+        <div className="college-page-span-2 min-h-0">
+          <FinancialSnapshotPanel />
         </div>
         <TestScoresPanel />
         <FinancialAidPanel />

@@ -37,7 +37,7 @@ export function CapabilitiesPanel({
                 )}
               >
                 <p className="text-xs font-medium text-[var(--color-text-primary)]">{mod.label}</p>
-                <p className="mt-0.5 text-[10px] leading-snug text-[var(--color-text-tertiary)]">
+                <p className="mt-0.5 text-xs leading-snug text-[var(--color-text-tertiary)]">
                   {mod.description}
                 </p>
               </button>
@@ -56,7 +56,7 @@ export function CapabilitiesPanel({
             )}
           >
             <p className="text-xs font-medium text-[var(--color-text-primary)]">General chat</p>
-            <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+            <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
               Auto-routes to the best capability
             </p>
           </button>

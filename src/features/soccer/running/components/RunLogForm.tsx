@@ -3,6 +3,7 @@ import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { Textarea } from '@components/ui/Textarea'
 import { useDistanceUnit } from '@hooks/useDistanceUnit'
+import { saveError } from '@lib/userFacingError'
 import type { CreateRunLogInput, RunLog } from '../types'
 import {
   durationInputFromSeconds,
@@ -91,7 +92,7 @@ export function RunLogForm({ run, onSubmit, onCancel }: RunLogFormProps) {
         notes: notes.trim() || undefined,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save run')
+      setError(saveError('this run', err))
     } finally {
       setSubmitting(false)
     }

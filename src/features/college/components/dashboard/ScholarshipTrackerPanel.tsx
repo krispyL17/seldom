@@ -3,12 +3,19 @@ import { Panel } from '@components/ui/Panel'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
 import { EmptyState } from '@components/ui/EmptyState'
+import { MetricCard } from '../shared/MetricCard'
 import { useCollege } from '../../hooks/useCollege'
 import {
   buildJuniorSummerPrograms,
   buildSeniorScholarships,
 } from '../../data/templates'
-import { formatCurrency, formatShortDate, scholarshipStatusLabel, generateId } from '../../utils'
+import {
+  computeFinancialPlanningStats,
+  formatCurrency,
+  formatShortDate,
+  scholarshipStatusLabel,
+  generateId,
+} from '../../utils'
 import type { Scholarship, ScholarshipStatus } from '../../types'
 
 const STATUSES: ScholarshipStatus[] = [
@@ -22,10 +29,17 @@ const STATUSES: ScholarshipStatus[] = [
 export function ScholarshipTrackerPanel() {
   const { userData, colleges, isSeniorMode, onboardingComplete, updateScholarships } = useCollege()
   const scholarships = userData?.scholarships ?? []
+  const stats = computeFinancialPlanningStats(
+    userData?.financialAid ?? [],
+    scholarships,
+    colleges,
+  )
   const seedingRef = useRef(false)
   const [name, setName] = useState('')
   const [deadline, setDeadline] = useState('')
   const [amount, setAmount] = useState('')
+  const [requirements, setRequirements] = useState('')
+  const [collegeId, setCollegeId] = useState('')
   const [adding, setAdding] = useState(false)
 
   useEffect(() => {
@@ -50,12 +64,18 @@ export function ScholarshipTrackerPanel() {
         deadline: deadline || new Date().toISOString().slice(0, 10),
         amount: Number(amount) || 0,
         status: 'not_started',
-        requirements: [],
+        requirements: requirements
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        collegeId: collegeId || undefined,
       }
       await updateScholarships([...scholarships, next])
       setName('')
       setDeadline('')
       setAmount('')
+      setRequirements('')
+      setCollegeId('')
     } finally {
       setAdding(false)
     }
@@ -87,7 +107,37 @@ export function ScholarshipTrackerPanel() {
 
   return (
     <Panel fillHeight title={title} subtitle={`${scholarships.length} tracked`}>
-      <div className="mb-3 grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)]/40 p-3 sm:grid-cols-[1fr_auto_auto_auto]">
+      {scholarships.length > 0 && (
+        <div className="mb-3 grid grid-cols-3 gap-2">
+          <MetricCard
+            label="Awarded"
+            value={
+              stats.scholarshipAwardedTotal > 0
+                ? formatCurrency(stats.scholarshipAwardedTotal)
+                : '—'
+            }
+            variant="success"
+          />
+          <MetricCard
+            label="Pending"
+            value={
+              stats.scholarshipPendingTotal > 0
+                ? formatCurrency(stats.scholarshipPendingTotal)
+                : stats.scholarshipActiveCount
+            }
+            subValue={stats.scholarshipPendingTotal > 0 ? 'if all awarded' : 'active'}
+            variant="accent"
+          />
+          <MetricCard
+            label="Submitted"
+            value={scholarships.filter((s) => s.status === 'submitted').length}
+            subValue={`of ${scholarships.length}`}
+            variant="default"
+          />
+        </div>
+      )}
+
+      <div className="mb-3 grid gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)]/40 p-3 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto_1fr_auto]">
         <Input
           label={addLabel}
           value={name}
@@ -107,7 +157,30 @@ export function ScholarshipTrackerPanel() {
           onChange={(e) => setAmount(e.target.value)}
           placeholder="0"
         />
-        <div className="flex items-end">
+        <Input
+          label="Requirements (comma-separated)"
+          value={requirements}
+          onChange={(e) => setRequirements(e.target.value)}
+          placeholder="Essay, transcript, …"
+        />
+        {colleges.length > 0 && (
+          <label className="flex flex-col gap-1 text-xs text-[var(--color-text-tertiary)]">
+            Linked school (optional)
+            <select
+              value={collegeId}
+              onChange={(e) => setCollegeId(e.target.value)}
+              className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1.5 text-xs text-[var(--color-text-primary)]"
+            >
+              <option value="">None</option>
+              {colleges.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <div className="flex items-end sm:col-span-2 lg:col-span-1">
           <Button
             type="button"
             size="sm"
@@ -131,7 +204,7 @@ export function ScholarshipTrackerPanel() {
             <button
               type="button"
               onClick={() => void loadTemplate()}
-              className="text-[11px] text-[var(--color-accent-muted)] hover:underline"
+              className="text-xs text-[var(--color-accent-muted)] hover:underline"
             >
               Load starter list
             </button>
@@ -141,10 +214,11 @@ export function ScholarshipTrackerPanel() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="text-[10px] text-[var(--color-text-tertiary)]">
+              <tr className="text-xs text-[var(--color-text-tertiary)]">
                 <th className="pb-2 font-medium">Name</th>
                 <th className="pb-2 font-medium">Deadline</th>
                 <th className="pb-2 font-medium">{isSeniorMode ? 'Amount' : 'Cost'}</th>
+                <th className="pb-2 font-medium">Requirements</th>
                 <th className="pb-2 font-medium">Status</th>
                 <th className="pb-2 font-medium" aria-label="Actions" />
               </tr>
@@ -159,7 +233,7 @@ export function ScholarshipTrackerPanel() {
                     <td className="py-2 pr-2 text-[var(--color-text-primary)]">
                       {s.name}
                       {college && (
-                        <span className="block text-[10px] text-[var(--color-text-tertiary)]">
+                        <span className="block text-xs text-[var(--color-text-tertiary)]">
                           {college.name}
                         </span>
                       )}
@@ -170,13 +244,16 @@ export function ScholarshipTrackerPanel() {
                     <td className="py-2 pr-2 text-[var(--color-text-secondary)]">
                       {s.amount > 0 ? formatCurrency(s.amount) : '—'}
                     </td>
+                    <td className="max-w-[8rem] py-2 pr-2 text-xs text-[var(--color-text-tertiary)]">
+                      {s.requirements.length > 0 ? s.requirements.join(' · ') : '—'}
+                    </td>
                     <td className="py-2 pr-2">
                       <select
                         value={s.status}
                         onChange={(e) =>
                           void updateStatus(s.id, e.target.value as ScholarshipStatus)
                         }
-                        className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-1.5 py-1 text-[10px] text-[var(--color-text-primary)]"
+                        className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-1.5 py-1 text-xs text-[var(--color-text-primary)]"
                       >
                         {STATUSES.map((status) => (
                           <option key={status} value={status}>
@@ -189,7 +266,7 @@ export function ScholarshipTrackerPanel() {
                       <button
                         type="button"
                         onClick={() => void remove(s.id)}
-                        className="text-[10px] text-[var(--color-danger)] hover:underline"
+                        className="text-xs text-[var(--color-danger)] hover:underline"
                       >
                         Remove
                       </button>

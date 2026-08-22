@@ -88,7 +88,7 @@ export function MatchLogForm({ match, onSubmit, onCancel }: MatchLogFormProps) {
               key={key}
               type="button"
               onClick={() => setResult(key)}
-              className={`rounded-[var(--radius-sm)] border px-2.5 py-1 text-[11px] ${
+              className={`rounded-[var(--radius-sm)] border px-2.5 py-1 text-xs ${
                 result === key
                   ? 'border-[var(--color-accent)] bg-[var(--color-accent-subtle)]'
                   : 'border-[var(--color-border)]'

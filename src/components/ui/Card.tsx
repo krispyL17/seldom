@@ -39,7 +39,7 @@ export function CardHeader({ title, description, action }: CardHeaderProps) {
   return (
     <div className="mb-4 flex items-start justify-between gap-4">
       <div>
-        <h3 className="text-base font-semibold text-[var(--color-text-primary)]">
+        <h3 className="font-display text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
           {title}
         </h3>
         {description && (

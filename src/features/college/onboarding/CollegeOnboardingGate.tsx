@@ -94,11 +94,42 @@ export function CollegeOnboardingGate({ onComplete }: { onComplete: () => void }
     }
   }
 
+  async function handleSkip() {
+    const phase = userData?.resumeSettings.applicationPhase ?? 'junior'
+    await completeOnboarding({
+      resumeSettings: {
+        ...(userData?.resumeSettings ?? DEFAULT_RESUME_SETTINGS),
+        applicationPhase: phase,
+        onboardingCompletedAt: new Date().toISOString(),
+        studentProfile: {
+          name: displayNameFromUser(user),
+          school: '',
+          graduationYear: '',
+          gpa: null,
+          intendedMajor: null,
+        },
+      },
+      testScores: DEFAULT_TEST_SCORES,
+    })
+    onComplete()
+  }
+
   return (
-    <OnboardingChatPanel
-      config={collegeOnboarding}
-      onComplete={handleComplete}
-      onFinished={onComplete}
-    />
+    <div>
+      <OnboardingChatPanel
+        config={collegeOnboarding}
+        onComplete={handleComplete}
+        onFinished={onComplete}
+      />
+      <p className="mt-4 text-center">
+        <button
+          type="button"
+          onClick={() => void handleSkip()}
+          className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:underline"
+        >
+          Set up later — browse schools first
+        </button>
+      </p>
+    </div>
   )
 }

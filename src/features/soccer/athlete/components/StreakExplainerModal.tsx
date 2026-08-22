@@ -1,5 +1,5 @@
 import { Button } from '@components/ui/Button'
-import { Modal } from '@components/ui/Modal'
+import { Modal, ModalFooter } from '@components/ui/Modal'
 import { StreakFlame, StreakMilestoneBadges } from './StreakFlame'
 import { STREAK_MILESTONES } from '../types'
 
@@ -41,9 +41,11 @@ export function StreakExplainerModal({
             <StreakMilestoneBadges achieved={milestonesAchieved} />
           </div>
         )}
-        <div className="flex justify-end border-t border-[var(--color-border)] pt-4">
-          <Button onClick={onDismiss}>Got it</Button>
-        </div>
+        <ModalFooter className="mt-2">
+          <Button size="sm" onClick={onDismiss}>
+            Got it
+          </Button>
+        </ModalFooter>
       </div>
     </Modal>
   )

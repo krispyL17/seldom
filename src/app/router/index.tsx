@@ -78,24 +78,14 @@ const SoccerOverviewPage = lazy(() =>
 const RecoveryPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.RecoveryPage })),
 )
-const PerformancePreferencesPage = lazy(() =>
-  import('@features/soccer/components/pages/PerformancePreferencesPage').then((m) => ({
-    default: m.PerformancePreferencesPage,
-  })),
-)
-const ProgressionPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.ProgressionPage })),
-)
-const CustomSportTabPage = lazy(() =>
-  import('@features/soccer').then((m) => ({ default: m.CustomSportTabPage })),
+const SkillsPage = lazy(() =>
+  import('@features/soccer/components/pages/SkillsPage').then((m) => ({ default: m.SkillsPage })),
 )
 const KnowledgeImportPage = lazy(() =>
   import('@features/soccer').then((m) => ({ default: m.KnowledgeImportPage })),
 )
 
-const CalendarPage = lazy(() =>
-  import('@features/calendar').then((m) => ({ default: m.CalendarPage })),
-)
+
 const AnalyticsPage = lazy(() =>
   import('@features/analytics').then((m) => ({ default: m.AnalyticsPage })),
 )
@@ -145,7 +135,7 @@ export function AppRouter() {
               <Route path="timeline" element={<TimelinePage />} />
             </Route>
             <Route path="journal" element={<JournalPage />} />
-            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="calendar" element={<Navigate to="/" replace />} />
               <Route path="soccer" element={<SoccerLayout />}>
               <Route index element={<Navigate to="overview" replace />} />
               <Route path="overview" element={<SoccerOverviewPage />} />
@@ -159,11 +149,12 @@ export function AppRouter() {
               <Route path="strengths" element={<StrengthsPage />} />
               <Route path="coach" element={<Navigate to="/assistant?mode=soccer_drills" replace />} />
               <Route path="progress" element={<Navigate to="/soccer/progression" replace />} />
-              <Route path="progression" element={<ProgressionPage />} />
+              <Route path="progression" element={<Navigate to="/soccer/skills" replace />} />
               <Route path="recovery" element={<RecoveryPage />} />
-              <Route path="preferences" element={<PerformancePreferencesPage />} />
+              <Route path="skills" element={<SkillsPage />} />
+              <Route path="preferences" element={<Navigate to="/soccer/skills" replace />} />
               <Route path="knowledge" element={<KnowledgeImportPage />} />
-              <Route path="tab/:tabSlug" element={<CustomSportTabPage />} />
+              <Route path="tab/:tabSlug" element={<Navigate to="/soccer/skills" replace />} />
               <Route path="stats" element={<Navigate to="/soccer/progression" replace />} />
             </Route>
             <Route path="analytics" element={<AnalyticsPage />} />

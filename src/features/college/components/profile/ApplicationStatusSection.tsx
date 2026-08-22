@@ -33,7 +33,7 @@ export function ApplicationStatusSection({
           <select
             value={statuses.includes(college.status) ? college.status : statuses[0]}
             onChange={(e) => onStatusChange(e.target.value as College['status'])}
-            className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1 text-[11px] text-[var(--color-text-primary)]"
+            className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1 text-xs text-[var(--color-text-primary)]"
           >
             {(isSeniorMode ? APPLICATION_STATUSES : JUNIOR_STATUSES).map((status) => (
               <option key={status} value={status}>
@@ -59,7 +59,7 @@ export function ApplicationStatusSection({
                 <div className="flex flex-col items-center gap-1.5 px-1">
                   <span
                     className={cn(
-                      'flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold tabular-nums',
+                      'flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold tabular-nums',
                       isCurrent
                         ? 'bg-[var(--color-accent)] text-white ring-2 ring-[var(--color-accent)]/30'
                         : isPast
@@ -74,7 +74,7 @@ export function ApplicationStatusSection({
                   </span>
                   <span
                     className={cn(
-                      'max-w-[4.5rem] text-center text-[9px] leading-tight',
+                      'max-w-[4.5rem] text-center text-xs leading-tight',
                       isCurrent
                         ? 'font-medium text-[var(--color-accent-muted)]'
                         : isPast
@@ -105,7 +105,7 @@ export function ApplicationStatusSection({
       </div>
 
       {!isSeniorMode && (
-        <p className="mt-3 text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
           Full application pipeline unlocks when you start senior year.
         </p>
       )}

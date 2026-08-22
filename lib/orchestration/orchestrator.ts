@@ -9,6 +9,7 @@ import {
 import { retrieveMemories } from '../assistant/memory.js'
 import { runWebSearch, shouldWebSearch } from '../assistant/search.js'
 import type { AssistantEnv } from '../assistant/types.js'
+import { resolveModeMaxTokens } from '../ollama/limits.js'
 import { loadPromptConfig, type PromptConfig } from '../prompts/loader.js'
 import { assembleOSContext, formatOSContextBlock, formatPatternsBlock } from './context.js'
 import { getModuleByMode, OS_MODULES } from './modules.js'
@@ -64,12 +65,7 @@ export async function handleOSChat(
   const userTurns = request.history?.filter((m) => m.role === 'user').length ?? 0
   const isNewConversation = userTurns === 0
 
-  const maxTokens =
-    mode === 'weekly_review' || mode === 'goal_breakdown'
-      ? 2200
-      : mode === 'chat'
-        ? 1200
-        : 1600
+  const maxTokens = resolveModeMaxTokens(mode)
 
   const replyPromise = generateChatReply(env, systemPrompt, message, {
     contextBlocks,

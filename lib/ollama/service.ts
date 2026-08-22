@@ -1,4 +1,9 @@
 import { ensureDevEnvLoaded } from '../loadDevEnv.js'
+import {
+  resolveOllamaMaxTokens,
+  shouldDisableThinking,
+  stripThinkingFromContent,
+} from './limits.js'
 import type { OllamaConfig, OllamaHealthStatus } from './types.js'
 import { OllamaUnavailableError } from './types.js'
 
@@ -115,18 +120,26 @@ export async function ollamaChat(
   }
 
   const started = Date.now()
+  const numPredict = resolveOllamaMaxTokens(options.maxTokens)
+  const disableThinking = shouldDisableThinking(config.chatModel)
+
+  const requestBody: Record<string, unknown> = {
+    model: config.chatModel,
+    messages,
+    stream: false,
+    options: {
+      temperature: options.temperature ?? 0.7,
+      num_predict: numPredict,
+    },
+  }
+  if (disableThinking) {
+    requestBody.think = false
+  }
+
   const response = await fetch(`${config.baseUrl}/api/chat`, {
     method: 'POST',
     headers: ollamaHeaders(),
-    body: JSON.stringify({
-      model: config.chatModel,
-      messages,
-      stream: false,
-      options: {
-        temperature: options.temperature ?? 0.7,
-        num_predict: options.maxTokens ?? 1800,
-      },
-    }),
+    body: JSON.stringify(requestBody),
     signal: AbortSignal.timeout(120_000),
   })
 
@@ -135,8 +148,19 @@ export async function ollamaChat(
     throw new Error(`Ollama chat failed (${response.status}): ${body}`)
   }
 
-  const data = (await response.json()) as { message?: { content?: string } }
-  const reply = data.message?.content?.trim()
+  const data = (await response.json()) as {
+    message?: { content?: string; thinking?: string }
+    done_reason?: string
+  }
+
+  if (data.done_reason === 'length') {
+    console.warn(
+      `[ollama] Reply hit num_predict limit (${numPredict}) for model ${config.chatModel}. ` +
+        'Raise OLLAMA_MAX_TOKENS if responses keep ending mid-sentence.',
+    )
+  }
+
+  const reply = stripThinkingFromContent(data.message?.content?.trim() ?? '')
   if (!reply) throw new Error('Ollama returned an empty response')
 
   lastSuccessfulAt = new Date().toISOString()

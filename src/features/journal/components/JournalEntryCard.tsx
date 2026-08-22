@@ -20,7 +20,7 @@ function Section({ label, content }: { label: string; content: string | null }) 
   if (!content?.trim()) return null
   return (
     <div>
-      <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
+      <p className="text-xs font-medium uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {label}
       </p>
       <p className="mt-1 text-sm leading-relaxed text-[var(--color-text-secondary)] whitespace-pre-wrap">

@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { loadError } from '@lib/userFacingError'
 import { collegeService } from '@services/database/colleges'
 import { collegeActivityService } from '@services/database/collegeActivities'
 import { collegeAwardService } from '@services/database/collegeAwards'
@@ -135,7 +136,7 @@ export function CollegeProvider({ children }: { children: ReactNode }) {
       setUserData(ud)
       setError(null)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load college data')
+      setError(loadError('college prep data', err))
     } finally {
       setLoading(false)
     }

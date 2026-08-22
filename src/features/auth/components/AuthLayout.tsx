@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { APP_CONFIG } from '@config/env'
+import { SeldomMark } from '@components/layout/SidebarBrand'
 
 interface AuthLayoutProps {
   children: ReactNode
@@ -14,18 +15,16 @@ export function AuthLayout({ children }: AuthLayoutProps) {
     <div className="relative flex min-h-dvh flex-col items-center justify-center bg-[var(--color-surface-base)] px-4 py-12">
       {/* Subtle background gradient */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(10,132,255,0.08)_0%,_transparent_50%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_color-mix(in_srgb,var(--color-accent-muted)_12%,transparent)_0%,_transparent_55%)]"
         aria-hidden
       />
 
-      <div className="relative w-full max-w-md">
+      <main className="relative w-full max-w-md">
         {/* Brand */}
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-brand-bg)]">
-              <span className="text-base font-bold text-[var(--color-brand)]">S</span>
-            </div>
-            <span className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+            <SeldomMark className="text-2xl" />
+            <span className="font-display text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
               {APP_CONFIG.name}
             </span>
           </Link>
@@ -33,7 +32,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         </div>
 
         {children}
-      </div>
+      </main>
     </div>
   )
 }

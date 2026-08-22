@@ -57,12 +57,12 @@ export function RecommendationsPanel() {
                         : 'Connected'}
                   </Badge>
                 </div>
-                <p className="mt-0.5 text-[10px] capitalize text-[var(--color-text-tertiary)]">
+                <p className="mt-0.5 text-xs capitalize text-[var(--color-text-tertiary)]">
                   {rec.role}
                   {rec.dueDate && isSeniorMode && ` · due ${formatShortDate(rec.dueDate)}`}
                 </p>
                 {isSeniorMode && collegeNames.length > 0 && (
-                  <p className="mt-1 text-[10px] text-[var(--color-text-secondary)]">
+                  <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
                     {collegeNames.join(', ')}
                   </p>
                 )}

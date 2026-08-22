@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 import { IconSparkles } from '@components/ui/icons'
+import { Modal } from '@components/ui/Modal'
+import { ONBOARDING_DISMISS_DISCLAIMER } from '@features/onboarding/confirmDismiss'
 import { OnboardingChatPanel } from '@features/onboarding/OnboardingChatPanel'
 import { appTutorialConfig } from '@config/onboardingPrompts'
 import { useUserPreferences } from '@features/preferences'
 import { useAuth } from '@hooks/useAuth'
 import { authService } from '@services/auth'
-import { cn } from '@lib/utils'
 
 interface AppTutorialModalProps {
   open: boolean
@@ -14,15 +15,16 @@ interface AppTutorialModalProps {
 
 export function AppTutorialModal({ open, onClose }: AppTutorialModalProps) {
   const { user } = useAuth()
-  const { updatePreferences, completeTutorial, tutorialCompleted } = useUserPreferences()
+  const { updatePreferences, completeTutorial, dismissTutorial, tutorialCompleted } =
+    useUserPreferences()
 
   const handleDismiss = useCallback(() => {
     if (!tutorialCompleted) {
-      void completeTutorial()
+      void dismissTutorial()
     } else {
       onClose()
     }
-  }, [tutorialCompleted, completeTutorial, onClose])
+  }, [tutorialCompleted, dismissTutorial, onClose])
 
   const handleCustomizeComplete = useCallback(
     async (answers: Record<string, unknown>) => {
@@ -84,61 +86,42 @@ export function AppTutorialModal({ open, onClose }: AppTutorialModalProps) {
     [completeTutorial, updatePreferences, user],
   )
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-md animate-backdrop-in" aria-hidden />
-
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="app-tutorial-title"
-        className={cn(
-          'relative flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden',
-          'rounded-[var(--radius-xl)] border border-[var(--color-border)]',
-          'bg-[var(--color-surface-raised)] shadow-[var(--shadow-elevated)]',
-          'animate-scale-in',
-        )}
-      >
-        <header className="border-b border-[var(--color-border)] px-6 py-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent-subtle)]">
-                <IconSparkles width={18} height={18} className="text-[var(--color-accent-muted)]" />
-              </div>
-              <div>
-                <h2
-                  id="app-tutorial-title"
-                  className="text-base font-semibold tracking-tight text-[var(--color-text-primary)]"
-                >
-                  Meet Seldom
-                </h2>
-                <p className="text-xs text-[var(--color-text-tertiary)]">
-                  Personalize your workspace — tabs introduce themselves as you explore
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleDismiss}
-              className="text-[11px] text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
-            >
-              {!tutorialCompleted ? 'Skip' : 'Close'}
-            </button>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto p-6">
-          <OnboardingChatPanel
-            config={appTutorialConfig}
-            onComplete={handleCustomizeComplete}
-            embedded
-            progressLabel="Welcome setup"
-          />
+    <Modal
+      open={open}
+      onClose={handleDismiss}
+      title="Meet Seldom"
+      subtitle="Personalize your workspace — tab tours wait until you ask for them"
+      size="lg"
+      headerAction={
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="rounded-[var(--radius-sm)] px-2 py-1 text-xs text-[var(--color-text-tertiary)] transition-colors hover:bg-[var(--color-surface-overlay)] hover:text-[var(--color-text-secondary)]"
+        >
+          {!tutorialCompleted ? 'Skip setup' : 'Close'}
+        </button>
+      }
+    >
+      <div className="mb-4 flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-3 py-2.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--color-accent-subtle)]">
+          <IconSparkles width={16} height={16} className="text-[var(--color-accent-muted)]" aria-hidden />
         </div>
+        <p className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
+          Answer a few quick questions so Seldom labels your tabs and surfaces the right modules.
+        </p>
       </div>
-    </div>
+      <OnboardingChatPanel
+        config={appTutorialConfig}
+        onComplete={handleCustomizeComplete}
+        embedded
+        progressLabel="Welcome setup"
+      />
+      {!tutorialCompleted && (
+        <p className="mt-3 text-xs leading-relaxed text-[var(--color-text-tertiary)]">
+          {ONBOARDING_DISMISS_DISCLAIMER}
+        </p>
+      )}
+    </Modal>
   )
 }

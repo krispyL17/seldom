@@ -8,6 +8,26 @@ import {
   type UserPreferencesPatch,
 } from '@/types/userPreferences'
 
+function sanitizePreferencesPatch(patch: UserPreferencesPatch): UserPreferencesPatch {
+  const next: UserPreferencesPatch = { ...patch }
+
+  if (next.nav_tab_colors) {
+    next.nav_tab_colors = Object.fromEntries(
+      Object.entries(next.nav_tab_colors).filter(
+        ([, value]) => typeof value === 'string' && value.trim().length > 0,
+      ),
+    )
+  }
+
+  if (next.custom_themes) {
+    next.custom_themes = Object.fromEntries(
+      Object.entries(next.custom_themes).filter(([, value]) => value != null),
+    ) as UserPreferencesPatch['custom_themes']
+  }
+
+  return next
+}
+
 function parseThemePalette(value?: string | null): ThemePalette {
   if (
     value === 'sunset' ||
@@ -48,6 +68,8 @@ function mapRow(row: {
   calendar_sync_prompted_at?: string | null
   distance_unit?: string
   college_enabled?: boolean
+  overview_insight_mode?: string
+  overview_college_prompt_dismissed_at?: string | null
   updated_at: string
 }): UserPreferences {
   return {
@@ -67,6 +89,9 @@ function mapRow(row: {
     calendar_sync_prompted_at: row.calendar_sync_prompted_at ?? null,
     distance_unit: row.distance_unit === 'km' ? 'km' : 'mi',
     college_enabled: row.college_enabled ?? false,
+    overview_insight_mode:
+      row.overview_insight_mode === 'college' ? 'college' : 'analytics',
+    overview_college_prompt_dismissed_at: row.overview_college_prompt_dismissed_at ?? null,
     updated_at: row.updated_at,
   }
 }
@@ -104,14 +129,22 @@ export const userPreferencesService = {
     const client = requireClient()
     await userPreferencesService.ensure(userId)
 
+    const patch = sanitizePreferencesPatch(payload)
+
     const { data, error } = await client
       .from('user_preferences')
-      .update(payload as TableUpdate<'user_preferences'>)
+      .update(patch as TableUpdate<'user_preferences'>)
       .eq('user_id', userId)
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      const hint =
+        error.code === 'PGRST204' || error.message.includes('schema cache')
+          ? ' Database may be missing a migration — run Supabase migrations for user_preferences.'
+          : ''
+      throw new Error(`${error.message}${hint}`)
+    }
     return mapRow(data)
   },
 
@@ -122,11 +155,15 @@ export const userPreferencesService = {
     })
   },
 
-  async markTabIntroComplete(userId: string, tabId: string): Promise<UserPreferences> {
+  async markTabIntroComplete(
+    userId: string,
+    tabId: string,
+    version = 1,
+  ): Promise<UserPreferences> {
     const current = await userPreferencesService.ensure(userId)
     const tab_intros_completed = {
       ...current.tab_intros_completed,
-      [tabId]: new Date().toISOString(),
+      [tabId]: String(version),
     }
     return userPreferencesService.patch(userId, { tab_intros_completed })
   },

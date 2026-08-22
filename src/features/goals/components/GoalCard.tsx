@@ -5,12 +5,14 @@ import { IconCheck } from '@components/ui/icons'
 import type { Goal, Milestone } from '@features/goals/types'
 import {
   formatTargetDate,
+  goalDisplayProgress,
   isTargetOverdue,
-  progressFromMilestones,
+  milestoneCompletionPercent,
   progressVariant,
   statusBadgeVariant,
   statusLabel,
 } from '@features/goals/utils'
+import { useNavTabColor } from '@hooks/useNavTabColor'
 import { cn } from '@lib/utils'
 
 interface GoalCardProps {
@@ -19,7 +21,8 @@ interface GoalCardProps {
   onArchive: (id: string) => void
   onRestore: (id: string) => void
   onDelete: (id: string) => void
-  onMilestonesChange: (id: string, milestones: Milestone[], progress: number) => void
+  onMilestonesChange: (id: string, milestones: Milestone[]) => void
+  onMilestoneToTask?: (goal: Goal, milestone: Milestone) => void
 }
 
 export function GoalCard({
@@ -29,17 +32,18 @@ export function GoalCard({
   onRestore,
   onDelete,
   onMilestonesChange,
+  onMilestoneToTask,
 }: GoalCardProps) {
+  const perfColor = useNavTabColor('soccer')
   const overdue = isTargetOverdue(goal)
-  const milestoneProgress = progressFromMilestones(goal.milestones)
+  const displayProgress = goalDisplayProgress(goal)
+  const milestoneProgress = milestoneCompletionPercent(goal.milestones)
 
   function toggleMilestone(milestoneId: string) {
     const updated = goal.milestones.map((m) =>
       m.id === milestoneId ? { ...m, completed: !m.completed } : m,
     )
-    const newProgress =
-      updated.length > 0 ? progressFromMilestones(updated) : goal.progress
-    onMilestonesChange(goal.id, updated, newProgress)
+    onMilestonesChange(goal.id, updated)
   }
 
   return (
@@ -95,13 +99,13 @@ export function GoalCard({
       {/* Progress */}
       <div className="mt-4">
         <ProgressBar
-          value={goal.progress}
+          value={displayProgress}
           label="Progress"
-          variant={progressVariant(goal.progress)}
+          variant={progressVariant(displayProgress)}
           size="md"
         />
         {goal.milestones.length > 0 && (
-          <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+          <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
             Milestones: {milestoneProgress}% complete
           </p>
         )}
@@ -111,7 +115,7 @@ export function GoalCard({
       {goal.milestones.length > 0 && (
         <ul className="mt-4 space-y-2 border-t border-[var(--color-border)] pt-4">
           {goal.milestones.map((m) => (
-            <li key={m.id} className="flex items-center gap-2.5">
+            <li key={m.id} className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 aria-label={`${m.completed ? 'Undo' : 'Complete'} milestone: ${m.title}`}
@@ -129,14 +133,38 @@ export function GoalCard({
               </button>
               <span
                 className={cn(
-                  'text-xs',
+                  'min-w-0 flex-1 text-xs',
                   m.completed
                     ? 'text-[var(--color-text-tertiary)] line-through'
                     : 'text-[var(--color-text-primary)]',
                 )}
+                style={
+                  !m.completed && onMilestoneToTask
+                    ? { borderLeft: `2px solid ${perfColor}55`, paddingLeft: 6 }
+                    : undefined
+                }
               >
                 {m.title}
+                {m.target_date && (
+                  <span className="ml-1 text-[var(--color-text-tertiary)]">
+                    ·{' '}
+                    {new Date(`${m.target_date}T12:00:00`).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
+                )}
               </span>
+              {!m.completed && onMilestoneToTask && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => onMilestoneToTask(goal, m)}
+                >
+                  Add as task
+                </Button>
+              )}
             </li>
           ))}
         </ul>

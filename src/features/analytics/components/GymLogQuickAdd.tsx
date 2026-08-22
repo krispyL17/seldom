@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Input } from '@components/ui/Input'
+import { saveError } from '@lib/userFacingError'
 import { addLocalGymLog } from '@services/analytics/gymLogsLocal'
 
 interface GymLogQuickAddProps {
@@ -39,7 +40,7 @@ export function GymLogQuickAdd({ userId, disabled, onLogged }: GymLogQuickAddPro
       setOpen(false)
       onLogged()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save gym log')
+      setError(saveError('this gym log', err))
     } finally {
       setSaving(false)
     }

@@ -40,7 +40,7 @@ export function InjuryModeAiSuggestion({ message, visible, onDismiss }: InjuryMo
         </Button>
         <Link
           to="/soccer/recovery"
-          className="inline-flex h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2.5 text-[11px] text-[var(--color-text-secondary)]"
+          className="inline-flex h-7 items-center rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2.5 text-xs text-[var(--color-text-secondary)]"
         >
           View Recovery
         </Link>

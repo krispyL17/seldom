@@ -70,6 +70,10 @@ export interface TrainingSession {
   notes: string | null
   goal_id: string | null
   side_balance: SideBalance | null
+  /** Skill IDs trained this session */
+  skills_trained: string[]
+  /** Team/group session — skill credit halved */
+  team_session: boolean
   created_at: string
   updated_at: string
 }
@@ -89,6 +93,8 @@ export interface CreateTrainingSessionInput {
   notes?: string
   goal_id?: string | null
   side_balance?: SideBalance | null
+  skills_trained?: string[]
+  team_session?: boolean
   technical_ratings?: TechnicalRatings
 }
 
@@ -106,6 +112,8 @@ export interface UpdateTrainingSessionInput {
   notes?: string | null
   goal_id?: string | null
   side_balance?: SideBalance | null
+  skills_trained?: string[]
+  team_session?: boolean
   technical_ratings?: TechnicalRatings
 }
 

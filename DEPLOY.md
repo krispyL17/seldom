@@ -81,7 +81,7 @@ npm run deploy:prod
 
 ## Free Ollama URL for other users
 
-See **`docs/FREE-OLLAMA-URL.md`** — Cloudflare tunnel, Tailscale Funnel, ngrok, and Oracle free VM options.
+See **`docs/ORACLE-OLLAMA-SETUP.md`** (Oracle VM + qwen2.5:3b + Cloudflare) — Cloudflare tunnel, Tailscale Funnel, ngrok, and other options in **`docs/FREE-OLLAMA-URL.md`**.
 ```
 
 After deploy:

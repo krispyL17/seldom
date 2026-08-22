@@ -48,11 +48,11 @@ export const localPreferencesService = {
     })
   },
 
-  markTabIntroComplete(userId: string, tabId: string): UserPreferences {
+  markTabIntroComplete(userId: string, tabId: string, version = 1): UserPreferences {
     const current = localPreferencesService.fetch(userId)
     const tab_intros_completed = {
       ...current.tab_intros_completed,
-      [tabId]: new Date().toISOString(),
+      [tabId]: String(version),
     }
     return localPreferencesService.patch(userId, { tab_intros_completed })
   },

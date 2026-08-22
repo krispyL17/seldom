@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Button } from '@components/ui/Button'
 import { Panel } from '@components/ui/Panel'
+import { formatUserError } from '@lib/userFacingError'
 import { useAthleteDevelopment } from '../../hooks/useAthleteDevelopment'
 import { detectImportType } from '../../knowledge/importParser'
 
@@ -31,7 +32,7 @@ export function KnowledgeImportPage() {
       }
       setStatus(`Imported ${total} chunk${total === 1 ? '' : 's'}.${warnings.length ? ` ${warnings.join(' ')}` : ''}`)
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : 'Import failed')
+      setStatus(formatUserError(err, 'Could not import that file. Check the format and try again.'))
     } finally {
       setBusy(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -41,8 +42,8 @@ export function KnowledgeImportPage() {
   const recent = development.knowledgeImports.slice(-8).reverse()
 
   return (
-    <div className="perf-page-fit grid h-full min-h-0 grid-cols-1 gap-2 overflow-hidden lg:grid-cols-2">
-      <Panel fillHeight title="Import existing knowledge" subtitle="Markdown, TXT, or JSON" className="min-h-0">
+    <div className="perf-page-fit grid grid-cols-1 gap-2 lg:grid-cols-2">
+      <Panel title="Import existing knowledge" subtitle="Markdown, TXT, or JSON">
         <p className="text-xs text-[var(--color-text-secondary)]">
           Upload notes or exports. Seldom parses sections, extracts facts, and categorizes chunks for future
           semantic memory. ChatGPT login is not required — structured files only for now.
@@ -61,7 +62,7 @@ export function KnowledgeImportPage() {
         {status && <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">{status}</p>}
       </Panel>
 
-      <Panel fillHeight title="Imported chunks" subtitle={`${development.knowledgeImports.length} stored (max 200)`} className="min-h-0">
+      <Panel title="Imported chunks" subtitle={`${development.knowledgeImports.length} stored (max 200)`}>
         {recent.length === 0 ? (
           <p className="text-xs text-[var(--color-text-tertiary)]">No imports yet.</p>
         ) : (
@@ -71,14 +72,14 @@ export function KnowledgeImportPage() {
                 key={chunk.id}
                 className="rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] p-2"
               >
-                <div className="flex flex-wrap items-center gap-2 text-[10px] text-[var(--color-text-tertiary)]">
+                <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-tertiary)]">
                   <span className="rounded bg-[var(--color-surface-overlay)] px-1.5 py-0.5 uppercase">
                     {chunk.category}
                   </span>
                   <span>{chunk.sourceFile}</span>
                 </div>
                 <p className="mt-1 text-xs font-medium text-[var(--color-text-primary)]">{chunk.title}</p>
-                <p className="mt-0.5 line-clamp-2 text-[11px] text-[var(--color-text-secondary)]">
+                <p className="mt-0.5 line-clamp-2 text-xs text-[var(--color-text-secondary)]">
                   {chunk.content}
                 </p>
               </li>

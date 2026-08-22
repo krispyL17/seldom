@@ -40,7 +40,7 @@ export function DocumentsSection({ college }: DocumentsSectionProps) {
                 <p className="truncate text-xs font-medium text-[var(--color-text-primary)]">
                   {doc.name}
                 </p>
-                <p className="text-[10px] text-[var(--color-text-tertiary)]">
+                <p className="text-xs text-[var(--color-text-tertiary)]">
                   {doc.size} ·{' '}
                   {new Date(`${doc.uploadedAt}T12:00:00`).toLocaleDateString('en-US', {
                     month: 'short',

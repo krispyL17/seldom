@@ -1,4 +1,4 @@
-import { SIDEBAR_NAV } from '@config/navigation'
+import { PRIMARY_SIDEBAR_NAV, UTILITY_NAV } from '@config/navigation'
 
 export interface SearchResult {
   id: string
@@ -23,21 +23,25 @@ export function buildSearchIndex(hobbyTabLabel = 'Performance', hobbyPassion = '
   const passion = hobbyPassion.toLowerCase()
   const perfLabel = hobbyTabLabel
 
-  const navItems = SIDEBAR_NAV.map((nav) =>
+  const primaryNav = PRIMARY_SIDEBAR_NAV.map((nav) =>
     item(
       nav.id,
-      nav.id === 'soccer' ? perfLabel : nav.label,
+      nav.id === 'home' ? 'Today' : nav.id === 'soccer' ? perfLabel : nav.label,
       nav.href,
       [nav.label.toLowerCase(), nav.id, nav.id === 'soccer' ? passion : ''].filter(Boolean),
     ),
   )
 
+  const utilityNav = UTILITY_NAV.map((nav) =>
+    item(nav.id, nav.label, nav.href, [nav.label.toLowerCase(), nav.id]),
+  )
+
   const performanceRoutes: SearchResult[] = [
-    item('perf-overview', `${perfLabel} overview, sessions & games`, '/soccer/overview', ['session', 'training', 'game', 'match', 'log', 'practice', 'overview', passion]),
+    item('perf-overview', `${perfLabel} overview`, '/soccer/overview', ['session', 'training', 'game', 'match', 'log', 'practice', 'overview', 'gym', passion]),
     item('perf-cardio', 'Cardio / runs', '/soccer/running', ['cardio', 'run', 'running', 'mile', '5k', passion]),
-    item('perf-progression', `${perfLabel} progression & stats`, '/soccer/progression', ['progression', 'stats', 'skills', 'trends', passion]),
+    item('perf-skills', `${perfLabel} skills & progression`, '/soccer/skills', ['progression', 'stats', 'skills', 'heatmap', 'trends', passion]),
     item('perf-recovery', 'Recovery & workload', '/soccer/recovery', ['recovery', 'workload', 'injury', passion]),
-    item('perf-prefs', `${perfLabel} tab preferences`, '/soccer/preferences', ['tabs', 'customize', 'preferences', passion]),
+    item('perf-gym', 'Gym log', '/soccer/gym', ['gym', 'lift', 'weights', passion]),
     item('perf-knowledge', 'Import knowledge', '/soccer/knowledge', ['import', 'markdown', 'json', 'memory', 'notes']),
   ]
 
@@ -51,11 +55,12 @@ export function buildSearchIndex(hobbyTabLabel = 'Performance', hobbyPassion = '
   ]
 
   const utilityRoutes: SearchResult[] = [
+    item('assistant', 'Seldom AI assistant', '/assistant', ['seldom ai', 'assistant', 'chat', 'help']),
     item('settings-ai', 'AI Settings (Ollama)', '/settings/ai', ['ollama', 'ai', 'model', 'local llm']),
     item('assistant-drills', 'Training drills (AI)', '/assistant?mode=soccer_drills', ['drills', 'training plan', passion]),
   ]
 
-  const merged = [...navItems, ...performanceRoutes, ...collegeRoutes, ...utilityRoutes]
+  const merged = [...primaryNav, ...utilityNav, ...performanceRoutes, ...collegeRoutes, ...utilityRoutes]
   const byHref = new Map<string, SearchResult>()
 
   for (const entry of merged) {

@@ -31,25 +31,25 @@ export function CollegeAnalyticsPanel() {
             <p className="text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">
               {stats.collegeCount}
             </p>
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">Total schools</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">Total schools</p>
           </div>
           <div className="rounded-[var(--radius-sm)] bg-[var(--color-surface-overlay)] p-3">
             <p className="text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">
               {stats.averageAcceptanceRate}%
             </p>
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">Avg acceptance</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">Avg acceptance</p>
           </div>
           <div className="rounded-[var(--radius-sm)] bg-[var(--color-surface-overlay)] p-3">
             <p className="text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">
               {stats.recommendationsComplete}/{stats.recommendationsTotal}
             </p>
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">Rec letters</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">Rec letters</p>
           </div>
           <div className="rounded-[var(--radius-sm)] bg-[var(--color-surface-overlay)] p-3">
             <p className="text-lg font-semibold tabular-nums text-[var(--color-text-primary)]">
               {stats.overallProgress}%
             </p>
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">Checklist progress</p>
+            <p className="text-xs text-[var(--color-text-tertiary)]">Checklist progress</p>
           </div>
         </div>
         {chartData.length > 0 && (

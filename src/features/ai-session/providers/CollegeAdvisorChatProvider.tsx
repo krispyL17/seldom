@@ -11,6 +11,7 @@ import {
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '@hooks/useAuth'
 import { isSupabaseConfigured } from '@config/env'
+import { formatUserError } from '@lib/userFacingError'
 import { collegeUserDataService } from '@services/database/collegeUserData'
 import { AssistantApiError, sendAssistantMessage } from '@services/assistant/assistantClient'
 import type { AdvisorMessage } from '@features/college/types'
@@ -173,14 +174,14 @@ export function CollegeAdvisorChatProvider({ children }: { children: ReactNode }
             if (err instanceof AssistantApiError && (err.status === 503 || err.status === 404)) {
               streamReply(
                 assistantMsg.id,
-                'Live AI needs Ollama and the API server. Start Ollama locally, set OLLAMA_MODEL in `.env.local`, run `npm run dev:vercel` (not plain `npm run dev`), then retry.',
+                `**College advisor is offline**\n\n${formatUserError(err, 'Seldom AI could not respond.')}\n\nTry again in a few minutes. If you host this app, check **Settings → AI status**.`,
               )
               return
             }
-            const message =
-              err instanceof AssistantApiError
-                ? err.message
-                : 'Could not reach the advisor. Check your connection and try again.'
+            const message = formatUserError(
+              err,
+              'Could not reach the college advisor. Check your connection and try again.',
+            )
             streamReply(assistantMsg.id, `Sorry — ${message}`)
             return
           }
@@ -188,7 +189,7 @@ export function CollegeAdvisorChatProvider({ children }: { children: ReactNode }
 
         streamReply(
           assistantMsg.id,
-          'Sign in and start Ollama with OLLAMA_MODEL configured to use the college advisor.',
+          'Sign in to use the college advisor. AI also needs to be online — check **Settings → AI status** if replies fail.',
         )
       })()
     },

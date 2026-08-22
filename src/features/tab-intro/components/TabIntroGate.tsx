@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { getTabIntroConfig } from '@config/tabIntroPrompts'
+import { shouldShowTabIntro } from '@features/onboarding/onboardingVersion'
+import { consumePendingTabIntro } from '@features/onboarding/tabIntroQueue'
 import { useUserPreferences } from '@features/preferences'
 import { useAuth } from '@hooks/useAuth'
 import { soccerUserDataService } from '@services/database/soccerUserData'
@@ -19,14 +21,15 @@ export function TabIntroGate() {
 
   const tabId = getTabIntroId(location.pathname)
   const config = tabId ? getTabIntroConfig(tabId) : null
-  const completed = preferences?.tab_intros_completed ?? {}
+  const tabIntros = preferences?.tab_intros_completed ?? {}
 
   const [open, setOpen] = useState(false)
   const [performanceReady, setPerformanceReady] = useState(true)
   const pendingTabRef = useRef<string | null>(null)
 
   const isPerformanceRoute = location.pathname === '/soccer' || location.pathname.startsWith('/soccer/')
-  const isTabIntroDone = tabId ? Boolean(completed[tabId]) : true
+  const isTabIntroDone =
+    tabId && config ? !shouldShowTabIntro(tabIntros, tabId, config.version) : true
 
   useEffect(() => {
     if (!isPerformanceRoute || !isAuthenticated || !user?.id) {
@@ -57,9 +60,13 @@ export function TabIntroGate() {
     if (tutorialOpen) return
     if (isPerformanceRoute && !performanceReady) return
 
+    if (!consumePendingTabIntro(tabId)) {
+      setOpen(false)
+      return
+    }
+
     pendingTabRef.current = tabId
-    const timer = window.setTimeout(() => setOpen(true), 700)
-    return () => window.clearTimeout(timer)
+    setOpen(true)
   }, [
     location.pathname,
     loading,
@@ -73,15 +80,19 @@ export function TabIntroGate() {
 
   const dismiss = useCallback(async () => {
     const id = pendingTabRef.current ?? tabId
+    if (!id || !config) return
     setOpen(false)
-    if (id) await markTabIntroComplete(id)
-  }, [markTabIntroComplete, tabId])
+    await markTabIntroComplete(id, config.version)
+  }, [config, markTabIntroComplete, tabId])
 
   const handleComplete = useCallback(
     async (_answers: Record<string, unknown>) => {
-      await dismiss()
+      const id = pendingTabRef.current ?? tabId
+      if (!id || !config) return
+      setOpen(false)
+      await markTabIntroComplete(id, config.version)
     },
-    [dismiss],
+    [config, markTabIntroComplete, tabId],
   )
 
   if (!config || !tabId) return null

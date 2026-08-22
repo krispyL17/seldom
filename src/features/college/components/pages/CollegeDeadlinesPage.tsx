@@ -9,7 +9,7 @@ export function CollegeDeadlinesPage() {
       <CollegePageGrid columns={2} rows={2}>
         <UpcomingDeadlinesPanel />
         <DeadlineCalendarPanel />
-        <div className="college-page-span-2 min-h-0 overflow-hidden">
+        <div className="college-page-span-2 min-h-0">
           <TimelineContent compact title="Admission timeline" />
         </div>
       </CollegePageGrid>

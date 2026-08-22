@@ -4,9 +4,13 @@ import { EmptyState } from '@components/ui/EmptyState'
 import { ErrorPanel } from '@components/ui/ErrorPanel'
 import { PanelSkeleton } from '@components/ui/PanelSkeleton'
 import { ProgressBar } from '@components/ui/ProgressBar'
-import { Panel, PanelActionLink, PanelDivider } from '@components/ui/Panel'
+import { Panel, PanelActionLink } from '@components/ui/Panel'
 import { useGoals } from '@features/goals/hooks/useGoals'
 import type { Goal } from '@features/goals/types'
+import { goalDisplayProgress } from '@features/goals/utils'
+
+const MORE_LINK =
+  'text-xs font-medium text-[var(--color-accent-muted)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]'
 
 function nextMilestone(goal: Goal) {
   const pending = goal.milestones.find((m) => !m.completed)
@@ -14,7 +18,7 @@ function nextMilestone(goal: Goal) {
 }
 
 function formatEta(targetDate: string | null) {
-  if (!targetDate) return '—'
+  if (!targetDate) return 'No date'
   return new Date(`${targetDate}T12:00:00`).toLocaleDateString('en-US', {
     month: 'short',
     year: 'numeric',
@@ -23,57 +27,75 @@ function formatEta(targetDate: string | null) {
 
 export function GoalsPanel() {
   const { goals, loading, error, reload } = useGoals()
-  const active = goals.filter((g) => g.status === 'active')
+  const activeAll = goals.filter((g) => g.status === 'active')
+  const active = activeAll.slice(0, 2)
 
   if (error) {
-    return <ErrorPanel message={error} onRetry={() => void reload()} title="Goals" />
+    return (
+      <ErrorPanel message={error} onRetry={() => void reload()} title="Couldn't load goals" />
+    )
   }
 
   return (
     <Panel
       scrollCap
-      title="Long-Term Goals"
-      subtitle={loading ? 'Loading…' : `${active.length} active objective${active.length === 1 ? '' : 's'}`}
+      fillHeight
+      title="Goals"
+      accentNavId="goals"
+      subtitle={
+        loading
+          ? 'Loading…'
+          : activeAll.length === 0
+            ? 'None active'
+            : `${activeAll.length} active`
+      }
       action={<PanelActionLink to="/goals">Manage</PanelActionLink>}
     >
       {loading ? (
-        <PanelSkeleton lines={4} />
+        <PanelSkeleton lines={3} />
       ) : active.length === 0 ? (
         <EmptyState
+          compact
           title="No active goals"
-          description="Set goals to track long-term progress."
+          description="Set a target with milestones to track."
           action={
-            <Link
-              to="/goals?new=1"
-              className="text-xs font-medium text-[var(--color-accent-muted)] hover:underline"
-            >
-              Go to Goals
+            <Link to="/goals?new=1" className={MORE_LINK}>
+              Add goal
             </Link>
           }
         />
       ) : (
-        <div className="space-y-4">
-          {active.map((goal) => (
-            <div
-              key={goal.id}
-              className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] p-3"
-            >
-              <div className="mb-2 flex items-start justify-between gap-2">
-                <p className="text-xs font-medium text-[var(--color-text-primary)]">{goal.title}</p>
-                <Badge variant="muted">ETA {formatEta(goal.target_date)}</Badge>
+        <div className="space-y-3">
+          {active.map((goal) => {
+            const displayProgress = goalDisplayProgress(goal)
+            return (
+              <div key={goal.id} className="space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="min-w-0 truncate text-xs font-medium text-[var(--color-text-primary)]">
+                    {goal.title}
+                  </p>
+                  <Badge variant="muted" className="shrink-0 tabular-nums">
+                    {Math.round(displayProgress)}%
+                  </Badge>
+                </div>
+                <ProgressBar
+                  value={displayProgress}
+                  variant={displayProgress >= 70 ? 'success' : 'accent'}
+                  size="sm"
+                />
+                <p className="truncate text-xs text-[var(--color-text-tertiary)]">
+                  Next:{' '}
+                  <span className="text-[var(--color-text-secondary)]">{nextMilestone(goal)}</span>
+                  <span className="text-[var(--color-text-tertiary)]"> · {formatEta(goal.target_date)}</span>
+                </p>
               </div>
-              <ProgressBar
-                value={goal.progress}
-                variant={goal.progress >= 70 ? 'success' : 'accent'}
-                size="md"
-              />
-              <PanelDivider />
-              <p className="text-[10px] text-[var(--color-text-tertiary)]">
-                Next milestone:{' '}
-                <span className="text-[var(--color-text-secondary)]">{nextMilestone(goal)}</span>
-              </p>
-            </div>
-          ))}
+            )
+          })}
+          {activeAll.length > 2 && (
+            <Link to="/goals" className={`inline-block ${MORE_LINK}`}>
+              +{activeAll.length - 2} more
+            </Link>
+          )}
         </div>
       )}
     </Panel>

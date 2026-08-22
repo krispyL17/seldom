@@ -3,6 +3,7 @@ import { AnalyticsKpiRow, ChartPanel } from '@components/charts'
 import { Panel } from '@components/ui/Panel'
 import { useAuth } from '@hooks/useAuth'
 import { useAnalytics } from '@features/analytics'
+import { useDashboardInsights } from '@features/analytics/hooks/useDashboardInsights'
 import {
   analyticsJournalDayCount,
   analyticsTaskDayCount,
@@ -16,6 +17,7 @@ import { GymLogQuickAdd } from './GymLogQuickAdd'
 export function AnalyticsPage() {
   const { user } = useAuth()
   const { dashboard, loading, error, reload, refreshing } = useAnalytics()
+  const { insights } = useDashboardInsights()
 
   if (loading && !dashboard) {
     return <AnalyticsPageSkeleton />
@@ -23,7 +25,7 @@ export function AnalyticsPage() {
 
   if (error) {
     return (
-      <Panel title="Mission Analytics" subtitle="Telemetry sync error" fullWidth>
+      <Panel title="Your week" subtitle="Couldn't refresh your stats" fullWidth>
         <p className="text-sm text-[var(--color-danger)]">{error}</p>
         <Button type="button" variant="secondary" size="sm" className="mt-3" onClick={() => void reload()}>
           Retry
@@ -34,9 +36,9 @@ export function AnalyticsPage() {
 
   if (!dashboard || !user) {
     return (
-      <Panel title="Mission Analytics" subtitle="Sign in to view telemetry" fullWidth>
+      <Panel title="Your week" subtitle="Sign in to view progress" fullWidth>
         <p className="text-sm text-[var(--color-text-secondary)]">
-          Log in to see the advanced analytics layer of your command center.
+          Log in to see trends from tasks, training, journal, and college prep.
         </p>
       </Panel>
     )
@@ -45,22 +47,30 @@ export function AnalyticsPage() {
   const weekRange = analyticsWeekRangeLabel(dashboard.weekCount)
   const taskDays = analyticsTaskDayCount(dashboard.weekCount)
   const journalDays = analyticsJournalDayCount(dashboard.weekCount)
+  const headline = insights?.weekHeadline
 
   return (
     <div className="mx-auto max-w-[1600px] animate-fade-in">
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="max-w-2xl">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-[var(--color-accent-muted)]">
-            Command center · advanced telemetry
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--color-accent-muted)]">
+            Based on what you logged
           </p>
           <h2 className="mt-1 text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
-            Mission Analytics
+            Your week
           </h2>
-          <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-tertiary)]">
-            The deep-read layer of your personal command center — {weekRange} cross-domain trends from
-            tasks, goals, training, runs, gym, college prep, and journal entries you have logged.
-            Charts expand to 4 weeks once you have older activity.
-          </p>
+          {headline ? (
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-secondary)]">
+              <span className="font-semibold text-[var(--color-text-primary)]">{headline.adjective}</span>
+              {' — '}
+              {headline.sentence}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-text-tertiary)]">
+              {weekRange} cross-domain trends from tasks, goals, training, runs, gym, college prep,
+              and journal entries.
+            </p>
+          )}
         </div>
         <Button
           type="button"
@@ -82,21 +92,21 @@ export function AnalyticsPage() {
 
       <div className="dashboard-grid grid grid-cols-1 gap-4 lg:grid-cols-2">
         <ChartPanel
-          title="Task Completion"
-          subtitle={`Daily completion rate (${taskDays} days)`}
+          title="Tasks completed"
+          subtitle={`Daily completions (${taskDays} days)`}
           series={dashboard.taskCompletion}
           color="var(--color-success)"
           zeroMessage="No tasks completed in this window yet."
         />
         <ChartPanel
-          title="Goal Progress"
+          title="Goal progress"
           subtitle={`Average active goal progress (${weekRange})`}
           series={dashboard.goalProgress}
           color="var(--color-warning)"
           zeroMessage="No goal progress recorded in this period yet."
         />
         <ChartPanel
-          title="Training Frequency"
+          title="Training frequency"
           subtitle={`Practice sessions per week (${weekRange})`}
           series={dashboard.trainingFrequency}
           color="var(--color-accent)"
@@ -120,7 +130,7 @@ export function AnalyticsPage() {
           action={<GymLogQuickAdd userId={user.id} onLogged={() => void reload()} />}
         />
         <ChartPanel
-          title="College Application Progress"
+          title="College application progress"
           subtitle="Per-school checklist progress"
           series={dashboard.collegeProgress}
           color="var(--color-success)"
@@ -128,18 +138,23 @@ export function AnalyticsPage() {
           zeroMessage="No checklist progress recorded yet."
         />
         <ChartPanel
-          title="Journal Consistency"
-          subtitle={`Entries logged (${journalDays} days)`}
+          title="Journal consistency"
+          subtitle={`Days with entries (${journalDays} days)`}
           series={dashboard.journalConsistency}
           color="var(--color-accent)"
           zeroMessage="No journal entries in this period yet."
           fullWidth
+          variant="heatmap"
         />
       </div>
 
-      <p className="mt-4 text-[10px] text-[var(--color-text-tertiary)]">
-        Last computed {new Date(dashboard.computedAt).toLocaleString()}
-      </p>
+      {insights?.dailyInsight && (
+        <Panel title="Today's read" subtitle="One takeaway from your logs" fullWidth className="mt-4">
+          <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+            {insights.dailyInsight}
+          </p>
+        </Panel>
+      )}
     </div>
   )
 }

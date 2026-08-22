@@ -53,7 +53,7 @@ export function EssaysWorkspaceTab() {
       <div className="college-scroll-region space-y-5">
         <section>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]">
               Essay themes
             </h3>
             <Button
@@ -108,7 +108,7 @@ export function EssaysWorkspaceTab() {
                           essayIdeas: commonApp.essayIdeas.filter((i) => i.id !== idea.id),
                         })
                       }
-                      className="mt-5 shrink-0 text-[10px] text-[var(--color-danger)] hover:underline"
+                      className="mt-5 shrink-0 text-xs text-[var(--color-danger)] hover:underline"
                     >
                       Remove
                     </button>
@@ -136,7 +136,7 @@ export function EssaysWorkspaceTab() {
 
         <section>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="text-[10px] text-[var(--color-text-tertiary)]">
+            <p className="text-xs text-[var(--color-text-tertiary)]">
               Story angles for essays and interviews
             </p>
             <Button
@@ -186,7 +186,7 @@ export function EssaysWorkspaceTab() {
                           reflectionNotes: commonApp.reflectionNotes.filter((n) => n.id !== note.id),
                         })
                       }
-                      className="mt-5 shrink-0 text-[10px] text-[var(--color-danger)] hover:underline"
+                      className="mt-5 shrink-0 text-xs text-[var(--color-danger)] hover:underline"
                     >
                       Remove
                     </button>
@@ -259,7 +259,7 @@ export function EssaysWorkspaceTab() {
                           />
                         </div>
                         <div className="flex items-end gap-2">
-                          <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)]">
+                          <label className="block text-xs font-medium text-[var(--color-text-tertiary)]">
                             Status
                             <select
                               value={draft.status}
@@ -271,7 +271,7 @@ export function EssaysWorkspaceTab() {
                                 )
                                 void save({ ...commonApp, personalStatementDrafts })
                               }}
-                              className="mt-1 block rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1 text-[10px]"
+                              className="mt-1 block rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1 text-xs"
                             >
                               {DRAFT_STATUSES.map((s) => (
                                 <option key={s} value={s}>
@@ -290,7 +290,7 @@ export function EssaysWorkspaceTab() {
                                 ),
                               })
                             }
-                            className="pb-1 text-[10px] text-[var(--color-danger)] hover:underline"
+                            className="pb-1 text-xs text-[var(--color-danger)] hover:underline"
                           >
                             Remove
                           </button>
@@ -315,7 +315,7 @@ export function EssaysWorkspaceTab() {
                         }}
                         rows={5}
                       />
-                      <p className="mt-1 text-[10px] text-[var(--color-text-tertiary)]">
+                      <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
                         {draft.wordCount} words
                       </p>
                     </li>
@@ -374,7 +374,7 @@ export function EssaysWorkspaceTab() {
                               ),
                             })
                           }
-                          className="text-[10px] text-[var(--color-danger)] hover:underline"
+                          className="text-xs text-[var(--color-danger)] hover:underline"
                         >
                           Remove
                         </button>
@@ -392,7 +392,7 @@ export function EssaysWorkspaceTab() {
                       />
                       <div className="mt-2 flex flex-wrap items-center gap-2">
                         <Badge variant="default">{essayStatusLabel(entry.status)}</Badge>
-                        <label className="text-[10px] text-[var(--color-text-tertiary)]">
+                        <label className="text-xs text-[var(--color-text-tertiary)]">
                           Status
                           <select
                             value={entry.status}
@@ -404,7 +404,7 @@ export function EssaysWorkspaceTab() {
                               )
                               void save({ ...commonApp, supplementalTracking })
                             }}
-                            className="ml-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-0.5 text-[10px]"
+                            className="ml-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-0.5 text-xs"
                           >
                             {DRAFT_STATUSES.map((s) => (
                               <option key={s} value={s}>
@@ -492,9 +492,9 @@ function RecommendationsSection() {
                     : 'Connected'}
               </Badge>
             </div>
-            <p className="mt-0.5 text-[10px] capitalize text-[var(--color-text-tertiary)]">{rec.role}</p>
+            <p className="mt-0.5 text-xs capitalize text-[var(--color-text-tertiary)]">{rec.role}</p>
             {isSeniorMode && collegeNames.length > 0 && (
-              <p className="mt-1 text-[10px] text-[var(--color-text-secondary)]">
+              <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
                 {collegeNames.join(', ')}
               </p>
             )}

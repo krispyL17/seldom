@@ -141,7 +141,7 @@ export function ThemeSettingsSection({
     <div className="space-y-5">
       <fieldset>
         <legend className="text-xs font-medium text-[var(--color-text-secondary)]">Built-in palettes</legend>
-        <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
           Preset palettes support dark, light, and system brightness. Click <strong>Save preferences</strong> below to keep changes.
         </p>
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -164,7 +164,7 @@ export function ThemeSettingsSection({
               <span className="block text-xs font-medium text-[var(--color-text-primary)]">
                 {option.label}
               </span>
-              <span className="mt-0.5 block text-[10px] leading-snug text-[var(--color-text-tertiary)]">
+              <span className="mt-0.5 block text-xs leading-snug text-[var(--color-text-tertiary)]">
                 {option.description}
               </span>
             </button>
@@ -174,7 +174,7 @@ export function ThemeSettingsSection({
 
       <fieldset>
         <legend className="text-xs font-medium text-[var(--color-text-secondary)]">Custom themes</legend>
-        <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
           Create up to two personal themes with your own colors and sidebar bookmarks. Dark, light, and system brightness apply to custom themes too.
         </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -196,7 +196,7 @@ export function ThemeSettingsSection({
                   style={{ background: gradientPreviewCss(slot.id, { [slot.id]: theme ?? { name: slot.defaultName, colors } }) }}
                   aria-hidden
                 />
-                <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)]">
+                <label className="block text-xs font-medium text-[var(--color-text-tertiary)]">
                   Theme name
                   <input
                     type="text"
@@ -208,7 +208,7 @@ export function ThemeSettingsSection({
                 </label>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   {(['Primary', 'Mid', 'Accent'] as const).map((label, index) => (
-                    <label key={label} className="text-[9px] text-[var(--color-text-tertiary)]">
+                    <label key={label} className="text-xs text-[var(--color-text-tertiary)]">
                       {label}
                       <input
                         type="color"
@@ -230,14 +230,14 @@ export function ThemeSettingsSection({
                       upsertCustomTheme(slot.id, {})
                       handlePaletteChange(slot.id)
                     }}
-                    className="rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-[10px] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
+                    className="rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
                   >
                     {isActive ? 'Selected' : 'Use theme'}
                   </button>
                   <button
                     type="button"
                     onClick={() => applyCurrentLook(slot.id)}
-                    className="rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-[10px] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
+                    className="rounded-[var(--radius-sm)] border border-[var(--color-border)] px-2 py-1 text-xs text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-overlay)]"
                   >
                     Use current look
                   </button>
@@ -245,7 +245,7 @@ export function ThemeSettingsSection({
                     <button
                       type="button"
                       onClick={() => deleteCustomTheme(slot.id)}
-                      className="rounded-[var(--radius-sm)] px-2 py-1 text-[10px] text-[var(--color-danger)] hover:underline"
+                      className="rounded-[var(--radius-sm)] px-2 py-1 text-xs text-[var(--color-danger)] hover:underline"
                     >
                       Delete
                     </button>
@@ -253,14 +253,14 @@ export function ThemeSettingsSection({
                 </div>
                 <div className="mt-3 border-t border-[var(--color-border)] pt-3">
                   <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-medium text-[var(--color-text-secondary)]">
+                    <p className="text-xs font-medium text-[var(--color-text-secondary)]">
                       Tab bookmarks for this theme
                     </p>
                     {theme?.navTabColors && Object.keys(theme.navTabColors).length > 0 && (
                       <button
                         type="button"
                         onClick={() => resetCustomThemeTabColors(slot.id)}
-                        className="text-[9px] text-[var(--color-text-tertiary)] hover:underline"
+                        className="text-xs text-[var(--color-text-tertiary)] hover:underline"
                       >
                         Reset
                       </button>
@@ -280,7 +280,7 @@ export function ThemeSettingsSection({
                           key={item.id}
                           className="flex items-center justify-between gap-2 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)] px-2 py-1.5"
                         >
-                          <span className="truncate text-[10px] text-[var(--color-text-primary)]">
+                          <span className="truncate text-xs text-[var(--color-text-primary)]">
                             {item.label}
                           </span>
                           <input
@@ -303,7 +303,7 @@ export function ThemeSettingsSection({
 
       <fieldset>
         <legend className="text-xs font-medium text-[var(--color-text-secondary)]">Brightness</legend>
-        <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
           Applies to built-in and custom palettes — including light mode for custom color themes.
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -333,12 +333,12 @@ export function ThemeSettingsSection({
           <button
             type="button"
             onClick={resetTabColors}
-            className="text-[10px] text-[var(--color-text-tertiary)] underline-offset-2 hover:text-[var(--color-text-secondary)] hover:underline"
+            className="text-xs text-[var(--color-text-tertiary)] underline-offset-2 hover:text-[var(--color-text-secondary)] hover:underline"
           >
             Reset to palette
           </button>
         </div>
-        <p className="mt-0.5 text-[11px] text-[var(--color-text-tertiary)]">
+        <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
           Override sidebar tab underscores for built-in palettes. Custom themes store bookmarks per theme above.
         </p>
         <ul className="mt-3 space-y-2">

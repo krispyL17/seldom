@@ -106,7 +106,7 @@ export function StudentContextPanel() {
           onChange={(e) => setTeamQuality(e.target.value)}
           placeholder="e.g. State-ranked, competitive club, varsity starter"
         />
-        <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)]">
+        <label className="block text-xs font-medium text-[var(--color-text-tertiary)]">
           University / recruiting links
           <textarea
             value={universityLinks}
@@ -118,7 +118,7 @@ export function StudentContextPanel() {
         </label>
         <div className="flex items-center justify-end gap-2">
           {saved && (
-            <span className="text-[10px] text-[var(--color-success)]">Saved</span>
+            <span className="text-xs text-[var(--color-success)]">Saved</span>
           )}
           <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>
             {saving ? 'Saving…' : 'Save profile'}

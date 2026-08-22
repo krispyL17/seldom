@@ -1,90 +1,40 @@
-import { SOCCER_NAV, type SoccerNavId } from '../types'
-import type { CustomPerformanceTab } from '../athlete/types'
-
-const HIDDEN_TABS = new Set<SoccerNavId>([
-  'physical',
-  'weaknesses',
-  'strengths',
-  'coach',
-  'technical',
-  'progress',
-  'training',
-  'stats',
-  'matches',
-])
-
-const GENERIC_LABELS: Partial<Record<SoccerNavId, string>> = {
-  overview: 'Overview',
-  training: 'Sessions',
-  running: 'Cardio',
-  matches: 'Games',
-  stats: 'Stats',
-}
-
 export interface PerformanceNavItem {
   id: string
   label: string
   href: string
 }
 
+/** Performance sub-nav (Overview · Cardio · Skills · optional Gym · Recovery). */
 export function getPerformanceNav(
   _hobbyPassion = '',
-  customTabs: CustomPerformanceTab[] = [],
-  injuryModeActive = false,
+  _injuryModeActive = false,
   gymEnabled = false,
 ): PerformanceNavItem[] {
-  const base = SOCCER_NAV.filter((item) => !HIDDEN_TABS.has(item.id)).map((item) => {
-    const label = GENERIC_LABELS[item.id] ?? item.label
-    return {
-      id: item.id,
-      label: label === item.label ? item.label : label,
-      href: item.href,
-    }
-  })
-
-  const gymTab: PerformanceNavItem[] = gymEnabled
-    ? [{ id: 'gym', label: 'Gym', href: '/soccer/gym' }]
-    : []
-
-  const extended: PerformanceNavItem[] = [
-    { id: 'progression', label: 'Progression', href: '/soccer/progression' },
-    {
-      id: 'recovery',
-      label: injuryModeActive ? 'Recovery' : 'Recovery',
-      href: '/soccer/recovery',
-    },
-    { id: 'preferences', label: 'Tab preferences', href: '/soccer/preferences' },
+  const nav: PerformanceNavItem[] = [
+    { id: 'overview', label: 'Overview', href: '/soccer/overview' },
+    { id: 'running', label: 'Cardio', href: '/soccer/running' },
+    { id: 'skills', label: 'Skills', href: '/soccer/skills' },
   ]
 
-  const sportTabs = customTabs.slice(0, 4).map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    href: `/soccer/tab/${tab.slug}`,
-  }))
+  if (gymEnabled) {
+    nav.push({ id: 'gym', label: 'Gym', href: '/soccer/gym' })
+  }
 
-  return [...base, ...gymTab, ...extended, ...sportTabs]
+  nav.push({ id: 'recovery', label: 'Recovery', href: '/soccer/recovery' })
+
+  return nav
 }
 
-export function getPerformancePageTitle(
-  pathname: string,
-  customTabs: CustomPerformanceTab[] = [],
-): string {
+export function getPerformancePageTitle(pathname: string): string {
   const parts = pathname.split('/').filter(Boolean)
   const segment = parts[parts.length - 1] ?? 'overview'
 
-  if (parts.includes('tab') && segment) {
-    const tab = customTabs.find((t) => t.slug === segment)
-    if (tab) return tab.label
-  }
-
-  if (segment === 'progression') return 'Progression'
+  if (segment === 'skills' || segment === 'progression' || segment === 'stats') return 'Skills'
   if (segment === 'recovery') return 'Recovery'
+  if (segment === 'running') return 'Cardio'
   if (segment === 'gym') return 'Gym'
-  if (segment === 'preferences') return 'Tab preferences'
   if (segment === 'knowledge') return 'Import Knowledge'
-  if (segment === 'training') return 'Overview'
-  if (segment === 'stats') return 'Progression'
-  if (segment === 'matches') return 'Overview'
+  if (segment === 'overview' || segment === 'soccer') return 'Overview'
 
   const nav = getPerformanceNav()
   const match = nav.find((n) => n.href.endsWith(`/${segment}`))

@@ -14,6 +14,8 @@ Use this guide to pick a **free** option for sharing the app with other people.
 | **ngrok free** | Free | No on free tier | While tunnel runs | Quick demos |
 | **Oracle Cloud free VM** | Free tier | Yes | 24/7 if VM stays up | Best free “always on” for others |
 
+**Full step-by-step (Oracle + qwen2.5:3b + Cloudflare):** **`docs/ORACLE-OLLAMA-SETUP.md`**
+
 ---
 
 ## Option 1 — Cloudflare quick tunnel (already in Seldom)
@@ -153,7 +155,7 @@ https://your-app.vercel.app/api/ollama/status → online
 | Stage | Do this |
 |-------|---------|
 | **Now** | Deploy to Vercel; use quick tunnel to test AI on production |
-| **This week** | Named Cloudflare tunnel **or** Oracle free VM for a stable URL |
+| **This week** | Oracle free VM + Cloudflare tunnel — see **`docs/ORACLE-OLLAMA-SETUP.md`** |
 | **Before sharing widely** | Secure Ollama (auth / firewall); set `ALLOWED_ORIGINS` |
 
 See also: `DEPLOY.md`, `npm run tunnel:ollama`, `vercel.env.example`.

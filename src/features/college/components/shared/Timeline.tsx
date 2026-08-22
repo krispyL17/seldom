@@ -50,11 +50,11 @@ export function Timeline({ items, className }: TimelineProps) {
                 </Badge>
               </div>
               {item.subLabel && (
-                <p className="mt-0.5 text-[10px] text-[var(--color-text-tertiary)]">
+                <p className="mt-0.5 text-xs text-[var(--color-text-tertiary)]">
                   {item.subLabel}
                 </p>
               )}
-              <p className="mt-0.5 text-[10px] tabular-nums text-[var(--color-text-secondary)]">
+              <p className="mt-0.5 text-xs tabular-nums text-[var(--color-text-secondary)]">
                 {formatShortDate(item.date)}
               </p>
             </div>

@@ -24,7 +24,7 @@ function ScoreFields({
 }) {
   return (
     <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-overlay)]/50 p-3">
-      <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
         {label}
       </p>
       <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -41,7 +41,7 @@ function ScoreFields({
           }}
           placeholder={label === 'SAT' ? '400–1600' : '1–36'}
         />
-        <label className="block text-[10px] font-medium text-[var(--color-text-tertiary)]">
+        <label className="block text-xs font-medium text-[var(--color-text-tertiary)]">
           Status
           <select
             value={entry.status}
@@ -59,7 +59,7 @@ function ScoreFields({
         </label>
       </div>
       {entry.date && (
-        <p className="mt-2 text-[10px] text-[var(--color-text-tertiary)]">Last updated {entry.date}</p>
+        <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">Last updated {entry.date}</p>
       )}
     </div>
   )
@@ -123,7 +123,7 @@ export function TestScoresPanel() {
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
           <Badge variant="muted">Updates financial aid & application timelines</Badge>
           <div className="flex items-center gap-2">
-            {saved && <span className="text-[10px] text-[var(--color-success)]">Saved</span>}
+            {saved && <span className="text-xs text-[var(--color-success)]">Saved</span>}
             <Button type="button" size="sm" disabled={saving} onClick={() => void save()}>
               {saving ? 'Saving…' : 'Save scores'}
             </Button>

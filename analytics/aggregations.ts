@@ -32,16 +32,11 @@ export function resolveAnalyticsWeekCount(payload: AnalyticsSyncPayload): number
 function computeTaskCompletion(payload: AnalyticsSyncPayload, dayCount: number): ChartSeries {
   const days = lastNDays(dayCount)
   const labels = days.map(dayLabel)
-  const data = days.map((day) => {
-    const completedToday = payload.tasks.filter(
-      (t) => t.completed && dateInDay(t.updated_at, day),
-    ).length
-    const total = payload.tasks.length
-    if (total === 0) return 0
-    return Math.round((completedToday / total) * 100)
-  })
+  const data = days.map((day) =>
+    payload.tasks.filter((t) => t.completed && dateInDay(t.updated_at, day)).length,
+  )
 
-  return { labels, data, unit: '%' }
+  return { labels, data, unit: 'completed' }
 }
 
 function computeGoalProgress(payload: AnalyticsSyncPayload, weekCount: number): ChartSeries {
@@ -129,6 +124,19 @@ function computeJournalStreak(data: number[]): number {
   return streak
 }
 
+function trendFromDelta(delta: number | null, invert = false): 'up' | 'down' | 'neutral' {
+  if (delta == null || delta === 0) return 'neutral'
+  const positive = delta > 0
+  const good = invert ? !positive : positive
+  return good ? 'up' : 'down'
+}
+
+function deltaLabel(delta: number | null): string | undefined {
+  if (delta == null || delta === 0) return undefined
+  const sign = delta > 0 ? '+' : ''
+  return `${sign}${delta} vs last wk`
+}
+
 function computeKpis(
   payload: AnalyticsSyncPayload,
   dashboard: Omit<AnalyticsDashboard, 'kpis'>,
@@ -141,28 +149,96 @@ function computeKpis(
         )
       : 0
 
+  const activeGoals = payload.goals.filter((g) => g.status === 'active')
   const avgGoal =
-    payload.goals.filter((g) => g.status === 'active').length > 0
-      ? Math.round(
-          payload.goals
-            .filter((g) => g.status === 'active')
-            .reduce((s, g) => s + g.progress, 0) /
-            payload.goals.filter((g) => g.status === 'active').length,
-        )
+    activeGoals.length > 0
+      ? Math.round(activeGoals.reduce((s, g) => s + g.progress, 0) / activeGoals.length)
       : 0
 
   const journalStreak = computeJournalStreak(dashboard.journalConsistency.data)
+  const journalSparkline = dashboard.journalConsistency.data.slice(-7)
 
-  const weeklyTraining = dashboard.trainingFrequency.data.at(-1) ?? 0
-  const weeklyRuns = dashboard.running.data.at(-1) ?? 0
+  const trainingData = dashboard.trainingFrequency.data
+  const weeklyTraining = trainingData.at(-1) ?? 0
+  const priorTraining = trainingData.at(-2) ?? 0
+  const trainingDelta = trainingData.length >= 2 ? weeklyTraining - priorTraining : null
+
+  const runningData = dashboard.running.data
+  const weeklyRuns = runningData.at(-1) ?? 0
+  const priorRuns = runningData.at(-2) ?? 0
+  const runningDelta = runningData.length >= 2 ? Math.round((weeklyRuns - priorRuns) * 10) / 10 : null
+
+  const goalData = dashboard.goalProgress.data
+  const goalValue = goalData.at(-1) ?? avgGoal
+  const priorGoal = goalData.at(-2) ?? goalValue
+  const goalDelta = goalData.length >= 2 ? goalValue - priorGoal : null
+
+  const taskSparkline = dashboard.taskCompletion.data.slice(-7)
+  const priorTaskRate = taskSparkline.length >= 2 ? taskSparkline.at(-2) ?? 0 : 0
+  const taskDelta =
+    taskSparkline.length >= 2 ? (taskSparkline.at(-1) ?? 0) - priorTaskRate : null
+
+  const priorJournalStreak = computeJournalStreak(
+    dashboard.journalConsistency.data.slice(0, -1),
+  )
+  const journalDelta =
+    dashboard.journalConsistency.data.length >= 2 ? journalStreak - priorJournalStreak : null
+
+  const collegeValue = payload.college?.overallProgress ?? 0
 
   return [
-    { label: 'Task completion', value: taskRate, unit: '%', trend: taskRate >= 50 ? 'up' : 'neutral' },
-    { label: 'Goal progress', value: avgGoal, unit: '%', trend: 'up' },
-    { label: 'Training / wk', value: weeklyTraining, unit: 'sessions', trend: 'up' },
-    { label: 'Running / wk', value: weeklyRuns, unit: distanceUnit, trend: 'neutral' },
-    { label: 'College progress', value: payload.college?.overallProgress ?? 0, unit: '%', trend: 'up' },
-    { label: 'Journal streak', value: journalStreak, unit: 'days', trend: journalStreak >= 3 ? 'up' : 'neutral' },
+    {
+      label: 'Task completion',
+      value: taskRate,
+      unit: '%',
+      trend: trendFromDelta(taskDelta),
+      delta: taskDelta,
+      deltaLabel: deltaLabel(taskDelta),
+      sparkline: taskSparkline,
+    },
+    {
+      label: 'Goal progress',
+      value: goalValue,
+      unit: '%',
+      trend: trendFromDelta(goalDelta),
+      delta: goalDelta,
+      deltaLabel: deltaLabel(goalDelta),
+      sparkline: goalData.slice(-4),
+    },
+    {
+      label: 'Training / wk',
+      value: weeklyTraining,
+      unit: 'sessions',
+      trend: trendFromDelta(trainingDelta),
+      delta: trainingDelta,
+      deltaLabel: deltaLabel(trainingDelta),
+      sparkline: trainingData.slice(-4),
+    },
+    {
+      label: 'Running / wk',
+      value: weeklyRuns,
+      unit: distanceUnit,
+      trend: trendFromDelta(runningDelta),
+      delta: runningDelta,
+      deltaLabel: deltaLabel(runningDelta),
+      sparkline: runningData.slice(-4),
+    },
+    {
+      label: 'College progress',
+      value: collegeValue,
+      unit: '%',
+      trend: collegeValue >= 50 ? 'up' : 'neutral',
+      sparkline: payload.college?.collegeProgress.slice(0, 6),
+    },
+    {
+      label: 'Journal streak',
+      value: journalStreak,
+      unit: 'days',
+      trend: trendFromDelta(journalDelta),
+      delta: journalDelta,
+      deltaLabel: deltaLabel(journalDelta),
+      sparkline: journalSparkline,
+    },
   ]
 }
 

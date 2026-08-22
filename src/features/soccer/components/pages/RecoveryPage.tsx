@@ -41,8 +41,16 @@ export function RecoveryPage() {
   const breakdown = snap?.breakdown
 
   return (
-    <div className="perf-page-fit grid h-full min-h-0 grid-cols-1 gap-2 overflow-hidden lg:grid-cols-2">
-      <Panel fillHeight title="Workload" subtitle="Last 7 days · load-based estimate" className="min-h-0">
+    <div className="perf-tab-scroll">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
+      <Panel
+        title="Workload"
+        subtitle={
+          breakdown && !breakdown.acwrReady && breakdown.historyDaysAvailable > 0
+            ? `Last ${Math.min(7, breakdown.historyDaysAvailable)} day${Math.min(7, breakdown.historyDaysAvailable) === 1 ? '' : 's'} · ACWR pending`
+            : 'Last 7 days · load-based estimate'
+        }
+      >
         <div className="flex items-start justify-between gap-3">
           <p className="text-3xl font-semibold tabular-nums text-[var(--color-text-primary)]">
             {snap?.workloadScore ?? '—'}
@@ -62,12 +70,12 @@ export function RecoveryPage() {
             className="mt-3"
           />
         )}
-        <p className="mt-2 text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
           {formatMinutesDuration(snap?.minutesLast7Days ?? 0)} · {snap?.sessionsLast7Days ?? 0} sessions
           {breakdown && breakdown.runMinutesLast7 > 0 && ` · ${breakdown.runMinutesLast7} min runs`}
         </p>
         {breakdown && (
-          <dl className="mt-4 space-y-1.5 text-[10px] text-[var(--color-text-secondary)]">
+          <dl className="mt-4 space-y-1.5 text-xs text-[var(--color-text-secondary)]">
             <div className="flex justify-between gap-2">
               <dt>Volume load ({breakdown.acuteLoad} units)</dt>
               <dd className="tabular-nums text-[var(--color-text-primary)]">+{breakdown.volumePoints}</dd>
@@ -82,17 +90,41 @@ export function RecoveryPage() {
                 <dd className="tabular-nums">+{breakdown.acwrPenalty}</dd>
               </div>
             )}
+            {!breakdown.acwrReady && breakdown.trainingDaysLast28 > 0 && (
+              <div className="flex justify-between gap-2 text-[var(--color-text-tertiary)]">
+                <dt>
+                  ACWR ({breakdown.trainingDaysLast28}/7 training days in last 28)
+                </dt>
+                <dd className="tabular-nums">Not active yet</dd>
+              </div>
+            )}
+            {!breakdown.acwrReady && breakdown.trainingDaysLast28 === 0 && breakdown.historyDaysAvailable > 0 && (
+              <div className="flex justify-between gap-2 text-[var(--color-text-tertiary)]">
+                <dt>ACWR (log training to enable)</dt>
+                <dd className="tabular-nums">Not active yet</dd>
+              </div>
+            )}
             <div className="flex justify-between gap-2 border-t border-[var(--color-border)] pt-1.5 font-medium">
-              <dt>4-wk avg load</dt>
+              <dt>{breakdown.acwrReady ? '4-wk avg load' : 'Recent avg load'}</dt>
               <dd className="tabular-nums text-[var(--color-text-primary)]">
                 {breakdown.chronicWeeklyLoad} / wk
               </dd>
             </div>
+            {breakdown.acwrReady && breakdown.sampleConfidence < 1 && (
+              <div className="flex justify-between gap-2 text-[var(--color-text-tertiary)]">
+                <dt>
+                  History ({breakdown.trainingDaysLast28} day
+                  {breakdown.trainingDaysLast28 === 1 ? '' : 's'} ·{' '}
+                  {Math.round(breakdown.sampleConfidence * 100)}% confidence)
+                </dt>
+                <dd className="tabular-nums">ACWR dampened</dd>
+              </div>
+            )}
           </dl>
         )}
       </Panel>
 
-      <Panel fillHeight title="Recovery score" subtitle="Readiness estimate" className="min-h-0">
+      <Panel title="Recovery score" subtitle="Readiness estimate">
         <p className="text-3xl font-semibold tabular-nums text-[var(--color-accent-muted)]">
           {snap?.recoveryScore ?? '—'}
         </p>
@@ -105,11 +137,11 @@ export function RecoveryPage() {
             className="mt-3"
           />
         )}
-        <p className="mt-2 text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="mt-2 text-xs text-[var(--color-text-tertiary)]">
           Not medical advice · avg energy {snap?.avgEnergyLast7Days ?? 0}/5
         </p>
         {breakdown && snap && (
-          <dl className="mt-4 space-y-1.5 text-[10px] text-[var(--color-text-secondary)]">
+          <dl className="mt-4 space-y-1.5 text-xs text-[var(--color-text-secondary)]">
             <div className="flex justify-between gap-2">
               <dt>Base (100 − workload × 0.82)</dt>
               <dd className="tabular-nums text-[var(--color-text-primary)]">
@@ -140,30 +172,48 @@ export function RecoveryPage() {
         )}
       </Panel>
 
-      <Panel fillHeight title="Muscle stress" subtitle="Top areas from recent sessions" className="min-h-0">
+      <Panel title="Regional load" subtitle="Last 7 days · from logged skills + cardio">
         {snap?.muscleGroups.length ? (
-          <ul className="space-y-2">
-            {snap.muscleGroups.slice(0, 6).map((muscle) => (
-              <li key={muscle.id}>
-                <div className="mb-1 flex justify-between text-[10px]">
-                  <span className="text-[var(--color-text-secondary)]">{muscle.label}</span>
-                  <span className="tabular-nums text-[var(--color-text-tertiary)]">{muscle.stress}</span>
+          <ul className="space-y-3">
+            {snap.muscleGroups.map((region) => (
+              <li key={region.id}>
+                <div className="mb-1 flex justify-between gap-2 text-xs">
+                  <span className="font-medium text-[var(--color-text-secondary)]">{region.label}</span>
+                  <span className="shrink-0 tabular-nums text-[var(--color-text-tertiary)]">
+                    {region.percent}%
+                  </span>
                 </div>
                 <ProgressBar
-                  value={Math.min(100, muscle.stress * 12)}
+                  value={region.percent}
                   showValue={false}
                   size="sm"
-                  variant={muscle.stress >= 5 ? 'warning' : 'accent'}
+                  variant={region.percent >= 45 ? 'warning' : 'accent'}
                 />
+                <p className="mt-1 text-xs text-[var(--color-text-tertiary)]">
+                  {region.sources.slice(0, 3).join(' · ')}
+                  {region.sessionTouches > 0 && (
+                    <span className="text-[var(--color-text-tertiary)]">
+                      {' '}
+                      · {region.sessionTouches} touch{region.sessionTouches === 1 ? '' : 'es'}
+                    </span>
+                  )}
+                </p>
               </li>
             ))}
           </ul>
+        ) : snap && snap.sessionsLast7Days > 0 ? (
+          <p className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
+            Sessions logged, but no skills checked yet. Use the skill checklist when logging — regional
+            load is derived from that, not session titles.
+          </p>
         ) : (
-          <p className="text-xs text-[var(--color-text-tertiary)]">Log sessions to estimate regional stress.</p>
+          <p className="text-xs text-[var(--color-text-tertiary)]">
+            Log sessions with skills checked, or log cardio runs, to see where load accumulated.
+          </p>
         )}
       </Panel>
 
-      <Panel fillHeight title="Recommendations" subtitle="Training balance" className="min-h-0">
+      <Panel title="Recommendations" subtitle="Training balance">
         {snap?.recommendations.length ? (
           <ul className="space-y-1.5 text-xs text-[var(--color-text-secondary)]">
             {snap.recommendations.slice(0, 8).map((rec, i) => (
@@ -178,20 +228,21 @@ export function RecoveryPage() {
         )}
 
         <PanelDivider label="How scores work" />
-        <p className="text-[10px] leading-relaxed text-[var(--color-text-tertiary)]">
-          Workload combines 7-day volume (duration × intensity), average RPE, and acute:chronic ratio vs your
-          last 4 weeks. Recovery starts from inverted workload, then adjusts for logged energy and recent rest.
+        <p className="text-xs leading-relaxed text-[var(--color-text-tertiary)]">
+          Workload uses a rolling past 7 days (not calendar week). ACWR compares that window to your
+          recent 28-day average once you have 7+ logged training days in the last 28; until then spike
+          alerts stay off.
         </p>
       </Panel>
 
-      <Panel fillHeight title="Injury mode & profile" className="min-h-0 lg:col-span-2">
+      <Panel title="Injury mode & profile" className="lg:col-span-2">
         <div className="grid gap-4 lg:grid-cols-2">
           <div>
             <InjuryModeControls />
           </div>
           <AthleteSideProfileCard />
         </div>
-        <p className="mt-3 text-[10px] text-[var(--color-text-tertiary)]">
+        <p className="mt-3 text-xs text-[var(--color-text-tertiary)]">
           <Link to="/assistant?mode=soccer_drills" className="text-[var(--color-accent-muted)] hover:underline">
             AI Coach
           </Link>
@@ -201,6 +252,7 @@ export function RecoveryPage() {
           </Link>
         </p>
       </Panel>
+      </div>
     </div>
   )
 }

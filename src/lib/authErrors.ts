@@ -4,7 +4,9 @@ import { formatUserError } from './userFacingError'
  * Maps Supabase Auth error messages to user-friendly copy.
  */
 export function getAuthErrorMessage(error: unknown): string {
-  if (!(error instanceof Error)) return 'Something went wrong. Please try again.'
+  if (!(error instanceof Error)) {
+    return 'Something went wrong while signing in. Try again.'
+  }
 
   const msg = error.message.toLowerCase()
 
@@ -30,5 +32,5 @@ export function getAuthErrorMessage(error: unknown): string {
     return 'Could not reach the server. Check your connection and try again.'
   }
 
-  return formatUserError(error, 'Something went wrong. Please try again.')
+  return formatUserError(error, 'Something went wrong while signing in. Try again.')
 }

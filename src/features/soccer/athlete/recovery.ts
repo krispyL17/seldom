@@ -1,9 +1,18 @@
+import { computeRegionalLoad, countSkillTaggedSessions } from './regionalLoad'
+import { rollingWindowStartIso, todayIso, yesterdayIso } from '@lib/rollingWindow'
+
+export const ACUTE_ROLLING_DAYS = 7
+export const CHRONIC_ROLLING_DAYS = 28
+
 export interface SessionLoadInput {
   session_date: string
   duration_min: number
   intensity: number
   energy_level: number
-  focus: string
+  /** @deprecated Legacy focus label — not used for regional load */
+  focus?: string
+  skills?: { slug: string; label: string }[]
+  team_session?: boolean
 }
 
 export interface RunLoadInput {
@@ -23,12 +32,32 @@ export interface RecoveryBreakdown {
   acuteLoad: number
   chronicWeeklyLoad: number
   acwr: number
+  /** False until there are 7+ logged training days in the rolling 28-day window. */
+  acwrReady: boolean
+  /** Calendar days from first logged activity through today (scales volume target for new users). */
+  historyDaysAvailable: number
+  /** Distinct training days in the rolling 7-day acute window. */
+  trainingDaysLast7: number
   runMinutesLast7: number
   volumePoints: number
   intensityPoints: number
   acwrPenalty: number
   energyAdjustment: number
   freshnessBonus: number
+  /** Distinct days with sessions/runs in the last 28 days. */
+  trainingDaysLast28: number
+  /** 0–1; low when history is sparse — dampens ACWR spike penalties. */
+  sampleConfidence: number
+}
+
+export interface MuscleLoad {
+  id: string
+  label: string
+  stress: number
+  percent: number
+  sessionTouches: number
+  sources: string[]
+  region: 'upper' | 'lower' | 'core' | 'full'
 }
 
 export interface RecoverySnapshot {
@@ -44,72 +73,79 @@ export interface RecoverySnapshot {
   breakdown: RecoveryBreakdown
 }
 
-export interface MuscleLoad {
-  id: string
-  label: string
-  stress: number
-  region: 'upper' | 'lower' | 'core' | 'full'
-}
-
-const FOCUS_MUSCLES: Record<string, string[]> = {
-  sprint: ['quads', 'hamstrings', 'calves'],
-  speed: ['quads', 'hamstrings', 'calves'],
-  shoot: ['quads', 'core', 'hip_flexors'],
-  pass: ['hip_flexors', 'core', 'calves'],
-  dribbl: ['hip_flexors', 'ankles', 'core'],
-  run: ['quads', 'hamstrings', 'calves', 'hip_flexors'],
-  cardio: ['quads', 'hamstrings', 'calves'],
-  strength: ['core', 'quads', 'hamstrings', 'upper_back'],
-  mobility: ['hip_flexors', 'hamstrings', 'calves'],
-}
-
-const MUSCLE_LABELS: Record<string, { label: string; region: MuscleLoad['region'] }> = {
-  quads: { label: 'Quads', region: 'lower' },
-  hamstrings: { label: 'Hamstrings', region: 'lower' },
-  calves: { label: 'Calves', region: 'lower' },
-  hip_flexors: { label: 'Hip flexors', region: 'lower' },
-  core: { label: 'Core', region: 'core' },
-  ankles: { label: 'Ankles', region: 'lower' },
-  upper_back: { label: 'Upper back', region: 'upper' },
-}
-
-function daysAgoIso(days: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - days)
-  return d.toISOString().slice(0, 10)
-}
-
-function yesterdayIso(): string {
-  return daysAgoIso(1)
-}
-
-function focusTextForMuscles(focus: string): string {
-  const trimmed = focus.trim()
-  const tabIdx = trimmed.indexOf(':')
-  if (trimmed.startsWith('seldom-tab:') && tabIdx >= 0) {
-    return trimmed.slice(tabIdx + 1).replace(/^custom:/, '').replace(/-/g, ' ')
-  }
-  return trimmed
-}
-
-function inferMuscles(focus: string): string[] {
-  const lower = focusTextForMuscles(focus).toLowerCase()
-  const found = new Set<string>()
-  for (const [key, muscles] of Object.entries(FOCUS_MUSCLES)) {
-    if (lower.includes(key)) muscles.forEach((m) => found.add(m))
-  }
-  if (found.size === 0) return ['quads', 'hamstrings', 'core']
-  return [...found]
-}
-
-function sumSessionLoad(sessions: SessionLoadInput[], since: string): number {
+function sumSessionLoad(
+  sessions: SessionLoadInput[],
+  since: string,
+  until: string = todayIso(),
+): number {
   return sessions
-    .filter((s) => s.session_date >= since)
+    .filter((s) => s.session_date >= since && s.session_date <= until)
     .reduce((sum, s) => sum + sessionLoadUnits(s.duration_min, s.intensity), 0)
 }
 
-function sumRunMinutes(runs: RunLoadInput[], since: string): number {
-  return runs.filter((r) => r.run_date >= since).reduce((sum, r) => sum + r.minutes, 0)
+function sumRunMinutes(
+  runs: RunLoadInput[],
+  since: string,
+  until: string = todayIso(),
+): number {
+  return runs
+    .filter((r) => r.run_date >= since && r.run_date <= until)
+    .reduce((sum, r) => sum + r.minutes, 0)
+}
+
+function distinctTrainingDays(
+  sessions: SessionLoadInput[],
+  runs: RunLoadInput[],
+  since: string,
+  until: string = todayIso(),
+): Set<string> {
+  const days = new Set<string>()
+  for (const s of sessions) {
+    if (s.session_date >= since && s.session_date <= until) days.add(s.session_date)
+  }
+  for (const r of runs) {
+    if (r.run_date >= since && r.run_date <= until) days.add(r.run_date)
+  }
+  return days
+}
+
+/** Weeks spanned by logged activity (1–4), not always 4 — avoids ACWR spikes with few days of data. */
+export function weeksRepresentedForChronicLoad(trainingDays: Set<string>): number {
+  if (trainingDays.size === 0) return 1
+  const sorted = [...trainingDays].sort()
+  const first = new Date(`${sorted[0]}T12:00:00`)
+  const last = new Date(`${sorted[sorted.length - 1]}T12:00:00`)
+  const spanDays = Math.max(1, Math.round((last.getTime() - first.getTime()) / 86_400_000) + 1)
+  return Math.min(4, Math.max(1, Math.ceil(spanDays / 7)))
+}
+
+/** Full confidence at ~2 weeks of logged training days in the 28-day window. */
+export function sampleConfidenceFromTrainingDays(trainingDaysLast28: number): number {
+  return Math.min(1, trainingDaysLast28 / 14)
+}
+
+/** Calendar days from first logged activity through today (inclusive). */
+export function historyDaysAvailable(
+  sessions: SessionLoadInput[],
+  runs: RunLoadInput[],
+): number {
+  const allDays = distinctTrainingDays(sessions, runs, '1970-01-01')
+  if (allDays.size === 0) return 0
+  const sorted = [...allDays].sort()
+  const first = new Date(`${sorted[0]}T12:00:00`)
+  const today = new Date()
+  today.setHours(12, 0, 0, 0)
+  return Math.max(1, Math.round((today.getTime() - first.getTime()) / 86_400_000) + 1)
+}
+
+export function acwrIsReady(trainingDaysInChronicWindow: number): boolean {
+  return trainingDaysInChronicWindow >= ACUTE_ROLLING_DAYS
+}
+
+/** Weekly load target scaled while the user has less than 7 days of logging history. */
+export function targetLoadForAcutePeriod(historyDays: number): number {
+  const comparableDays = Math.min(ACUTE_ROLLING_DAYS, Math.max(historyDays, 1))
+  return TARGET_WEEKLY_LOAD * (comparableDays / ACUTE_ROLLING_DAYS)
 }
 
 function runLoadUnits(minutes: number): number {
@@ -120,10 +156,17 @@ export function analyzeRecovery(
   sessions: SessionLoadInput[],
   runs: RunLoadInput[] = [],
 ): RecoverySnapshot {
-  const since7 = daysAgoIso(7)
-  const since28 = daysAgoIso(28)
-  const recent = sessions.filter((s) => s.session_date >= since7)
+  const since7 = rollingWindowStartIso(ACUTE_ROLLING_DAYS)
+  const since28 = rollingWindowStartIso(CHRONIC_ROLLING_DAYS)
+  const recent = sessions.filter(
+    (s) => s.session_date >= since7 && s.session_date <= todayIso(),
+  )
   const sessionsLast7Days = recent.length
+  const trainingDaysInAcuteWindow = distinctTrainingDays(sessions, runs, since7)
+  const trainingDaysLast7 = trainingDaysInAcuteWindow.size
+  const historyDays = historyDaysAvailable(sessions, runs)
+  const trainingDaysLast28 = distinctTrainingDays(sessions, runs, since28)
+  const acwrReady = acwrIsReady(trainingDaysLast28.size)
   const runMinutesLast7 = sumRunMinutes(runs, since7)
   const minutesLast7Days = recent.reduce((s, x) => s + x.duration_min, 0) + runMinutesLast7
   const avgIntensityLast7Days =
@@ -138,26 +181,30 @@ export function analyzeRecovery(
   const acuteLoad = sumSessionLoad(recent, since7) + runLoadUnits(runMinutesLast7)
   const load28 =
     sumSessionLoad(sessions, since28) + runLoadUnits(sumRunMinutes(runs, since28))
-  const chronicWeeklyLoad = Math.round((load28 / 4) * 10) / 10
+  const sampleConfidence = sampleConfidenceFromTrainingDays(trainingDaysLast28.size)
+  const weeksRepresented = weeksRepresentedForChronicLoad(trainingDaysLast28)
+  const chronicWeeklyLoad = Math.round((load28 / weeksRepresented) * 10) / 10
   const acwr =
-    chronicWeeklyLoad > 0
+    acwrReady && chronicWeeklyLoad > 0
       ? Math.round((acuteLoad / chronicWeeklyLoad) * 100) / 100
-      : acuteLoad > 0
-        ? 1.4
-        : 1
+      : 1
 
-  const volumePoints = Math.min(55, Math.round((acuteLoad / TARGET_WEEKLY_LOAD) * 55))
+  const targetForAcutePeriod = targetLoadForAcutePeriod(historyDays)
+  const volumePoints = Math.min(55, Math.round((acuteLoad / targetForAcutePeriod) * 55))
   const intensityPoints = Math.min(25, Math.round(avgIntensityLast7Days * 2.5))
-  let acwrPenalty = 0
-  if (acwr > 1.5) acwrPenalty = Math.min(20, Math.round((acwr - 1.5) * 40))
-  else if (acwr > 1.3) acwrPenalty = Math.min(10, Math.round((acwr - 1.3) * 50))
+  let rawAcwrPenalty = 0
+  if (acwrReady && acwr > 1.5) rawAcwrPenalty = Math.min(20, Math.round((acwr - 1.5) * 40))
+  else if (acwrReady && acwr > 1.3) rawAcwrPenalty = Math.min(10, Math.round((acwr - 1.3) * 50))
+  const acwrPenalty = acwrReady ? Math.round(rawAcwrPenalty * sampleConfidence) : 0
 
   const workloadScore = Math.min(100, volumePoints + intensityPoints + acwrPenalty)
 
   const energyAdjustment =
     recent.length > 0 ? Math.round((avgEnergyLast7Days - 3) * 4) : 8
 
-  const trainedYesterday = recent.some((s) => s.session_date >= yesterdayIso())
+  const yday = yesterdayIso()
+  const trainedYesterday =
+    recent.some((s) => s.session_date === yday) || runs.some((r) => r.run_date === yday)
   const freshnessBonus =
     sessionsLast7Days > 0 && !trainedYesterday ? 10 : sessionsLast7Days === 0 ? 12 : 0
 
@@ -169,72 +216,94 @@ export function analyzeRecovery(
     ),
   )
 
+  const acwrCountsForFatigue = acwrReady && sampleConfidence >= 0.5
   let fatigueLevel: RecoverySnapshot['fatigueLevel'] = 'low'
-  if (workloadScore >= 75 || acwr > 1.6) fatigueLevel = 'very_high'
-  else if (workloadScore >= 55 || acwr > 1.4) fatigueLevel = 'high'
-  else if (workloadScore >= 35 || acwr > 1.25) fatigueLevel = 'moderate'
+  if (workloadScore >= 75 || (acwrCountsForFatigue && acwr > 1.6)) fatigueLevel = 'very_high'
+  else if (workloadScore >= 55 || (acwrCountsForFatigue && acwr > 1.4)) fatigueLevel = 'high'
+  else if (workloadScore >= 35 || (acwrCountsForFatigue && acwr > 1.25)) fatigueLevel = 'moderate'
 
-  const muscleStress = new Map<string, number>()
-  for (const session of recent) {
-    const load = sessionLoadUnits(session.duration_min, session.intensity) / 10
-    for (const m of inferMuscles(session.focus)) {
-      muscleStress.set(m, (muscleStress.get(m) ?? 0) + load)
-    }
-  }
-  if (runMinutesLast7 > 0) {
-    const runLoad = runLoadUnits(runMinutesLast7) / 10
-    for (const m of ['quads', 'hamstrings', 'calves', 'hip_flexors']) {
-      muscleStress.set(m, (muscleStress.get(m) ?? 0) + runLoad)
-    }
-  }
-
-  const muscleGroups: MuscleLoad[] = [...muscleStress.entries()]
-    .map(([id, stress]) => ({
-      id,
-      label: MUSCLE_LABELS[id]?.label ?? id,
-      region: MUSCLE_LABELS[id]?.region ?? 'full',
-      stress: Math.round(stress * 10) / 10,
-    }))
-    .sort((a, b) => b.stress - a.stress)
-    .slice(0, 8)
+  const regionalEntries = computeRegionalLoad(sessions, runMinutesLast7, since7)
+  const skillTaggedSessions = countSkillTaggedSessions(sessions, since7)
+  const muscleGroups: MuscleLoad[] = regionalEntries.map((entry) => ({
+    id: entry.id,
+    label: entry.label,
+    stress: entry.load,
+    percent: entry.percent,
+    sessionTouches: entry.sessionTouches,
+    sources: entry.sources,
+    region: entry.region,
+  }))
 
   const breakdown: RecoveryBreakdown = {
     acuteLoad: Math.round(acuteLoad),
     chronicWeeklyLoad,
     acwr,
+    acwrReady,
+    historyDaysAvailable: historyDays,
+    trainingDaysLast7,
     runMinutesLast7,
     volumePoints,
     intensityPoints,
     acwrPenalty,
     energyAdjustment,
     freshnessBonus,
+    trainingDaysLast28: trainingDaysLast28.size,
+    sampleConfidence,
   }
 
   const recommendations: string[] = []
+  if (!acwrReady && trainingDaysLast28.size > 0) {
+    const daysLeft = ACUTE_ROLLING_DAYS - trainingDaysLast28.size
+    if (daysLeft > 0) {
+      recommendations.push(
+        `ACWR needs ${ACUTE_ROLLING_DAYS} logged training days in the last ${CHRONIC_ROLLING_DAYS} days — ${daysLeft} more to go.`,
+      )
+    }
+    if (historyDays < ACUTE_ROLLING_DAYS) {
+      recommendations.push(
+        `Volume target scaled to your first ${historyDays} day${historyDays === 1 ? '' : 's'} of logging.`,
+      )
+    }
+  } else if (sampleConfidence < 0.5) {
+    recommendations.push(
+      'Limited training history logged — workload estimates will stabilize as you add more sessions (prior rest is not penalized).',
+    )
+  }
   if (fatigueLevel === 'very_high' || fatigueLevel === 'high') {
-    recommendations.push('High workload this week — consider a lighter day or active recovery.')
+    recommendations.push(
+      'High workload in the last 7 days — consider a lighter day or active recovery.',
+    )
     recommendations.push('Prioritize sleep, hydration, and easy mobility.')
-  } else if (sessionsLast7Days === 0) {
-    recommendations.push('No sessions logged this week — a short skill or mobility block can restart momentum.')
+  } else if (sessionsLast7Days === 0 && runMinutesLast7 === 0) {
+    recommendations.push(
+      'No sessions logged in the last 7 days — a short skill or mobility block can restart momentum.',
+    )
   } else {
     recommendations.push('Workload looks manageable — maintain consistency and log how you feel.')
   }
 
-  if (acwr > 1.5) {
+  if (acwrReady && acwr > 1.5 && sampleConfidence >= 0.5) {
     recommendations.push(
       `Acute:chronic ratio is ${acwr.toFixed(2)} (spike) — ease volume before adding intensity.`,
     )
-  } else if (acwr < 0.8 && sessionsLast7Days > 0) {
-    recommendations.push('Training load dropped vs your 4-week average — room to build back gradually.')
+  } else if (acwrReady && acwr < 0.8 && sessionsLast7Days > 0 && sampleConfidence >= 0.5) {
+    recommendations.push(
+      'Training load dropped vs your recent 28-day average — room to build back gradually.',
+    )
   }
 
   const topMuscle = muscleGroups[0]
-  if (topMuscle && topMuscle.stress >= 4) {
-    recommendations.push(`Repeated stress on ${topMuscle.label} — add mobility or alternate focus next session.`)
+  if (topMuscle && topMuscle.percent >= 45 && skillTaggedSessions > 0) {
+    const from = topMuscle.sources.slice(0, 2).join(', ')
+    recommendations.push(
+      `Load skewed toward ${topMuscle.label}${from ? ` (${from})` : ''} — rotate skills or add mobility.`,
+    )
+  } else if (sessionsLast7Days > 0 && skillTaggedSessions === 0 && runMinutesLast7 === 0) {
+    recommendations.push('Check skills when logging sessions — regional load uses your skill checklist, not guesses.')
   }
 
   if (avgIntensityLast7Days >= 8 && sessionsLast7Days >= 4) {
-    recommendations.push('High intensity frequency — mix in a lower-RPE session this week.')
+    recommendations.push('High intensity frequency — mix in a lower-RPE session soon.')
   }
 
   if (avgEnergyLast7Days <= 2 && sessionsLast7Days >= 3) {

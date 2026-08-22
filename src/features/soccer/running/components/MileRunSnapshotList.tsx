@@ -34,7 +34,7 @@ export function MileRunSnapshotList({ runs, limit = 3 }: MileRunSnapshotListProp
               <p className="text-sm font-semibold tabular-nums text-[var(--color-text-primary)]">
                 {formatDuration(run.duration_sec)}
               </p>
-              <p className="text-[10px] text-[var(--color-text-tertiary)]">
+              <p className="text-xs text-[var(--color-text-tertiary)]">
                 {formatShortDate(run.run_date)}
               </p>
             </div>

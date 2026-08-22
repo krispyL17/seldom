@@ -64,7 +64,7 @@ export function CollegesListPanel() {
                         <p className="truncate text-sm font-medium text-[var(--color-text-primary)]">
                           {college.name}
                         </p>
-                        <p className="text-[11px] text-[var(--color-text-tertiary)]">
+                        <p className="text-xs text-[var(--color-text-tertiary)]">
                           {college.location || 'Location not set'}
                           {college.deadlines.length > 0 &&
                             ` · ${college.deadlines.length} timeline dates`}
@@ -76,7 +76,7 @@ export function CollegesListPanel() {
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-7 px-2 text-[10px] text-[var(--color-danger)]"
+                          className="h-9 min-h-10 px-3 text-xs text-[var(--color-danger)]"
                           disabled={removingId === college.id}
                           onClick={() => void handleRemove(college.id, college.name)}
                         >

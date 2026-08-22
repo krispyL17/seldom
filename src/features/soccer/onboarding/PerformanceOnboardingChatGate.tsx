@@ -3,7 +3,7 @@ import { OnboardingChatPanel } from '@features/onboarding/OnboardingChatPanel'
 import type { OnboardingAnswers } from '@features/onboarding/types'
 import { useUserPreferences } from '@features/preferences'
 import { useAuth } from '@hooks/useAuth'
-import type { SoccerPlayerProfile } from '@services/database/soccerUserData'
+import { EMPTY_SOCCER_PROFILE } from '@services/database/soccerUserData'
 import { useAthleteDevelopment } from '../hooks/useAthleteDevelopment'
 import { useSoccer } from '../hooks/useSoccerProfile'
 
@@ -32,12 +32,9 @@ export function PerformanceOnboardingChatGate({ onComplete }: { onComplete: () =
     const goalTitle = str(answers['goal.title'])
     const cardioGoalTitle = str(answers['cardioGoal.title'])
 
-    const profile: SoccerPlayerProfile = {
+    const profile = {
+      ...EMPTY_SOCCER_PROFILE,
       name: displayName,
-      position: '',
-      preferredFoot: '',
-      squadNumber: null,
-      season: '',
       currentFocus: goalTitle || hobbyPassion || '',
     }
 
@@ -53,11 +50,40 @@ export function PerformanceOnboardingChatGate({ onComplete }: { onComplete: () =
     await setGymEnabled(parseGymEnabled(answers))
   }
 
+  async function handleSkip() {
+    await completeOnboarding(
+      {
+        ...EMPTY_SOCCER_PROFILE,
+        name: displayName,
+        currentFocus: hobbyPassion || '',
+      },
+      {
+        weaknessTitle: '',
+        weaknessDescription: '',
+        strengthTitle: '',
+        strengthDescription: '',
+        goalTitle: '',
+      },
+    )
+    onComplete()
+  }
+
   return (
-    <OnboardingChatPanel
-      config={performanceOnboarding}
-      onComplete={handleComplete}
-      onFinished={onComplete}
-    />
+    <div>
+      <OnboardingChatPanel
+        config={performanceOnboarding}
+        onComplete={handleComplete}
+        onFinished={onComplete}
+      />
+      <p className="mt-4 text-center">
+        <button
+          type="button"
+          onClick={() => void handleSkip()}
+          className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:underline"
+        >
+          Set up later — explore the tab first
+        </button>
+      </p>
+    </div>
   )
 }
